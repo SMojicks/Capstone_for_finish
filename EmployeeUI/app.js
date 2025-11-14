@@ -43,6 +43,7 @@ function initializeApp() {
             
             // --- ADDED THIS CALL ---
             setupInventoryToggle();
+            setupReservationHistoryToggle();
             
             // 3. Update employee info in navbar
             document.querySelector(".employee-name").textContent = userProfile.fullName || "Employee";
@@ -238,5 +239,33 @@ function setupInventoryToggle() {
         });
     } else {
         console.warn("Could not find inventory toggle buttons or sections.");
+    }
+}
+function setupReservationHistoryToggle() {
+    const viewHistoryBtn = document.getElementById('view-reservation-history-btn');
+    const backToResBtn = document.getElementById('back-to-reservations-btn');
+    const reservationMainSection = document.querySelector('#reservations-section > .section-header').parentElement;
+    const historySection = document.getElementById('reservation-history-section');
+
+    if (viewHistoryBtn && backToResBtn && historySection) {
+        viewHistoryBtn.addEventListener('click', () => {
+            // Hide main reservation content, show history
+            const mainContent = reservationMainSection.querySelectorAll('.inventory-filter-bar, .analytics-grid, .table-container');
+            mainContent.forEach(el => el.style.display = 'none');
+            reservationMainSection.querySelector('.section-header').style.display = 'none';
+            historySection.classList.remove('hidden');
+            historySection.style.display = 'block';
+        });
+
+        backToResBtn.addEventListener('click', () => {
+            // Show main reservation content, hide history
+            const mainContent = reservationMainSection.querySelectorAll('.inventory-filter-bar, .analytics-grid, .table-container');
+            mainContent.forEach(el => el.style.display = '');
+            reservationMainSection.querySelector('.section-header').style.display = '';
+            historySection.classList.add('hidden');
+            historySection.style.display = 'none';
+        });
+    } else {
+        console.warn("Could not find reservation history toggle buttons or sections.");
     }
 }

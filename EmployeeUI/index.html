@@ -452,6 +452,7 @@
     <div class="section-header">
         <h1>Reservations</h1>
         <div class="header-actions">
+            <button id="view-reservation-history-btn" class="btn btn--secondary">View History</button>
         </div>
     </div>
 
@@ -509,6 +510,36 @@
             <tbody id="reservationTableBody">
                 </tbody>
             </table>
+    </div>
+        <!-- NEW: Reservation History Section -->
+    <div id="reservation-history-section" class="content-section hidden">
+        <div class="section-header">
+            <h1>Reservation History</h1>
+            <div class="header-actions">
+                <button id="back-to-reservations-btn" class="btn btn--primary">← Back to Reservations</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Contact</th>
+                        <th>Table</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Diners</th>
+                        <th>Pre-Order</th>
+                        <th>Receipt</th>
+                        <th>Notes</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="reservation-history-table-body">
+                </tbody>
+            </table>
+        </div>
     </div>
 </section>
 

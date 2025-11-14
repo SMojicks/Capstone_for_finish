@@ -2943,10 +2943,7 @@ body.sidebar-collapsed .sidebar {
     border: 1px solid var(--color-border);
 }
 
-/* This CSS hides the Name/Price on subsequent rows for the same variation */
-#product-variations-list .ingredient-row:not(:first-child) .variation-name-price-group {
-    visibility: hidden; 
-}
+
 
 /* This group holds Name and Price */
 .variation-name-price-group {

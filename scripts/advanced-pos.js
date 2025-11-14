@@ -822,6 +822,7 @@ function updateCartQuantity(productId, change) {
 
 function updateCartTotals() {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  
   let discountAmount = 0;
   if (currentDiscount.type === "PWD" || currentDiscount.type === "Senior") {
     discountAmount = subtotal * 0.20;
@@ -831,11 +832,16 @@ function updateCartTotals() {
   if (discountAmount > subtotal) {
       discountAmount = subtotal;
   }
-  const tax = (subtotal - discountAmount) * 0.12;
-  const total = (subtotal - discountAmount) + tax;
+  
+  // Calculate VAT-inclusive amounts
+  const netSubtotal = subtotal - discountAmount;
+  const vatable = netSubtotal / 1.12; // Remove VAT to get base amount
+  const vatAmount = netSubtotal - vatable; // VAT is the difference
+  const total = netSubtotal; // Total is already VAT-inclusive
+  
   if (subtotalEl) subtotalEl.textContent = `₱${subtotal.toFixed(2)}`;
   if (cartDiscountEl) cartDiscountEl.textContent = `(₱${discountAmount.toFixed(2)})`;
-  if (taxEl) taxEl.textContent = `₱${tax.toFixed(2)}`;
+  if (taxEl) taxEl.textContent = `₱${vatAmount.toFixed(2)}`;
   if (totalEl) totalEl.textContent = `₱${total.toFixed(2)}`;
 }
 
@@ -1316,9 +1322,16 @@ function printReceipt(order) {
         const amount = (item.quantity * item.pricePerItem).toFixed(2).padStart(10);
         return `${qty}  ${name} ${unitPrice} ${amount}`;
     }).join('\n');
-    const subtotal = `${'Subtotal:'.padEnd(30)}${order.subtotal.toFixed(2).padStart(10)}`;
-    const tax = `${'VAT (12%):'.padEnd(30)}${order.tax.toFixed(2).padStart(10)}`;
-    const total = `${'Total Amount:'.padEnd(30)}${order.totalAmount.toFixed(2).padStart(10)}`;
+    const netAmount = order.subtotal - (order.discountAmount || 0);
+const vatable = netAmount / 1.12;
+const vatAmount = netAmount - vatable;
+
+const subtotal = `${'Subtotal:'.padEnd(30)}${order.subtotal.toFixed(2).padStart(10)}`;
+const discount = (order.discountAmount && order.discountAmount > 0) ? 
+    `${'Discount:'.padEnd(30)}${('-' + order.discountAmount.toFixed(2)).padStart(10)}` : '';
+const vatableSales = `${'Vatable Sales:'.padEnd(30)}${vatable.toFixed(2).padStart(10)}`;
+const vat = `${'VAT (12%):'.padEnd(30)}${vatAmount.toFixed(2).padStart(10)}`;
+const total = `${'Total Amount:'.padEnd(30)}${order.totalAmount.toFixed(2).padStart(10)}`;
     const dateTime = order.createdAt ? 
                    order.createdAt.toDate().toLocaleString('en-US', {
                        year: 'numeric', month: '2-digit', day: '2-digit', 
@@ -1353,8 +1366,7 @@ function printReceipt(order) {
             <div class="center"><div class="header">ACACCIA BISTRO CAFE</div><div class="info">Brgy. San Agustin, Alaminos, Laguna</div><div class="info">TIN: 123-456-789-00000</div><div class="info">BIR Permit to Use No: CAS-2025-001</div></div>
             <div class="line"></div><pre>Official Receipt No: ${order.orderId}</pre><pre>Date/Time: ${dateTime}</pre><pre>Cashier: ${order.processedBy || 'Cashier'}</pre><pre>Order Type: ${order.orderType}</pre>
             <div class="line"></div><pre>Qty  Description           Unit Price     Amount</pre><div class="line"></div><pre>${itemRows}</pre><div class="line"></div>
-            <pre>${subtotal}</pre><pre>${tax}</pre><div class="line"></div><pre class="totals-line">${total}</pre><div class="line"></div>
-            <pre>Payment Method: ${order.paymentMethod}</pre><pre>Customer Name:  ${order.customerName}</pre>
+<pre>${subtotal}</pre>${discount ? `<pre>${discount}</pre>` : ''}<div class="line"></div><pre>${vatableSales}</pre><pre>${vat}</pre><div class="line"></div><pre class="totals-line">${total}</pre><div class="line"></div>            <pre>Payment Method: ${order.paymentMethod}</pre><pre>Customer Name:  ${order.customerName}</pre>
             <div class="center footer"><strong>This serves as your OFFICIAL RECEIPT</strong><br>Thank you for dining with us!</div>
             <div class="line"></div><div class="bir-info">POS Provider: CafeSync System v1.0<br>Accredited Developer: Team Cafesync<br>BIR Accreditation No.: CASDEV-2025-045</div><div class="line"></div>
             <br><div class="button-bar"><button class="print-receipt-btn" onclick="window.print()">Print Receipt</button><button class="download-receipt-btn" onclick="downloadAsJpg()">Download JPG</button></div>
@@ -1731,16 +1743,20 @@ document.addEventListener("DOMContentLoaded", () => {
           const paymentMethodRadio = document.querySelector('#customer-info-modal input[name="paymentMethod"]:checked');
           if (!paymentMethodRadio) { alert("Please select a payment method."); return; }
           const paymentMethod = paymentMethodRadio.value;
-          const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-          let discountAmount = 0;
-          if (currentDiscount.type === "PWD" || currentDiscount.type === "Senior") {
-            discountAmount = subtotal * 0.20;
-          } else if (currentDiscount.type === "Custom") {
-            discountAmount = currentDiscount.amount;
-          }
-          if (discountAmount > subtotal) discountAmount = subtotal;
-          const tax = (subtotal - discountAmount) * 0.12;
-          const total = (subtotal - discountAmount) + tax;
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+let discountAmount = 0;
+if (currentDiscount.type === "PWD" || currentDiscount.type === "Senior") {
+  discountAmount = subtotal * 0.20;
+} else if (currentDiscount.type === "Custom") {
+  discountAmount = currentDiscount.amount;
+}
+if (discountAmount > subtotal) discountAmount = subtotal;
+
+// Calculate VAT-inclusive amounts
+const netSubtotal = subtotal - discountAmount;
+const vatable = netSubtotal / 1.12;
+const vatAmount = netSubtotal - vatable;
+const total = netSubtotal;
           let paymentAmount = 0;
           let change = 0;
           if (paymentMethod === 'Cash') {
@@ -1760,8 +1776,7 @@ document.addEventListener("DOMContentLoaded", () => {
             processedBy: document.querySelector(".employee-name").textContent || "Cashier"
           };
           if (customerInfoModal) customerInfoModal.style.display = "none";
-          processSale(customerName, orderType, total, subtotal, tax, paymentDetails, currentDiscount);
-        });
+processSale(customerName, orderType, total, subtotal, vatAmount, paymentDetails, currentDiscount);        });
     }
 
     // --- Order Details Modal (Kitchen) ---

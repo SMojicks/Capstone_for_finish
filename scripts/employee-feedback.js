@@ -152,14 +152,16 @@ function renderFeedbackCard(docSnap) {
     }
 
     // --- 4. Actions ---
-    let actionsHtml = '';
-    if (!isApproved) {
-        actionsHtml = `
-            <div class="feedback-actions">
-                <button class="btn btn--small btn--icon-approve approve-btn" data-id="${id}" title="Approve">✔️ Approve</button>
-            </div>
-        `;
-    }
+ // --- 4. Actions ---
+let actionsHtml = '';
+if (!isApproved) {
+    actionsHtml = `
+        <div class="feedback-actions">
+            <button class="btn btn--small btn--icon-approve approve-btn" data-id="${id}" title="Approve">✔️ Approve</button>
+            <button class="btn btn--small btn--icon-reject reject-btn" data-id="${id}" title="Reject">❌ Reject</button>
+        </div>
+    `;
+}
     
     // --- 5. Date ---
     let dateStr = "—";

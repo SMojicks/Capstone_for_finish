@@ -113,7 +113,102 @@ function promptForMessage(id, newStatus, userId, date) {
     reservationMessageModal.style.display = 'flex';
     notificationMessageTextarea.focus();
 }
+// --- NEW: Function to load reservation history ---
+function loadReservationHistory() {
+    const historyTableBody = document.getElementById('reservation-history-table-body');
+    if (!historyTableBody) return;
 
+    // Query for completed and canceled reservations, ordered by date descending
+    const q = query(
+        reservationCollection, 
+        where("status", "in", ["completed", "canceled"]),
+        orderBy("date", "desc"), 
+        orderBy("time", "desc")
+    );
+
+    onSnapshot(q, (snapshot) => {
+        historyTableBody.innerHTML = "";
+
+        if (snapshot.empty) {
+            historyTableBody.innerHTML = `
+            <tr>
+                <td colspan="10" style="text-align: center; padding: 20px; color: #999;">
+                No reservation history found.
+                </td>
+            </tr>
+            `;
+            return;
+        }
+
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const row = document.createElement("tr");
+            const status = data.status || "completed";
+
+            // Build Pre-Order HTML
+            let preOrderCell = "—";
+            let preOrderModalHtml = '<p>No pre-order items.</p>';
+            if (data.preOrder && data.preOrder.length > 0) {
+                preOrderCell = `<ul class="pre-order-item-list">`;
+                data.preOrder.forEach(item => {
+                    preOrderCell += `<li>${item.quantity}x ${item.name}</li>`;
+                });
+                preOrderCell += `</ul>`;
+                
+                preOrderModalHtml = `<ul class="pre-order-item-list">`;
+                data.preOrder.forEach(item => {
+                    preOrderModalHtml += `<li><strong>${item.quantity}x</strong> ${item.name}</li>`;
+                });
+                preOrderModalHtml += `</ul>`;
+            }
+
+            let receiptCell = "—";
+            if (data.paymentReceiptUrl) {
+                receiptCell = `<button class="btn btn--secondary btn--sm view-receipt-btn" data-src="${data.paymentReceiptUrl}">View</button>`;
+            }
+
+            // Format date
+            let formattedDate = data.date;
+            try {
+                const parts = data.date.split('-');
+                if (parts.length === 3) {
+                    formattedDate = `${parts[1]}/${parts[2]}/${parts[0].substring(2)}`;
+                }
+            } catch (e) { console.warn("Could not format date:", data.date); }
+
+            // Format time
+            let formattedTime = data.time;
+            if (data.time) {
+                try {
+                    const [hours, minutes] = data.time.split(':').map(Number);
+                    const ampm = hours >= 12 ? 'PM' : 'AM';
+                    let h = hours % 12;
+                    if (h === 0) h = 12;
+                    const m = String(minutes).padStart(2, '0');
+                    formattedTime = `${h}:${m} ${ampm}`;
+                } catch (e) { console.warn("Could not format time:", data.time); }
+            }
+
+            row.innerHTML = `
+            <td>${data.name}</td>
+            <td>${data.contactNumber}</td>
+            <td>${data.tableNumber}</td>
+            <td>${formattedDate}</td>
+            <td>${formattedTime}</td>
+            <td>${data.numOfDiners}</td>
+            <td class="view-preorder" data-preorder-html="${encodeURIComponent(preOrderModalHtml)}">${preOrderCell}</td>
+            <td>${receiptCell}</td>
+            <td class="view-notes" data-notes="${data.notes || "No notes provided."}">${data.notes || "—"}</td>
+            <td class="status ${status}">${status}</td>
+            `;
+
+            historyTableBody.appendChild(row);
+        });
+    }, (error) => {
+        console.error("Error loading reservation history:", error);
+        historyTableBody.innerHTML = `<tr><td colspan="10">Error loading reservation history.</td></tr>`;
+    });
+}
 // --- NEW: Function to load dashboard stats ---
 function loadReservationDashboard() {
     // This query listens to ALL reservations to update cards in real-time
@@ -323,7 +418,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load data on init
     loadReservationDashboard(); 
-    loadReservationTable();     
+    loadReservationTable();    
+     loadReservationHistory();
     
     // Add filter event listeners
     if (statusFilter) statusFilter.addEventListener('change', loadReservationTable);
