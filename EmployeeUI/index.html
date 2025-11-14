@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CafeSync POS System</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns/cdn.min.js"></script>
+</head>
+<body>
+    <nav class="top-navbar">
+        <div class="navbar-left">
+        <button id="sidebar-toggle-btn" class="sidebar-toggle-btn">
+            <span class="material-icons">menu</span>
+        </button>
+        <h2 class="company-logo"></h2>
+    </div>
+        <div class="navbar-left">
+            <h2 class="company-logo">Acaccia Bistro Cafe POS</h2>
+        </div>
+        <div class="navbar-right">
+            <div class="employee-info">
+                <div class="employee-avatar">JS</div>
+                <span class="employee-name">John Smith</span>
+            </div>
+            <button class="btn btn--outline btn--sm logout-btn">Logout</button>
+        </div>
+    </nav>
+    <div class="main-container">
+
+<aside class="sidebar">
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item" data-permission="pos">
+                    <button class="nav-link active" data-section="pos">
+                        <span class="nav-icon">🛒</span>
+                        Orders
+                    </button>
+                </li>
+                <li class="nav-item" data-permission="inventory">
+                        <button class="nav-link" data-section="inventory" style="position: relative;">
+                            <span class="nav-icon">📦</span>
+                            Inventory
+                            <span id="inventory-alert-dot"></span>
+                        </button>
+                </li>
+                <li class="nav-item" data-permission="transactions">
+                    <button id="transactions-tab" button class="nav-link" data-section="transactions">
+                        <span class="nav-icon">💳</span>
+                        Transactions
+                    </button>
+                </li>
+                <li class="nav-item" data-permission="reservations">
+                    <button class="nav-link" data-section="reservations">
+                        <span class="nav-icon">📅</span>
+                        Reservations
+                    </button>
+                </li>
+                <li class="nav-item" data-permission="accounts">
+                    <button class="nav-link" data-section="accounts">
+                        <span class="nav-icon">👥</span>
+                        Accounts
+                    </button>
+                </li>
+                <li class="nav-item" data-permission="feedback">
+                    <button class="nav-link" data-section="feedback">
+                        <span class="nav-icon">⭐</span>
+                        Feedback
+                    </button>
+                </li>
+                <li class="nav-item" data-permission="analytics">
+                    <button class="nav-link" data-section="analytics">
+                        <span class="nav-icon">📊</span>
+                        Analytics
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div id="content-area">
+<section id="pos-section" class="content-section active">
+                <div class="section-header-row">
+                    <h1>Point of Sale</h1>
+                    <div class="header-actions">
+                        <button id="edit-mode-btn" class="btn btn--secondary">Edit Menu</button>
+                        <button id="add-menu-item-btn" class="btn btn--primary">Add Menu Item</button>
+                    </div>
+                </div>
+
+                    <div id="menu-item-modal" class="modal">
+                            <div class="modal-content modal-content--wide">
+                                <h2 id="menu-modal-title">Add Menu Product</h2>
+                                <form id="menu-item-form">
+                                    <input type="hidden" id="menu-product-id" />
+                                    <div class="form-grid-two-col">
+
+                                        <div class="form-column">
+                                            <div class="form-group">
+                                                <label for="menu-waiting-time">Avg. Waiting Time:</label>
+                                                <select id="menu-waiting-time" class="form-control" required>
+                                                    <option value="">Select time...</option>
+                                                    <option value="short">Short (< 5 min)</option>
+                                                    <option value="medium">Medium (5-10 min)</option>
+                                                    <option value="long">Long (15-20 min)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-column">
+                                            <div class="form-group">
+                                                <label for="menu-name">Product Name:</label>
+                                                <input type="text" id="menu-name" class="form-control" placeholder="e.g., Cappuccino" required>
+                                            </div>
+                                        </div>
+                                            <div class="form-column">
+
+                                            <div id="single-price-wrapper" class="form-group">
+                                                <label for="menu-price">Price (₱):</label>
+                                                <input type="number" id="menu-price" class="form-control" placeholder="0.00" step="0.01" min="0">
+                                            </div>
+                                                <div class="form-group">
+                                                <label>Pricing:</label>
+                                                <div class="permission-item">
+                                                    <input type="checkbox" id="product-variation-toggle">
+                                                    <label for="product-variation-toggle" style="font-weight: 500; cursor: pointer;">This product has variations (e.g., 8oz, 12oz)</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-column">
+                                                            <div class="form-group">
+                                                                <label for="menu-category">Category:</label>
+                                                                <select id="menu-category" class="form-control" required>
+                                                                    <option value="">Select category...</option>
+                                                                    </select>
+                                                                <input type="text" id="new-category-input" class="form-control" placeholder="Enter new category name..." style="display: none; margin-top: 8px;">
+                                                            </div>
+                                                        </div>
+                                    </div>
+                                    <div id="variations-wrapper" class="form-group hidden">
+                                        <label>Product Variations</label>
+                                        <div id="product-variations-list">
+                                            </div>
+                                        <button type="button" id="add-variation-btn" class="btn btn--secondary btn--small" style="margin-top: 10px;">+ Add Variation</button>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Recipe (Ingredients):</label>
+                                        <div id="recipe-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 8px;">
+                                            </div>
+                                        <button type="button" id="add-ingredient-btn" class="btn btn--secondary btn--small" style="margin-top: 10px;">+ Add Ingredient</button>
+                                    </div>
+                                    <label>Product Image:</label>
+                <div class="image-upload-container">
+                    <label for="menu-image-upload" class="image-upload-label">
+                        📷 Upload Image
+                    </label>
+                    <input type="file" id="menu-image-upload" accept="image/*">
+                    <img id="menu-image-preview" class="hidden" alt="Image preview">
+                </div>
+
+                                    <div class="modal-buttons">
+                                        <button type="submit" class="btn btn--primary">Save Product & Recipe</button>
+                                        <button type="button" id="cancel-menu-btn" class="btn btn--secondary">Cancel</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                <div class="pos-layout">
+                    <div class="pos-left">
+                                            <div id="orders-line-container">
+                                <h5 class="orders-line-title">Pending Orders</h5>
+                                <div id="orders-line" class="orders-line">
+                                    </div>
+                            </div>
+                        <div id="category-tabs-container">
+                         </div>
+                        <div class="product-grid" id="product-grid">
+                            </div>
+                    </div>
+                    <div class="pos-right">
+                        <div class="cart-section">
+                            <h3>Shopping Cart</h3>
+                            <div class="cart-items" id="cart-items">
+                                <p class="empty-cart">Cart is empty</p>
+                            </div>
+                            <div class="cart-total">
+                                <div class="total-line">
+                                    <span>Subtotal:</span>
+                                    <span id="cart-subtotal">₱0.00</span>
+                                </div>
+                                <div class="total-line discount-line">
+                                    <span>Discount:</span>
+                                    <span id="cart-discount">(₱0.00)</span>
+                                </div>
+                                <div class="total-line">
+                                    <span>Tax:</span>
+                                    <span id="cart-tax">₱0.00</span>
+                                </div>
+                                <div class="total-line total-final">
+                                    <span>Total:</span>
+                                    <span id="cart-total">₱0.00</span>
+                                </div>
+                            </div>
+
+                            <div class="discount-controls">
+                                <div class="form-group">
+                                    <label for="discount-type">Apply Discount</label>
+                                    <select id="discount-type" class="form-control">
+                                        <option value="none">No Discount</option>
+                                        <option value="PWD">PWD (20%)</option>
+                                        <option value="Senior">Senior (20%)</option>
+                                        <option value="Custom">Custom Amount</option>
+                                    </select>
+                                </div>
+                                <div class="form-group hidden" id="custom-discount-wrapper">
+                                    <label for="custom-discount-amount">Custom Amount (₱)</label>
+                                    <div style="display: flex; gap: 8px;">
+                                        <input type="number" id="custom-discount-amount" class="form-control" placeholder="0.00" step="0.01" min="0">
+                                        <button type="button" id="apply-discount-btn" class="btn btn--secondary">Apply</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="payment-buttons">
+                                <button class="btn btn--primary btn--full-width">Process Payment</button>
+                                <button class="btn btn--secondary btn--full-width">Clear Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+                                <section id="inventory-section" class="content-section">
+                                <div class="section-header">
+                                    <h1>Inventory Management</h1>
+                                    <div class="header-actions"> 
+                                        <button id="view-inventory-log-btn" class="btn btn--secondary">View Logs</button>
+                                        <button id="manage-categories-btn" class="btn btn--secondary">Manage Categories</button>
+                                        <button id="add-product-btn" class="btn btn--primary">Add Product</button>
+                                    </div>
+                                </div>
+
+                                <div class="inventory-filter-bar">
+                                    <div class="filter-group">
+                                        <label for="inventory-search-name">Search Name:</label>
+                                        <input type="text" id="inventory-search-name" class="form-control" placeholder="e.g., Coffee Beans">
+                                    </div>
+                                    <div class="filter-group">
+                                        <label for="inventory-filter-category">Category:</label>
+                                        <select id="inventory-filter-category" class="form-control">
+                                            <option value="">All Categories</option>
+                                            </select>
+                                    </div>
+                                    <div class="filter-group">
+                                        <label for="inventory-filter-status">Status:</label>
+                                        <select id="inventory-filter-status" class="form-control">
+                                            <option value="">All Statuses</option>
+                                            <option value="in_stock">In Stock</option>
+                                            <option value="low_stock">Low Stock</option>
+                                            <option value="out_of_stock">Out of Stock</option>
+                                            <option value="expired">Expired</option>
+                                        </select>
+                                    </div>
+                                    <div class="filter-group">
+                                        <label for="inventory-filter-expiry">Expiry:</label>
+                                        <select id="inventory-filter-expiry" class="form-control">
+                                            <option value="">All Dates</option>
+                                            <option value="expired">Expired</option>
+                                            <option value="expiring_soon">Expiring in 7 Days</option>
+                                        </select>
+                                    </div>
+                                    <button id="inventory-reset-filters" class="btn btn--secondary" style="align-self: flex-end;">Reset</button>
+                                </div>
+
+
+                                <div class="table-container">
+                                    <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Item ID</th>
+                                            <th>Name</th>
+                                            <th>Category</th>
+                                            <th>Status</th>
+                                            <th>Stock (Unit)</th>
+                                            <th>Min Stock (Base)</th>
+                                            <th>Expiry Date</th>
+                                            <th>Last Updated</th>
+                                            <th>Conversion</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="inventory-table">
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="pagination">
+                                    <button id="prevPage" disabled>Previous</button>
+                                    <span id="pageInfo">Page 1</span>
+                                    <button id="nextPage">Next</button>
+                                </div>
+                                </section>
+<section id="inventory-log-section" class="content-section hidden">
+    <div class="section-header">
+        <h1>Inventory Log</h1>
+        <div class="header-actions">
+            <div class="filter-controls" style="display: flex; gap: 10px; align-items: center;">
+                    <select id="log-date-filter" class="form-control" style="padding: 6px; width: auto;">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                </select>
+            </div>
+            <button id="back-to-inventory-btn" class="btn btn--primary">← Back to Inventory</button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Employee</th>
+                    <th>Action</th>
+                    <th>Item</th>
+                    <th>Category</th>
+                    <th>Change</th>
+                    <th>Prev. Qty</th>
+                    <th>New Qty</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+            <tbody id="inventory-log-table-body">
+                </tbody>
+        </table>
+    </div>
+</section>
+
+                <div id="product-modal" class="modal">
+                        <div class="modal-content modal-content--wide"> 
+                            <h2 id="modal-title">Add Ingredient</h2>
+                            <form id="product-form">
+                                <input type="hidden" id="product-id" />
+
+                                <div class="form-grid-two-col">
+                                    <div class="form-column">
+                                        <div class="form-group">
+                                            <label for="product-name">Ingredient Name:</label>
+                                            <input type="text" id="product-name" class="form-control" placeholder="e.g., Coffee Beans" required />
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="product-category-dropdown">Category:</label>
+                                            <select id="product-category-dropdown" class="form-control" required>
+                                                <option value="">Loading categories...</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="product-expiry">Expiry Date:</label>
+                                            <input type="date" id="product-expiry" class="form-control" />
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="product-min-stock">Low Stock Alert (in Base Unit):</label>
+                                            <input type="number" id="product-min-stock" class="form-control" min="0" placeholder="e.g., 2000 (for 2000g)" required />
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-column">
+                                        <div class="form-group">
+                                            <label for="product-stock">Stock Quantity:</label>
+                                            <input type="number" id="product-stock" class="form-control" min="0" step="any" placeholder="e.g., 10" required />
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="product-stock-unit">Stock Unit (Purchase Unit):</label>
+                                            <input type="text" id="product-stock-unit" class="form-control" placeholder="e.g., bag, jug, bottle" required />
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="product-base-unit">Base Unit (Usage Unit):</label>
+                                            <input type="text" id="product-base-unit" class="form-control" placeholder="e.g., g, ml" required />
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="product-conversion">Conversion Factor:</label>
+                                            <input type="number" id="product-conversion" class="form-control" min="1" step="any" placeholder="e.g., 1000" required />
+                                            <p style="font-size: 12px; color: #666; margin-top: 4px;">
+                                                (1 Stock Unit = ? Base Units)
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="modal-actions">
+                                    <button type="submit" class="btn btn--primary">Save</button>
+                                    <button type="button" id="cancel-btn" class="btn btn--secondary">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                        <section id="transactions-section" class="content-section hidden">
+                        <div class="section-header">
+                            <h1>Transaction History</h1>
+                            <div class="header-actions"> <div class="filter-container">
+                                <label for="filterRange">Sort by:</label>
+                                <select id="filterRange">
+                                    <option value="all">All</option>
+                                    <option value="today">Today</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month">This Month</option>
+                                </select>
+                                </div>
+                                <div class="export-buttons">
+                                    <button id="export-pdf-btn" class="btn btn--secondary btn--sm">Export PDF</button>
+                                    <button id="export-excel-btn" class="btn btn--secondary btn--sm">Export Excel</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="transactions-container">
+                            <table class="transactions-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Date & Time</th>
+                                    <th>Processed By</th>
+                                    <th>Items</th>
+                                    <th>Subtotal</th>
+                                    <th>Tax</th>
+                                    <th>Discount</th> 
+                                    <th>Total</th>
+                                    <th>Payment Method</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-list">
+                                </tbody>
+                            </table>
+                        </div>
+                        </section>
+
+
+<section id="reservations-section" class="content-section">
+    <div class="section-header">
+        <h1>Reservations</h1>
+        <div class="header-actions">
+        </div>
+    </div>
+
+    <div class="inventory-filter-bar" style="margin-bottom: 24px;">
+        <div class="filter-group">
+            <label for="reservation-filter-status">Status:</label>
+            <select id="reservation-filter-status" class="form-control">
+                <option value="all">All</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="completed">Completed</option>
+                <option value="canceled">Canceled</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="reservation-filter-date">Date:</label>
+            <input type="date" id="reservation-filter-date" class="form-control">
+        </div>
+        <button id="reservation-reset-filters" class="btn btn--secondary">Reset</button>
+    </div>
+
+    <div class="analytics-grid" style="margin-bottom: 24px;">
+        <div class="stat-card" id="res-card-total">
+            <h5>Total Reservations</h5>
+            <h2 id="analytics-total-res">...</h2>
+        </div>
+        <div class="stat-card" id="res-card-pending">
+            <h5>Pending</h5>
+            <h2 id="analytics-pending-res">...</h2>
+        </div>
+        <div class="stat-card" id="res-card-approved"> <h5>Approved</h5> <h2 id="analytics-approved-res">...</h2> </div>
+        <div class="stat-card" id="res-card-today">
+            <h5>Today's Reservations</h5>
+            <h2 id="analytics-today-res">...</h2>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table id="reservationTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Contact</th>
+                    <th>Table</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Diners</th>
+                    <th>Pre-Order</th>
+                    <th>Receipt</th>
+                    <th>Notes</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="reservationTableBody">
+                </tbody>
+            </table>
+    </div>
+</section>
+
+                <section id="accounts-section" class="content-section">
+                <div class="section-header">
+                    <h1>Account Management</h1>
+                    </div>
+                
+                <div class="account-tabs">
+                    <button class="account-tab-btn active" data-target="customer-accounts">Customers</button>
+                    <button class="account-tab-btn" data-target="employee-accounts">Employees</button>
+                </div>
+    
+                <div id="customer-accounts" class="account-table-container active">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customer-accounts-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+    
+                <div id="employee-accounts" class="account-table-container">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Permissions</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employee-accounts-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+<section id="feedback-section" class="content-section">
+                    <div class="section-header">
+                        <h1>Customer Feedback</h1>
+                        <div class="header-actions">
+                            <div class="average-rating-card">
+                                <h5>Average Rating</h5>
+                                <h2 id="overall-average-rating">...</h2>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="feedback-grid" id="feedback-grid-container">
+                        </div>
+                </section>
+
+            <section id="analytics-section" class="content-section">
+                <div class="section-header">
+                    <h1>Business Analytics</h1>
+                    <div class="header-actions">
+                         <button id="generate-z-report-btn" class="btn btn--primary">Generate Z-Report</button>
+                    </div>
+                </div>
+
+                    <div class="analytics-grid">
+
+                        <div class="stat-card">
+                            <h5>Today's Sales</h5>
+                            <h2 id="analytics-today-sales">$0.00</h2>
+                        </div>
+                        <div class="stat-card">
+                            <h5>Today's Reservations</h5>
+                            <h2 id="analytics-today-res">0</h2>
+                        </div>
+                        <div class="stat-card">
+                            <h5>This Week's Sales</h5>
+                            <h2 id="analytics-week-sales">$0.00</h2>
+                        </div>
+                        <div class="stat-card">
+                            <h5>Low Stock Items</h5>
+                            <h2 id="analytics-low-stock">0</h2>
+                        </div>
+
+                        <div class="chart-card chart-card-medium">
+                            <div class="chart-header">
+                                <h5 id="sales-chart-title">Weekly Sales Overview</h5>
+                                <div class="filter-container">
+                                    <select id="sales-chart-filter" class="form-control">
+                                        <option value="week">This Week</option>
+                                        <option value="month">This Month</option>
+                                        <option value="today">Today (Hourly)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <canvas id="analytics-sales-chart"></canvas>
+                        </div>
+
+                        <div class="right-chart-column">
+                            <div class="chart-card chart-card-small">
+                                <h5>Top 5 Selling Items</h5>
+                                <canvas id="analytics-top-items-chart"></canvas>
+                            </div>
+
+                            <div class="chart-card chart-card-small">
+                                            <h5>Reservation Status</h5>
+                                            <canvas id="analytics-reservation-chart"></canvas>
+                                        </div>
+                            </div>
+                        </div>
+
+                    
+                    </div>
+            </section> 
+            
+            <div id="customer-info-modal" class="modal">
+                <div class="modal-content">
+                    <h2 id="customer-info-title">Order Details</h2>
+                    <form id="customer-info-form">
+                        <div class="form-group">
+                            <label for="customer-name">Customer Name:</label>
+                            <input type="text" id="customer-name" class="form-control" placeholder="e.g., John D." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="order-type">Order Type:</label>
+                            <select id="order-type" class="form-control" required>
+                                <option value="Dine-In">Dine-In</option>
+                                <option value="Take Out">Take Out</option>
+                                <option value="Delivery">Delivery</option>
+                            </select>
+                        </div>
+                        
+                        <div id="payment-details">
+                            <div class="payment-method">
+                                <strong>Mode of Payment:</strong>
+                                <div>
+                                    <input type="radio" id="pay-cash" name="paymentMethod" value="Cash" checked>
+                                    <label for="pay-cash">Cash</label>
+                                </div>
+                                <div>
+                                    <input type="radio" id="pay-gcash" name="paymentMethod" value="Gcash">
+                                    <label for="pay-gcash">Gcash</label>
+                                </div>
+                                <div>
+                                    <input type="radio" id="pay-card" name="paymentMethod" value="Debit/Credit Card">
+                                    <label for="pay-card">Debit/Credit Card</label>
+                                </div>
+                            </div>
+                            <div id="payment-cash-details">
+                                <div class="form-group">
+                                    <label for="payment-amount">Payment Amount (₱):</label>
+                                    <input type="number" id="payment-amount" class="form-control" placeholder="0.00" step="any" min="0">
+                                </div>
+                                <div class="payment-change">
+                                <p style="font-size: 1.1rem; font-weight: 600; color: #333;">
+                                <strong>Total Due:</strong> 
+                                <span id="customer-modal-total" style="color: var(--color-primary);">₱0.00</span>
+                                 </p>
+                                    <strong>Change:</strong>
+                                    <span id="payment-change-display">₱0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-buttons">
+                            <button type="submit" class="btn btn--primary">Create Order</button>
+                            <button type="button" id="cancel-customer-info-btn" class="btn btn--secondary">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="order-details-modal" class="modal">
+                <div class="modal-content modal-content--wide">
+                    <h2 id="order-modal-title">Order #0000</h2>
+                    
+                    <div id="order-modal-details" class="order-modal-grid">
+                        
+                        <div class="order-modal-info">
+                            <p><strong>Customer:</strong> <span id="order-modal-customer"></span></p>
+                            <p><strong>Order Type:</strong> <span id="order-modal-type"></span></p>
+                            <p><strong>Total:</strong> <span id="order-modal-total"></span></p>
+                            <p><strong>Avg. Wait:</strong> <span id="order-modal-wait-time"></span></p>
+                            <p><strong>Time Left:</strong> <span id="order-modal-estimated-time">Calculating...</span></p>
+                            <p><strong>Status:</strong> <span id="order-modal-status-text" class="status status-pending">Pending</span></p>
+                        </div>
+
+                            <div id="order-modal-items-container">
+                                <h5>Items</h5>
+                                <label>Item Checklist Progress:</label>
+                                <div class="progress-bar" style="height: 12px; margin-bottom: 10px;">
+                                    <div id="order-modal-item-progress" class="progress-bar-inner" style="width: 0%; background-color: var(--color-blue-500);"></div>
+                                </div>
+                                <ul id="order-modal-item-list">
+                                    </ul>
+                            </div>
+                            
+
+                    </div>
+
+                    <div class="modal-buttons">
+                        <button type="button" id="order-modal-void-btn" class="btn btn--secondary" style="background-color: var(--color-red-500); color: white;">Void Order</button>
+                        <button type="button" id="order-modal-back-btn" class="btn btn--secondary">Close</button>
+                        <button type="button" id="order-modal-print-btn" class="btn btn--info" style="display: none;">Print Receipt</button>
+                        <button type="button" id="order-modal-progress-btn" class="btn btn--primary">Mark as Preparing</button>
+                    </div>
+                </div>
+            </div>
+<div id="employee-modal" class="modal">
+            <div class="modal-content modal-content--wide">
+                <h2 id="employee-modal-title">Edit User Permissions</h2>
+                <form id="employee-form">
+                    <input type="hidden" id="employee-id">
+                    <div class="form-grid-two-col">
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label for="employee-name">Full Name</label>
+                                <input type="text" id="employee-name" class="form-control" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="employee-email">Email</label>
+                                <input type="email" id="employee-email" class="form-control" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="role-select">User Role</label>
+                                <select id="role-select" class="form-control">
+                                    <option value="customer">Customer</option>
+                                    <option value="employee">Employee</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                            </div>
+                        <div class="form-column">
+                            <label>Access Matrix (Permissions)</label>
+                            <div class="permissions-grid">
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-pos" data-permission="pos">
+                                    <label for="perm-pos">Point of Sale (POS)</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-inventory" data-permission="inventory">
+                                    <label for="perm-inventory">Inventory</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-transactions" data-permission="transactions">
+                                    <label for="perm-transactions">Transactions</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-reservations" data-permission="reservations">
+                                    <label for="perm-reservations">Reservations</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-feedback" data-permission="feedback">
+                                    <label for="perm-feedback">Feedback</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-analytics" data-permission="analytics">
+                                    <label for="perm-analytics">Analytics</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-accounts" data-permission="accounts">
+                                    <label for="perm-accounts" title="Grants admin access">Account Mgmt (Admin)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-buttons">
+                        <button type="submit" class="btn btn--primary">Save Changes</button>
+                        <button type="button" id="cancel-employee-btn" class="btn btn--secondary">Cancel</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+        <div id="inventory-category-modal" class="modal">
+            <div class="modal-content modal-content--wide">
+                <h2>Manage Inventory Categories</h2>
+                
+                <form id="add-inv-category-form" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <div class="form-group" style="flex-grow: 1; margin-bottom: 0;">
+                        <label for="new-inv-category-name" style="margin-bottom: 4px;">New Category Name:</label>
+                        <input type="text" id="new-inv-category-name" class="form-control" placeholder="e.g., Dairy, Produce...">
+                    </div>
+                    <button id="add-inv-category-btn" type="submit" class="btn btn--primary" style="align-self: flex-end;">Add Category</button>
+                </form>
+
+                <hr style="margin: 20px 0;">
+                
+                <label>Existing Categories:</label>
+                <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Category Name</th>
+                                <th style="width: 120px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="existing-inv-categories-tbody">
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="modal-buttons" style="margin-top: 20px; justify-content: flex-end;">
+                    <button type="button" id="close-inv-category-btn" class="btn btn--secondary">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="image-view-modal" class="modal" style="padding: 20px;">
+            <div class="modal-content" style="padding: 10px; max-width: 80vw; max-height: 80vh;">
+                <span id="close-image-modal" class="close-modal">&times;</span>
+                <img id="modal-image-src" src="" alt="Feedback Image" style="width: 100%; height: auto; max-height: 75vh; object-fit: contain;">
+            </div>
+        </div>
+            <div id="variation-modal" class="modal">
+            <div class="modal-content" style="width: 400px;">
+                <h2 id="variation-modal-title">Select Variation</h2>
+                <div id="variation-options-container">
+                    </div>
+                <div class="modal-buttons" style="margin-top: 20px;">
+                    <button type="button" id="cancel-variation-btn" class="btn btn--secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+        <div id="reservation-message-modal" class="modal">
+    <div class="modal-content" style="width: 500px;">
+        <h2 id="modal-message-title">Reservation Action</h2>
+        <form id="reservation-message-form">
+            <div class="form-group">
+                <label for="notification-message-textarea">Message (Optional)</label>
+                <textarea id="notification-message-textarea" class="form-control" rows="4" placeholder="Optional: Add a message for the customer..."></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" id="cancel-message-btn" class="btn btn--secondary">Cancel</button>
+                <button type="submit" id="confirm-message-btn" class="btn btn--primary">Confirm</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div id="view-details-modal" class="modal">
+            <div class="modal-content" style="width: 500px;">
+                <h2 id="view-details-title">Details</h2>
+                <div id="view-details-content" class="modal-details-content">
+                    </div>
+                <div class="modal-buttons" style="margin-top: 20px; justify-content: flex-end;">
+                    <button type="button" id="close-details-btn" class="btn btn--secondary">Close</button>
+                </div>
+            </div>
+        </div>
+        <div id="kitchen-stub-modal" class="modal">
+                <div class="modal-content" style="width: 360px;">
+                    <h2 id="kitchen-stub-title">Send to Kitchen</h2>
+                    
+                    <div id="kitchen-stub-content">
+                        </div>
+
+                    <div class="modal-buttons" style="margin-top: 20px;">
+                        <button type="button" id="kitchen-stub-cancel-btn" class="btn btn--secondary">Cancel</button>
+                        <button type="button" id="kitchen-stub-send-btn" class="btn btn--primary">Send to Kitchen</button>
+                    </div>
+                </div>
+            </div>
+        </div> 
+        
+    </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns/cdn.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script type="module" src="../scripts/firebase.js"></script>
+    <script type="module" src="../scripts/advanced-pos.js"></script>
+    <script type="module" src="../scripts/inventory-categories.js"></script>
+    <script type="module" src="../scripts/inventory.js"></script>
+    <script type="module" src="../scripts/transaction.js"></script>
+    <script type="module" src="../scripts/employee-reservations.js"></script>
+    <script type="module" src="../scripts/employee-feedback.js"></script>
+    <script type="module" src="../scripts/analytics.js"></script>
+    <script type="module" src="app.js"></script>
+
+</body>
+</html>
+
+     <script type="module">
+  // Logout functionality
+  document.addEventListener('DOMContentLoaded', () => {
+    const logoutBtn = document.querySelector('.logout-btn');
+    
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        // Simply redirect to login page
+        window.location.href = '../login.html';
+      });
+    }
+  });
+</script>
+</body>
+</html>

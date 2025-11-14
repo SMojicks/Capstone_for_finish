@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="customer-ui-style.css">
+  <title>Café Menu</title>
+</head>
+<body class="page-content">
+    <div id="i6po" class="gjs-grid-row">
+        <div id="itjq" class="gjs-grid-column">
+            <div id="iyd2">
+                <div>
+                    <a href="index.html">
+                        <img id="ihtxj" src="assets/acaccia_logo.png" alt="Acaccia Logo" />
+                    </a>
+                </div>
+                <button id="mobile-menu-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div id="it00l">
+                    <div class="nav-links">
+                        <a href="index.html">Home</a>
+                        <a href="menu.html">Menu</a>
+                        <a href="reservation.html">Reservation</a>
+                        <a href="community-feedback.html">Community</a>
+                    </div>
+                </div>
+                <div id="it00l">
+                    </div>
+
+<div class="header-controls">
+    
+    <div id="notification-bell" class="notification-bell" style="display: none;">
+        <span>🔔</span>
+        <div id="notification-badge" class="notification-badge hidden">0</div>
+        <div id="notification-panel" class="notification-panel hidden">
+            <div class="notification-panel-header">
+                <h3>Notifications</h3>
+            </div>
+            <ul id="notification-list">
+                <li class="notification-none">Loading...</li>
+            </ul>
+        </div>
+    </div>
+
+    <a id="i1mew" class="cta-button" href="login.html" style="padding: 10px 20px; text-transform: uppercase; font-family: var(--font-body); font-size: 0.85rem; letter-spacing: 1.5px; font-weight: 700; background-color: var(--color-gold); color: white; text-decoration: none; border-radius: var(--radius-md); transition: var(--transition-fast);">Login/Sign up</a>
+
+    <div class="profile-avatar-container" id="profile-avatar-container" style="display: none;">
+        <div class="profile-avatar" id="profile-avatar">
+            <span id="profile-initials">--</span>
+        </div>
+        <div class="profile-dropdown" id="profile-dropdown">
+            <div class="dropdown-item" id="open-my-reservation-btn">My Reservation</div>
+            <div class="dropdown-item" id="open-account-settings-btn">Account Settings</div>
+            <div class="dropdown-item" id="profile-logout-btn">Logout</div>
+        </div>
+    </div>
+    
+</div>
+        </div>
+    </div>
+
+    <div class="menu-background">
+        <div class="menu-section">
+            
+            <div class="sidebar" id="menu-categories-sidebar">
+                <h2>Menu</h2>
+                </div>
+
+            <div class="content" id="menu-content-area">
+                <h2 class="content-title">Loading Menu...</h2>
+                <p>Please wait while we fetch our fresh menu items!</p>
+            </div>
+
+        </div>
+    </div>
+<div id="my-reservation-modal" class="auth-modal-backdrop hidden">
+    <div class="auth-modal-content" style="max-width: 500px; text-align: left;">
+        <h2 style="text-align: center;">My Active Reservation</h2>
+        
+        <div id="reservation-details-content">
+            <div style="background: #f8f9fa; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 20px; margin-top: 20px;">
+                <p><strong>Reservation ID:</strong> <span id="my-res-id">...</span></p>
+                <p><strong>Date:</strong> <span id="my-res-date">...</span></p>
+                <p><strong>Time:</strong> <span id="my-res-time">...</span></p>
+                <p><strong>Table:</strong> <span id="my-res-table">...</span></p>
+                <p><strong>Diners:</strong> <span id="my-res-diners">...</span></p>
+                <p><strong>Status:</strong> <span id="my-res-status" style="font-weight: 700;">...</span></p>
+                
+                <h4 style="margin-top: 15px; border-top: 1px solid var(--color-border); padding-top: 15px;">Pre-Order Summary</h4>
+                <div id="my-res-items" style="font-size: 0.9rem; max-height: 150px; overflow-y: auto;">
+                    </div>
+            </div>
+            
+            <div id="my-res-warning" class="reschedule-warning hidden" style="margin-top: 15px;">
+                </div>
+            
+            <div class="auth-modal-buttons" style="margin-top: 25px; gap: 10px;">
+                <button type="button" id="my-res-view-receipt-btn" class="auth-modal-btn auth-modal-btn-secondary">View Receipt</button>
+                <button type="button" id="my-res-reschedule-btn" class="auth-modal-btn">Reschedule</button>
+            </div>
+        </div>
+        
+        <div id="no-reservation-content" class="hidden">
+            <p style="text-align: center; margin-top: 20px;">You have no active reservations.</p>
+            <div class="auth-modal-buttons" style="margin-top: 25px;">
+                <a href="reservation.html" class="auth-modal-btn">Book a Table</a>
+            </div>
+        </div>
+
+        <div class="auth-modal-tertiary-action" style="margin-top: 15px;">
+            <button type="button" class="auth-modal-btn-tertiary" id="close-my-reservation-modal-btn">Close</button>
+        </div>
+    </div>
+</div>
+
+<div id="account-settings-modal" class="auth-modal-backdrop hidden">
+    <div class="auth-modal-content" style="max-width: 500px; text-align: left;">
+        <h2 style="text-align: center;">Account Settings</h2>
+        
+        <form id="change-name-form">
+            <h4 style="margin-top: 10px;">Change Your Name</h4>
+            <div class="form-group">
+                <label for="account-full-name">Full Name</label>
+                <input type="text" id="account-full-name" class="form-control" required>
+            </div>
+            <button type="submit" class="auth-modal-btn" style="width: 100%;">Save Name</button>
+        </form>
+        
+        <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--color-border);">
+        
+        <form id="change-password-form">
+            <h4 style="margin-top: 10px;">Change Password</h4>
+            <div class="form-group">
+                <label for="account-current-password">Current Password</label>
+                <input type="password" id="account-current-password" class="form-control" required placeholder="••••••••">
+            </div>
+            <div class="form-group">
+                <label for="account-new-password">New Password</label>
+                <input type="password" id="account-new-password" class="form-control" required placeholder="At least 6 characters">
+            </div>
+            <div class="form-group">
+                <label for="account-confirm-password">Confirm New Password</label>
+                <input type="password" id="account-confirm-password" class="form-control" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="auth-modal-btn" style="width: 100%;">Change Password</button>
+        </form>
+
+        <div class="auth-modal-tertiary-action" style="margin-top: 15px;">
+            <button type="button" class="auth-modal-btn-tertiary" id="close-account-settings-modal-btn">Close</button>
+        </div>
+    </div>
+</div>
+
+<footer id="iv3be5" class="gjs-grid-row">
+    <footer id="iv3be5" class="gjs-grid-row">
+        <div id="ilriti" class="gjs-grid-column">
+            <div id="im0rle">
+                <div>
+                    <a href="index.html">
+                        <img id="ikhs8g" src="https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/bc3511d6-050e-47d3-bc04-602f13480d07__acaccialogo.jpg" alt="Acaccia Logo" />
+                    </a>
+                </div>
+                <div class="footer-column">
+                    <h3>Acaccia Bistro Cafe</h3>
+                    <a>Alaminos, Laguna</a>
+                    <a>09123456789</a>
+                    <a>www.Cafesync.com</a>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <a href="index.html">Home</a>
+                    <a href="menu.html">Menu</a>
+                    <a href="reservation.html">Reservations</a>
+                    <a href="community-feedback.html">Community</a>
+                    <a href="#">About Us</a>
+                </div>
+                <div class="footer-column">
+                    <h3>Social Media</h3>
+                    <a href="https://www.facebook.com/profile.php?id=61561806667727">Facebook</a>
+                    <a href="https://www.instagram.com/acacciabistrocafe/">Instagram</a>
+                    <a href="#">TikTok</a>
+                </div>
+            </div>
+            <div class="gjs-divider"></div>
+            <div id="it6g1v">Copyright © 2025 Acaccia Bistro Cafe</div>
+        </div>
+    </footer>
+
+  <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var toggleBtn = document.getElementById('mobile-menu-toggle');
+            var menu = document.getElementById('it00l'); // This is the container for .nav-links
+    
+            if (toggleBtn && menu) {
+                toggleBtn.addEventListener('click', function() {
+                    this.classList.toggle('is-active');
+                    menu.classList.toggle('mobile-menu-active');
+                });
+            }
+        });
+    </script>
+  
+  <script type="module" src="scripts/firebase.js"></script>
+  
+  <script type="module" src="scripts/menu.js"></script>
+
+  <script type="module" src="scripts/auth-manager.js"></script>
+  <script type="module" src="scripts/notification-manager.js"></script>
+  <script type="module" src="scripts/my-account.js"></script> </body>
+</body>
+</html>

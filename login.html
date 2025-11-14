@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acaccia Bistro Cafe - Login</title>
+    <link rel="stylesheet" href="customer-ui-style.css">
+</head>
+<body class="page-login">
+    <div class="login-container">
+        <div class="image-section">
+            <div class="image-placeholder">
+                <div class="image-overlay"></div>
+                <div class="image-text">Express Yourself.</div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="welcome-text">
+                <h2 id="welcomeTitle">Welcome Back</h2>
+                <p id="welcomeSubtext">Enter your credentials to view your account</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="user@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required>
+                </div>
+
+                <div class="form-group hidden" id="confirmPasswordGroup">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••">
+                </div>
+
+                <div class="form-group hidden" id="fullNameGroup">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" name="fullName" placeholder="Enter your full name">
+                </div>
+
+                <div class="form-group hidden" id="phoneGroup">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" placeholder="Enter your phone number">
+                </div>
+
+                <div class="forgot-password">
+                    <a href="#" id="forgotLink">Forgot your password?</a>
+                </div>
+
+                <button type="submit" class="main-button" id="mainButton">Log In</button>
+            </form>
+
+<div class="employee-login" id="employeeLoginLink">
+                <button type="button" class="employee-login-btn" onclick="switchLoginType('employee')">
+                    Log in as Employee
+                </button>
+            </div>
+            
+            <div class="employee-login" id="customerLoginLink" style="display: none;">
+                <button type="button" class="employee-login-btn" onclick="switchLoginType('customer')">
+                    ← Back to Customer Login
+                </button>
+            </div>
+
+            <div class="register-link" id="registerLink">
+                <a href="#" onclick="toggleMode()">Don't have an account? Sign Up</a>
+            </div>
+        </div>
+    </div>
+
+ <script>
+        // This UI-toggling script stays
+        let currentLoginType = 'customer';
+        let isRegisterMode = false;
+
+        function switchLoginType(type) {
+            currentLoginType = type;
+
+            const title = document.getElementById('welcomeTitle');
+            const subtext = document.getElementById('welcomeSubtext');
+            const mainButton = document.getElementById('mainButton');
+            const employeeLink = document.getElementById('employeeLoginLink');
+            const customerLink = document.getElementById('customerLoginLink');
+            const registerLink = document.getElementById('registerLink');
+            const forgotLink = document.getElementById('forgotLink');
+
+            if (type === 'customer') {
+                // --- Customer Mode ---
+                // Check if we are in register or login mode
+                if (isRegisterMode) {
+                    title.textContent = 'Create Account';
+                    subtext.textContent = 'Join our community today';
+                    mainButton.textContent = 'Sign Up';
+                    showRegistrationFields();
+                    forgotLink.style.display = 'none';
+                    registerLink.innerHTML = '<a href="#" onclick="toggleMode()">Already have an account? Log In</a>';
+                } else {
+                    title.textContent = 'Welcome Back';
+                    subtext.textContent = 'Enter your credentials to view your account';
+                    mainButton.textContent = 'Log In';
+                    hideRegistrationFields();
+                    forgotLink.style.display = 'block';
+                    registerLink.innerHTML = '<a href="#" onclick="toggleMode()">Don\'t have an account? Sign Up</a>';
+                }
+                
+                // Toggle link visibility
+                employeeLink.style.display = 'block';
+                customerLink.style.display = 'none';
+                registerLink.style.display = 'block';
+
+            } else {
+                // --- Employee Mode ---
+                title.textContent = 'Employee Login';
+                subtext.textContent = 'Access employee dashboard';
+                mainButton.textContent = 'Employee Login';
+                
+                // Hide customer-specific links/fields
+                employeeLink.style.display = 'none';
+                customerLink.style.display = 'block';
+                registerLink.style.display = 'none';
+                forgotLink.style.display = 'none';
+                
+                // Hide registration fields if they were open and reset mode
+                hideRegistrationFields();
+                isRegisterMode = false;
+            }
+        }
+        
+        function toggleMode() {
+            if (currentLoginType !== 'customer') return;
+            isRegisterMode = !isRegisterMode;
+            // switchLoginType('customer') will now handle all the text/field changes
+            switchLoginType('customer');
+        }
+        
+        function showRegistrationFields() {
+            document.getElementById('confirmPasswordGroup').classList.remove('hidden');
+            document.getElementById('fullNameGroup').classList.remove('hidden');
+            document.getElementById('phoneGroup').classList.remove('hidden');
+        }
+        function hideRegistrationFields() {
+            document.getElementById('confirmPasswordGroup').classList.add('hidden');
+            document.getElementById('fullNameGroup').classList.add('hidden');
+            document.getElementById('phoneGroup').classList.add('hidden');
+        }
+    </script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var toggleBtn = document.getElementById('mobile-menu-toggle');
+            var menu = document.getElementById('it00l'); // This is the container for .nav-links
+    
+            if (toggleBtn && menu) {
+                toggleBtn.addEventListener('click', function() {
+                    // Toggle the 'X' animation on the button
+                    this.classList.toggle('is-active');
+                    
+                    // Toggle the dropdown menu visibility
+                    menu.classList.toggle('mobile-menu-active');
+                });
+            }
+        });
+    </script>
+    <script type="module" src="scripts/firebase.js"></script>
+    <script type="module" src="scripts/auth-login.js"></script>
+</body>
+</html>

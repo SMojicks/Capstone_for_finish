@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservation</title>
+    <link rel="stylesheet" href="customer-ui-style.css">
+    
+    <style>
+
+    #vipModal, #paymentModal {
+        display: none !important;
+    }
+
+        .layout-blur-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            z-index: 11; /* This ensures it covers the table spots */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-text);
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .layout-blur-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="page-content">
+    <div id="i6po" class="gjs-grid-row">
+        <div id="itjq" class="gjs-grid-column">
+            <div id="iyd2">
+                <div>
+                    <a href="index.html">
+                        <img id="ihtxj" src="assets/acaccia_logo.png" alt="Acaccia Logo" />
+                    </a>
+                </div>
+                <button id="mobile-menu-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+                <div id="it00l">
+                    <div class="nav-links">
+                        <a href="index.html">Home</a>
+                        <a href="menu.html">Menu</a>
+                        <a href="reservation.html">Reservation</a>
+                        <a href="community-feedback.html">Community</a>
+                    </div>
+                </div>
+
+<div class="header-controls">
+    
+    <div id="notification-bell" class="notification-bell" style="display: none;">
+        <span>🔔</span>
+        <div id="notification-badge" class="notification-badge hidden">0</div>
+        <div id="notification-panel" class="notification-panel hidden">
+            <div class="notification-panel-header">
+                <h3>Notifications</h3>
+            </div>
+            <ul id="notification-list">
+                <li class="notification-none">Loading...</li>
+            </ul>
+        </div>
+    </div>
+
+    <a id="i1mew" class="cta-button" href="login.html" style="padding: 10px 20px; text-transform: uppercase; font-family: var(--font-body); font-size: 0.85rem; letter-spacing: 1.5px; font-weight: 700; background-color: var(--color-gold); color: white; text-decoration: none; border-radius: var(--radius-md); transition: var(--transition-fast);">Login/Sign up</a>
+
+    <div class="profile-avatar-container" id="profile-avatar-container" style="display: none;">
+        <div class="profile-avatar" id="profile-avatar">
+            <span id="profile-initials">--</span>
+        </div>
+        <div class="profile-dropdown" id="profile-dropdown">
+            <div class="dropdown-item" id="open-my-reservation-btn">My Reservation</div>
+            <div class="dropdown-item" id="open-account-settings-btn">Account Settings</div>
+            <div class="dropdown-item" id="profile-logout-btn">Logout</div>
+        </div>
+    </div>
+    
+</div>
+            </div>
+        </div>
+    </div>
+
+ <div class="reservation-background">
+    <div class="reservation-section" id="reservation-section-main">
+        <div class="reservation-grid">
+            <div class="cafe-section">
+                <h2 style="color: rgb(4, 85, 21); font-size: 30px;">Cafe Floor Plan</h2>
+                
+                 <div class="cafe-layout" style="position: relative;">
+                    
+                    <div class="layout-blur-overlay" id="layout-blur-overlay">
+                        Select a date and time range to check seat availability.
+                    </div>
+                    
+                    <div class="floor-container">
+                        <div class="cafe-image-container" id="cafeImageContainer">
+                            <img src='assets/cafe_layout_2d_real.png' alt="Cafe Floor Plan" class="cafe-image" id="cafeImage" onload="this.style.display='block'; document.getElementById('imagePlaceholder').style.display='none';">
+                            
+                            <div class="image-placeholder" id="imagePlaceholder">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M21,19V5c0-1.1-0.9-2-2-2H5c-1.1,0-2,0.9-2,2v14c0,1.1,0.9,2,2,2h14C20.1,21,21,20.1,21,19z M8.5,13.5l2.5,3.01 L14.5,12l4.5,6H5L8.5,13.5z"/>
+                                </svg>
+                                <p><strong>Cafe Floor Plan Image</strong></p>
+                                <p>Replace the image URL in the code to display your cafe layout</p>
+                            </div>
+                            
+                            <div class="table-overlays" id="tableOverlays">
+                                <div class="table-spot" data-id="1" style="top: 25%; left: 10%;"></div>
+                                <div class="table-spot" data-id="2" style="top: 23%; left: 38%;"></div>
+                                <div class="table-spot" data-id="3" style="top: 26%; left: 89%;"></div>
+                                <div class="table-spot" data-id="4" style="top: 60%; left: 13%;"></div>
+                                <div class="table-spot" data-id="5" style="top: 54%; left: 32%;"></div>
+                                <div class="table-spot" data-id="6" style="top: 54%; left: 50%;"></div>
+                                <div class="table-spot" data-id="7" style="top: 82%; left: 6%;"></div>
+                                <div class="table-spot" data-id="8" style="top: 82%; left: 32%;"></div>
+                                <div class="table-spot" data-id="9" style="top: 80%; left:50%;"></div>
+                                <div class="table-spot" data-id="10" style="top: 60%; left: 90%;"></div>
+                                <div class="table-spot" data-id="11" style="top: 78%; left: 90%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="cafe-image-container hidden" id="secondFloorContainer">
+                            <img src='assets/cafe_layout_2d_2ndfloor.png' alt="Cafe Floor Plan - Upstairs" class="cafe-image" onload="this.style.display='block';">
+                            
+                            <div class="image-placeholder" style="display: none;">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M21,19V5c0-1.1-0.9-2-2-2H5c-1.1,0-2,0.9-2,2v14c0,1.1,0.9,2,2,2h14C20.1,21,21,20.1,21,19z M8.5,13.5l2.5,3.01 L14.5,12l4.5,6H5L8.5,13.5z"/>
+                                </svg>
+                                <p><strong>Upstairs Floor Plan</strong></p>
+                            </div>
+                            
+                            <div class="table-overlays" id="tableOverlaysUpstairs">
+                                <button class="vip-room-btn" data-id="12" style="top: 35%; left: 35%;">VIP ROOM</button>
+                                <div class="table-spot" data-id="13" style="top: 90%; left: 80%;"></div>
+                                <div class="table-spot" data-id="14" style="top: 85%; left: 8%;"></div>
+                                <div class="table-spot" data-id="15" style="top: 90%; left: 28%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="legend-container">
+                    <button id="floorToggle" class="floor-toggle-btn">See Upstairs</button>
+                    
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: linear-gradient(45deg, #4ECDC4, #44A08D);"></div>
+                            <span>Available Tables</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: linear-gradient(45deg, #df0404, #FF8E53);"></div>
+                            <span>Occupied Tables</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: linear-gradient(45deg, #04ec23, #764ba2);"></div>
+                            <span>Your Selection</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reservation-form">
+
+                    <div class="success-message" id="successMessage">
+                        <strong>🎉 Reservation Confirmed!</strong><br>
+                        Your table has been reserved successfully.
+                    </div>
+
+                    <div class="selected-table-info" id="selectedTableInfo">
+                        <strong>Selected Table: <span id="selectedTableNumber"></span></strong>
+                    </div>
+
+                    <form id="reservationForm">
+                        <h2 style="  color: rgba(4, 85, 21);
+   
+    text-align: center;
+    margin-bottom: 5px;
+    font-weight: bold;">Reserve Your Table</h2>
+
+                        <div class="form-group">
+                        <label for="customerName">Full Name</label>
+                        <input type="text" name="customerName" placeholder="Full Name" required>
+                        </div>
+
+                        <div class="form-group">
+                        <label for="contactNumber">Contact Number</label>
+                        <input type="tel" name="contactNumber" placeholder="09xxxxxxxxx" required maxlength="11" pattern="09[0-9]{9}" title="Must be an 11-digit number starting with 09.">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reservationDate">1. Select a Date</label>
+                            <div class="date-check-group">
+                                <input type="date" id="reservationDate" name="reservationDate" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reservationTimeIn">2. Select a Time Range</label>
+                            <div style="display: flex; gap: 10px;">
+                                <select name="reservationTimeIn" id="reservationTimeIn" class="form-control" required>
+                                    <option value="">Time In</option>
+                                    </select>
+                                <select name="reservationTimeOut" id="reservationTimeOut" class="form-control" required>
+                                    <option value="">Time Out</option>
+                                    </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="checkAvailabilityBtn">3. Check Availability</label>
+                            <div class="date-check-group">
+                                <button type="button" id="checkAvailabilityBtn" class="submit-btn" style="width: 100%; padding: 12px; font-size: 14px; min-width: 100px;">
+                                    Check Available Tables
+                                </button>
+                                <span id="availabilityLoader" class="loader hidden"></span>
+                            </div>
+                            <small id="availability-message" style="color: white; display: block; margin-top: 8px; text-shadow: 1px 1px 2px black;"></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="numberOfDiners">4. Number of Diners</label>
+                            <select name="numberOfDiners" id="numberOfDiners" required disabled>
+                                <option value="">Select number of diners</option>
+                                <option value="1">1 Diner</option>
+                                <option value="2">2 Diners</option>
+                                <option value="3">3 Diners</option>
+                                <option value="4">4 Diners</option>
+                                <option value="5">5 Diners</option>
+                                <option value="6">6 Diners</option>
+                                <option value="7">7 Diners</option>
+                                <option value="8">8 Diners</option>
+                                <option value="9">9 Diners</option>
+                                <option value="10+">10+ Diners</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                        <label for="notes">5. Special Requests (Optional)</label>
+                        <textarea name="notes" id="notes" placeholder="e.g., anniversary, near window" disabled></textarea>
+                        </div>
+                        
+                        <div class="terms-container">
+                            <input type="checkbox" id="agreeTerms" required disabled>
+                            <label for="agreeTerms">
+                                I agree to the
+                                <a href="#" id="openTerms">Terms and Conditions</a>.
+                            </label>
+                        </div>
+                        <button type="submit" class="submit-btn" id="confirmReservationBtn" disabled>Confirm Reservation</button>
+                    </form>
+
+            </div>
+        </div>
+    </div>
+    
+    <div id="preorder-section" class="desktop-only-section" style="display: none;">
+        <div class="preorder-modal-content">
+            <div class="preorder-header">
+                <button class="preorder-back-btn"><span>&larr;</span><span class="btn-text"> Back to Reservation</span></button> <h2 style="color: white;">Pre-Order Your Food</h2>
+            </div>
+            <div class="preorder-body">
+                <div class="preorder-sidebar">
+                    <h3>Categories</h3>
+                    <ul id="preorder-categories-desktop">
+                        <li class="active" data-category="All">All</li>
+                        </ul>
+                </div>
+                <div class="preorder-main">
+                    <div id="preorder-grid-desktop" class="preorder-grid">
+                        </div>
+                </div>
+                <div class="preorder-cart">
+                    <div class="preorder-cart-summary-header">
+                        <h3>Your Pre-Order</h3>
+                        <button id="clear-cart-btn-desktop" class="clear-cart-btn" disabled>Clear</button>
+                        <div class="cart-icon-container" id="cartIconContainer-desktop">
+                            <img src="assets/cart_icon.png" alt="Cart" class="cart-icon"> 
+                            <span class="cart-badge" id="cartBadge-desktop">0</span>
+                        </div>
+                    </div>
+                    <div id="preOrderCartItemsWrapper-desktop" class="preorder-cart-items-wrapper collapsed">
+                        <div id="preOrderCartItems-desktop" class="preorder-cart-items">
+                            <p style="color: #888; text-align: center;">Your cart is empty.</p>
+                        </div>
+                    </div>
+                    <div class="preorder-summary"> 
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span id="preOrderSubtotal-desktop">₱0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Tax (12%):</span>
+                            <span id="preOrderTax-desktop">₱0.00</span>
+                        </div>
+                        
+                        <div class="summary-row total">
+                            <span>Total:</span>
+                            <span id="preOrderTotal-desktop">₱0.00</span>
+                        </div>
+                    </div>
+                    <button id="preOrderCheckoutBtn-desktop" class="preorder-checkout-btn" disabled>Checkout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+   <div id="payment-section" class="desktop-only-section" style="display: none;">
+    <div class="payment-modal-content">
+        <div class="preorder-header">
+            <button id="cancel-payment-btn-desktop" class="preorder-back-btn"><span>&larr;</span><span class="btn-text"> Back to Pre-Order</span></button>
+            <h2 style="color: white;">Pay for Pre-Order</h2>
+        </div>
+        
+        <div class="payment-body payment-body-grid">
+            
+            <div class="payment-reservation-summary">
+                <h3>Reservation Summary</h3>
+                <p><strong>Name:</strong> <span id="payment-summary-name-desktop">...</span></p>
+                <p><strong>Date:</strong> <span id="payment-summary-date-desktop">...</span></p>
+                <p><strong>Time:</strong> <span id="payment-summary-time-desktop">...</span></p>
+                <p><strong>Diners:</strong> <span id="payment-summary-diners-desktop">...</span></p>
+                
+                <h4>Pre-Order Summary</h4>
+                <div id="payment-summary-items-desktop">
+                    </div>
+            </div>
+            <div class="payment-grid">
+                <div class="payment-qr-code">
+                    <h4>Pay with GCash</h4>
+                    <p>Total Amount: <strong id="payment-total-amount-desktop" style="font-size: 1.2rem;">₱0.00</strong></p>
+                    <img src="assets/acaccia qr code.png" alt="GCash QR Code">
+                    <p>Scan this QR code with your GCash app.</p>
+                </div>
+                <div class="payment-upload">
+                    <h4>Upload Receipt</h4>
+                    <p>After paying, please upload a screenshot of your e-receipt.</p>
+                    <div class="form-group">
+                        <label for="receipt-file-input-desktop">Proof of Payment:</label>
+                        <input type="file" id="receipt-file-input-desktop" class="file-input" accept="image/*" required>
+                        <label for="receipt-file-input-desktop" class="file-input-label" style="color: white;">📷 Select Screenshot</label>
+                        <button type="button" id="receipt-preview-link-desktop" class="receipt-preview-link" style="display: none;">View Attached Screenshot</button>
+                    </div>
+                    <button id="upload-receipt-btn-desktop" class="submit-btn" disabled>Confirm Pre-Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+ </div> 
+    
+    <div id="termsModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal" id="closeTerms">&times;</span>
+            <h2>Terms and Conditions</h2>
+            <p>By confirming your reservation, you agree to:</p>
+            <ul>
+                <li>Arrive within 15 minutes of your reservation time, or your table may be released.</li>
+                <li>Provide a valid ID to verify your booking upon arrival.</li>
+                <li>Any fraudulent or repeated no-shows may result in account restrictions.</li>
+                <li>Respect other customers and staff during your stay.</li>
+                <li>The restaurant reserves the right to modify or cancel reservations in case of emergencies.</li>
+            </ul>
+            <p>For more details, please contact our staff at <b>Acaccia Bistro Café</b>.</p>
+        </div>
+    </div>
+    
+    <div id="vipModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal" id="closeVip">&times;</span>
+            <h2>VIP Room Reservation</h2>
+            <p>Experience luxury dining in our exclusive VIP room with premium amenities and privacy.</p>
+            <div class="vip-image-container">
+                <img src="assets/vip-room.jpg" alt="VIP Room" class="vip-room-image">
+            </div>
+            <div class="vip-details">
+                <p><strong>Features:</strong></p>
+                <ul>
+                    <li>Private dining area for up to 10 guests</li>
+                    <li>Exclusive menu options</li>
+                    <li>Personalized service</li>
+                    <li>₱500 down payment required</li>
+                </ul>
+            </div>
+            <div class="vip-modal-buttons">
+                <button class="modal-btn cancel-btn" id="cancelVip">Cancel</button>
+                <button class="modal-btn proceed-btn" id="proceedPayment">Proceed to Down Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="paymentModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal" id="closePayment">&times;</span>
+            <h2>Down Payment - ₱500</h2>
+            <p>Scan the QR code below to complete your down payment:</p>
+            <div class="qr-code-container">
+                <img src="assets/qr-code.png" alt="Payment QR Code" class="qr-code-image">
+            </div>
+            <p class="payment-instructions">
+                <strong>Instructions:</strong><br>
+                1. Scan the QR code using your banking app or e-wallet<br>
+                2. Complete the ₱500 payment<br>
+                3. Click "Close" to complete your reservation
+            </p>
+            <button class="modal-btn proceed-btn" id="closePaymentBtn">Close</button>
+        </div>
+    </div>
+
+    <div id="preorder-modal" class="preorder-modal">
+        <div class="preorder-modal-content">
+            <div class="preorder-header">
+                <button class="preorder-back-btn"><span>&larr;</span><span class="btn-text"> Back to Reservation</span></button> <h2 style="color: white;">Pre-Order Your Food</h2>
+            </div>
+            <div class="preorder-body">
+                <div class="preorder-sidebar">
+                    <h3>Categories</h3>
+                    <ul id="preorder-categories">
+                        <li class="active" data-category="All">All</li>
+                        </ul>
+                </div>
+                <div class="preorder-main">
+                    <div id="preorder-grid" class="preorder-grid">
+                        </div>
+                </div>
+                <div class="preorder-cart">
+                    <div class="preorder-cart-summary-header">
+                        <h3>Your Pre-Order</h3>
+                        <button id="clear-cart-btn-mobile" class="clear-cart-btn" disabled>Clear</button>
+                        <div class="cart-icon-container" id="cartIconContainer">
+                            <img src="assets/cart_icon.png" alt="Cart" class="cart-icon"> 
+                            <span class="cart-badge" id="cartBadge">0</span>
+                        </div>
+                    </div>
+                    <div id="preOrderCartItemsWrapper" class="preorder-cart-items-wrapper collapsed">
+                        <div id="preOrderCartItems" class="preorder-cart-items">
+                            <p style="color: #888; text-align: center;">Your cart is empty.</p>
+                        </div>
+                    </div>
+                    <div class="preorder-summary"> 
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span id="preOrderSubtotal">₱0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Tax (12%):</span>
+                            <span id="preOrderTax">₱0.00</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total:</span>
+                            <span id="preOrderTotal">₱0.00</span>
+                        </div>
+                    </div>
+                    <button id="preOrderCheckoutBtn" class="preorder-checkout-btn" disabled>Checkout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="preorder-variation-modal" class="modal hidden" style="z-index: 1001;">
+        <div class="modal-content">
+            <h2 id="preorder-variation-title">Select Variation</h2>
+            <div id="preorder-variation-options">
+                </div>
+            <div class="modal-buttons">
+                <button type="button" id="cancel-preorder-variation" class="btn--secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+ <div id="preorder-payment-modal" class="preorder-modal" style="z-index: 1002;">
+    <div class="payment-modal-content">
+        <div class="preorder-header">
+            <button id="payment-back-btn-mobile" class="preorder-back-btn">
+                <span>&larr;</span><span class="btn-text"> Back to Pre-Order</span>
+            </button>
+            <h2 style="color: white;">Payment</h2>
+        </div>
+        
+        <div class="payment-body">
+            <div class="payment-reservation-summary">
+                <h3>Reservation Summary</h3>
+                <p><strong>Name:</strong> <span id="payment-summary-name-mobile">...</span></p>
+                <p><strong>Date:</strong> <span id="payment-summary-date-mobile">...</span></p>
+                <p><strong>Time:</strong> <span id="payment-summary-time-mobile">...</span></p>
+                <p><strong>Diners:</strong> <span id="payment-summary-diners-mobile">...</span></p>
+                
+                <h4>Pre-Order Summary</h4>
+                <div id="payment-summary-items-mobile">
+                </div>
+            </div>
+            
+            <div class="payment-grid">
+                <div class="payment-qr-code">
+                    <h4>Pay with GCash</h4>
+                    <p>Total Amount: <strong id="payment-total-amount" style="font-size: 1.2rem;">₱0.00</strong></p>
+                    <img src="assets/acaccia qr code.png" alt="GCash QR Code">
+                    <p>Scan this QR code with your GCash app.</p>
+                </div>
+                
+                <div class="payment-upload">
+                    <h4>Upload Receipt</h4>
+                    <p>After paying, please upload a screenshot of your e-receipt.</p>
+                    <div class="form-group">
+                        <label for="receipt-file-input">Proof of Payment:</label>
+                        <input type="file" id="receipt-file-input" class="file-input" accept="image/*" required>
+                        <label for="receipt-file-input" class="file-input-label" style="color: white;">📷 Select Screenshot</label>
+                        <button type="button" id="receipt-preview-link" class="receipt-preview-link" style="display: none;">View Attached Screenshot</button>
+                    </div>
+                    <button id="upload-receipt-btn" class="submit-btn" disabled>Confirm Pre-Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div id="auth-validation-modal" class="auth-modal-backdrop hidden">
+        <div class="auth-modal-content">
+            <h2>Login Required</h2>
+            <p>You must be logged in to reserve a table. Please log in or create an account to continue.</p>
+            <div class="auth-modal-buttons">
+                <a href="login.html" class="auth-modal-btn">Login</a>
+                <a href="login.html" class="auth-modal-btn auth-modal-btn-secondary">Sign Up</a>
+            </div>
+            <div class="auth-modal-tertiary-action">
+            <button type="button" class="auth-modal-btn-tertiary auth-modal-close-btn">Stay signed out</button>
+        </div>
+        </div>
+    </div>
+
+    <div id="reservation-receipt-modal" class="modal hidden" style="z-index: 1003;">
+        <div class="modal-content" style="max-width: 90vw; max-height: 90vh; padding: 10px;">
+            <span class="close-modal" id="close-receipt-modal" style="font-size: 2.5rem; top: 10px; right: 20px; position: absolute; color: #fff; text-shadow: 0 0 5px #000;">&times;</span>
+            <img id="receipt-modal-image" src="" alt="Receipt Preview" style="width: 100%; height: auto; max-height: 85vh; object-fit: contain;">
+        </div>
+    </div>
+
+    <div id="pending-reservation-modal" class="auth-modal-backdrop hidden">
+        <div class="auth-modal-content">
+            <h2>Active Reservation Found</h2>
+            <p>You already have a reservation scheduled for <strong id="pending-res-date">...</strong>.</p>
+            <p><strong>Please note: Rescheduling is allowed only one time.</strong></p>
+            
+            <p id="reschedule-warning" class="reschedule-warning hidden">
+                Reservations cannot be rescheduled less than 24 hours in advance or if already rescheduled.
+            </p>
+            <p>You can reschedule this reservation, or please wait for it to be completed before booking a new one.</p>
+            <div class="auth-modal-buttons">
+                <a href="index.html" class="auth-modal-btn auth-modal-btn-secondary">Go to Homepage</a>
+                <button type="button" id="reschedule-btn" class="auth-modal-btn">Reschedule</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="reschedule-success-modal" class="auth-modal-backdrop hidden">
+        <div class="auth-modal-content">
+            <h2>Reschedule Success!</h2>
+            <p>Your reservation has been successfully updated. We look forward to seeing you!</p>
+            <div class="auth-modal-buttons">
+                <button type="button" id="reschedule-ok-btn" class="auth-modal-btn">OK</button>
+            </div>
+        </div>
+    </div>
+    <div id="final-reservation-summary-modal" class="auth-modal-backdrop hidden">
+       <div class="auth-modal-content">
+            <h2 style="text-align: center;">🎉 Reservation Confirmed!</h2>
+            <p style="text-align: center;">Your reservation receipt is below. A copy will also be sent to you.</p>
+            
+            <div style="background: #f8f9fa; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 20px; margin-top: 20px;">
+                <h3 style="margin-top: 0; border-bottom: 1px solid var(--color-border); padding-bottom: 10px;">Reservation Details</h3>
+                <p><strong>Reservation ID:</strong> <span id="final-summary-id">...</span></p>
+                <p><strong>Name:</strong> <span id="final-summary-name">...</span></p>
+                <p><strong>Date:</strong> <span id="final-summary-date">...</span></p>
+                <p><strong>Time:</strong> <span id="final-summary-time">...</span></p>
+                <p><strong>Table:</strong> <span id="final-summary-table">...</span></p>
+                <p><strong>Diners:</strong> <span id="final-summary-diners">...</span></p>
+
+                <h4 style="margin-top: 15px; border-top: 1px solid var(--color-border); padding-top: 15px;">Pre-Order Summary</h4>
+                <div id="final-summary-items" style="font-size: 0.9rem; max-height: 150px; overflow-y: auto;">
+                    </div>
+                <div id="final-summary-total" style="font-size: 1.1rem; font-weight: bold; text-align: right; margin-top: 10px; border-top: 1px solid var(--color-border); padding-top: 10px;">
+                    </div>
+            </div>
+
+            <div class="auth-modal-buttons" style="margin-top: 25px;">
+                <button type="button" id="final-summary-ok-btn" class="auth-modal-btn">OK</button>
+            </div>
+        </div>
+    </div>
+<div id="my-reservation-modal" class="auth-modal-backdrop hidden">
+    <div class="auth-modal-content" style="max-width: 500px; text-align: left;">
+        <h2 style="text-align: center;">My Active Reservation</h2>
+        
+        <div id="reservation-details-content">
+            <div style="background: #f8f9fa; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 20px; margin-top: 20px;">
+                <p><strong>Reservation ID:</strong> <span id="my-res-id">...</span></p>
+                <p><strong>Date:</strong> <span id="my-res-date">...</span></p>
+                <p><strong>Time:</strong> <span id="my-res-time">...</span></p>
+                <p><strong>Table:</strong> <span id="my-res-table">...</span></p>
+                <p><strong>Diners:</strong> <span id="my-res-diners">...</span></p>
+                <p><strong>Status:</strong> <span id="my-res-status" style="font-weight: 700;">...</span></p>
+                
+                <h4 style="margin-top: 15px; border-top: 1px solid var(--color-border); padding-top: 15px;">Pre-Order Summary</h4>
+                <div id="my-res-items" style="font-size: 0.9rem; max-height: 150px; overflow-y: auto;">
+                    </div>
+            </div>
+            
+            <div id="my-res-warning" class="reschedule-warning hidden" style="margin-top: 15px;">
+                </div>
+            
+            <div class="auth-modal-buttons" style="margin-top: 25px; gap: 10px;">
+                <button type="button" id="my-res-view-receipt-btn" class="auth-modal-btn auth-modal-btn-secondary">View Receipt</button>
+                <button type="button" id="my-res-reschedule-btn" class="auth-modal-btn">Reschedule</button>
+            </div>
+        </div>
+        
+        <div id="no-reservation-content" class="hidden">
+            <p style="text-align: center; margin-top: 20px;">You have no active reservations.</p>
+            <div class="auth-modal-buttons" style="margin-top: 25px;">
+                <a href="reservation.html" class="auth-modal-btn">Book a Table</a>
+            </div>
+        </div>
+
+        <div class="auth-modal-tertiary-action" style="margin-top: 15px;">
+            <button type="button" class="auth-modal-btn-tertiary" id="close-my-reservation-modal-btn">Close</button>
+        </div>
+    </div>
+</div>
+
+<div id="account-settings-modal" class="auth-modal-backdrop hidden">
+    <div class="auth-modal-content" style="max-width: 500px; text-align: left;">
+        <h2 style="text-align: center;">Account Settings</h2>
+        
+        <form id="change-name-form">
+            <h4 style="margin-top: 10px;">Change Your Name</h4>
+            <div class="form-group">
+                <label for="account-full-name">Full Name</label>
+                <input type="text" id="account-full-name" class="form-control" required>
+            </div>
+            <button type="submit" class="auth-modal-btn" style="width: 100%;">Save Name</button>
+        </form>
+        
+        <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--color-border);">
+        
+        <form id="change-password-form">
+            <h4 style="margin-top: 10px;">Change Password</h4>
+            <div class="form-group">
+                <label for="account-current-password">Current Password</label>
+                <input type="password" id="account-current-password" class="form-control" required placeholder="••••••••">
+            </div>
+            <div class="form-group">
+                <label for="account-new-password">New Password</label>
+                <input type="password" id="account-new-password" class="form-control" required placeholder="At least 6 characters">
+            </div>
+            <div class="form-group">
+                <label for="account-confirm-password">Confirm New Password</label>
+                <input type="password" id="account-confirm-password" class="form-control" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="auth-modal-btn" style="width: 100%;">Change Password</button>
+        </form>
+
+        <div class="auth-modal-tertiary-action" style="margin-top: 15px;">
+            <button type="button" class="auth-modal-btn-tertiary" id="close-account-settings-modal-btn">Close</button>
+        </div>
+    </div>
+</div>
+
+<footer id="iv3be5" class="gjs-grid-row">
+    <footer id="iv3be5" class="gjs-grid-row">
+        <div id="ilriti" class="gjs-grid-column">
+            <div id="im0rle">
+                <div>
+                    <a href="index.html">
+                        <img id="ikhs8g" src="https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/bc3511d6-050e-47d3-bc04-602f13480d07__acaccialogo.jpg" alt="Acaccia Logo" />
+                    </a>
+                </div>
+                <div class="footer-column">
+                    <h3>Acaccia Bistro Cafe</h3>
+                    <a>Alaminos, Laguna</a>
+                    <a>09123456789</a>
+                    <a>www.Cafesync.com</a>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <a href="index.html">Home</a>
+                    <a href="menu.html">Menu</a>
+                    <a href="reservation.html">Reservations</a>
+                    <a href="community-feedback.html">Community</a>
+                    <a href="#">About Us</a>
+                </div>
+                <div class="footer-column">
+                    <h3>Social Media</h3>
+                    <a href="https://www.facebook.com/profile.php?id=61561806667727">Facebook</a>
+                    <a href="https://www.instagram.com/acacciabistrocafe/">Instagram</a>
+                    <a href="#">TikTok</a>
+                </div>
+            </div>
+            <div class="gjs-divider"></div>
+            <div id="it6g1v">Copyright © 2025 Acaccia Bistro Cafe</div>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var toggleBtn = document.getElementById('mobile-menu-toggle');
+            var menu = document.getElementById('it00l'); // This is the container for .nav-links
+    
+            if (toggleBtn && menu) {
+                toggleBtn.addEventListener('click', function() {
+                    // Toggle the 'X' animation on the button
+                    this.classList.toggle('is-active');
+                    
+                    // Toggle the dropdown menu visibility
+                    menu.classList.toggle('mobile-menu-active');
+                });
+            }
+        });
+    </script>
+<script type="module" src="scripts/firebase.js"></script>
+    <script type="module" src="scripts/auth-manager.js"></script>
+    <script type="module" src="scripts/notification-manager.js"></script>
+    <script type="module" src="scripts/reservation.js"></script>
+    <script type="module" src="scripts/my-account.js"></script> </body>
+</body>
+</html>

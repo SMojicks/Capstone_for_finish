@@ -1,0 +1,3511 @@
+/* ========================================
+   CAFESYNC POS SYSTEM - PART 1
+   Variables, Base Styles, Layout
+   ======================================== */
+
+:root {
+  /* Primary Green Palette */
+  --color-green-50: #f0f9f4;
+  --color-green-100: #dcf4e4;
+  --color-green-200: #bbe7cc;
+  --color-green-300: #86d5a8;
+  --color-green-400: #4aba7d;
+  --color-green-500: #2d9d5f;
+  --color-green-600: #1f7d4a;
+  --color-green-700: #1a633c;
+  --color-green-800: #174f32;
+  --color-green-900: #14412a;
+
+  /* Secondary Brown Palette */
+  --color-brown-50: #faf8f5;
+  --color-brown-100: #f5f0e8;
+  --color-brown-200: #e8dcc8;
+  --color-brown-300: #d4b896;
+  --color-brown-400: #b8935f;
+  --color-brown-500: #8b6f47;
+  --color-brown-600: #725a39;
+  --color-brown-700: #5e4a30;
+  --color-brown-800: #4a3a26;
+  --color-brown-900: #3d3020;
+
+  /* Neutral Colors */
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+
+  /* Accent Colors */
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+  --color-orange-500: #f97316;
+  --color-yellow-500: #eab308;
+  --color-blue-500: #3b82f6;
+
+  /* Semantic Colors */
+  --color-background: var(--color-brown-50);
+  --color-surface: var(--color-white);
+  --color-text: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-600);
+  --color-primary: var(--color-green-600);
+  --color-primary-hover: var(--color-green-700);
+  --color-primary-active: var(--color-green-800);
+  --color-secondary: var(--color-brown-500);
+  --color-secondary-hover: var(--color-brown-600);
+  --color-secondary-active: var(--color-brown-700);
+  --color-border: var(--color-brown-200);
+  --color-error: var(--color-red-500);
+  --color-success: var(--color-green-600);
+  --color-warning: var(--color-orange-500);
+  --color-info: var(--color-blue-500);
+
+  /* Typography */
+  --font-family-base: "FKGroteskNeue", "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family-mono: "Berkeley Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+  --font-size-2xl: 20px;
+  --font-size-3xl: 24px;
+  --font-size-4xl: 30px;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 550;
+  --font-weight-bold: 600;
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --letter-spacing-tight: -0.01em;
+
+  /* Spacing */
+  --space-0: 0;
+  --space-1: 1px;
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-32: 32px;
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-base: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Animation */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: var(--color-gray-900);
+    --color-surface: var(--color-gray-800);
+    --color-text: var(--color-gray-100);
+    --color-text-secondary: var(--color-gray-400);
+    --color-border: var(--color-gray-700);
+    --color-primary: var(--color-green-400);
+    --color-primary-hover: var(--color-green-300);
+    --color-primary-active: var(--color-green-500);
+    --color-secondary: var(--color-brown-400);
+    --color-secondary-hover: var(--color-brown-300);
+    --color-secondary-active: var(--color-brown-500);
+  }
+}
+
+/* Base Styles */
+html {
+  font-size: var(--font-size-base);
+  font-family: var(--font-family-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text);
+  background-color: var(--color-background);
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;
+  display: grid;
+  grid-template-areas: 
+    "sidebar navbar"
+    "sidebar main";
+  grid-template-columns: 250px 1fr;
+  grid-template-rows: 60px 1fr;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  color: var(--color-text);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+h1 { font-size: var(--font-size-4xl); }
+h2 { font-size: var(--font-size-3xl); }
+h3 { font-size: var(--font-size-2xl); }
+h4 { font-size: var(--font-size-xl); }
+h5 { font-size: var(--font-size-lg); }
+h6 { font-size: var(--font-size-md); }
+
+p {
+  margin: 0 0 var(--space-16) 0;
+}
+
+/* Top Navigation Bar */
+.top-navbar {
+  grid-area: navbar;
+  background: linear-gradient(135deg, var(--color-green-700) 0%, var(--color-green-600) 100%);
+  border-bottom: 3px solid var(--color-green-800);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-24);
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+}
+
+.company-logo {
+  color: var(--color-white);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+}
+
+.employee-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.employee-avatar {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--color-brown-500) 0%, var(--color-brown-600) 100%);
+  color: var(--color-white);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
+  border: 2px solid var(--color-white);
+  box-shadow: var(--shadow-sm);
+}
+
+.employee-name {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-white);
+}
+
+.logout-btn {
+  background: var(--color-white);
+  color: var(--color-green-700);
+  border: 2px solid var(--color-white);
+  font-weight: var(--font-weight-semibold);
+}
+
+.logout-btn:hover {
+  background: var(--color-brown-100);
+  border-color: var(--color-brown-100);
+}
+
+/* Sidebar Navigation */
+.sidebar {
+  grid-area: sidebar;
+  background: linear-gradient(180deg, var(--color-brown-800) 0%, var(--color-brown-900) 100%);
+  color: var(--color-brown-100);
+  padding: var(--space-16) 0;
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item {
+  margin-bottom: var(--space-4);
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  width: 100%;
+  padding: var(--space-12) var(--space-24);
+  background: none;
+  border: none;
+  color: var(--color-brown-200);
+  text-decoration: none;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-standard);
+  border-left: 3px solid transparent;
+  position: relative;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--color-green-300);
+}
+
+.nav-link.active {
+  background: linear-gradient(90deg, rgba(45, 157, 95, 0.15) 0%, transparent 100%);
+  color: var(--color-green-300);
+  border-left-color: var(--color-green-400);
+  font-weight: var(--font-weight-semibold);
+}
+
+.nav-icon {
+  font-size: var(--font-size-xl);
+  width: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Inventory Alert Dot */
+#inventory-alert-dot {
+  display: none;
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  width: 10px;
+  height: 10px;
+  background-color: var(--color-red-500);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Main Content Area */
+.main-content {
+  grid-area: main;
+  background-color: var(--color-background);
+  overflow-y: auto;
+  padding: var(--space-24);
+}
+
+.content-section {
+  display: none;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.content-section.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section-header,
+.section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-24);
+  padding-bottom: var(--space-16);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.section-header h1,
+.section-header-row h1 {
+  margin: 0;
+  color: var(--color-green-800);
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-12);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-10) var(--space-20);
+  border-radius: var(--radius-base);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.5;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-standard);
+  border: none;
+  text-decoration: none;
+  position: relative;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.btn--primary {
+  background: linear-gradient(135deg, var(--color-green-600) 0%, var(--color-green-700) 100%);
+  color: var(--color-white);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--primary:hover {
+  background: linear-gradient(135deg, var(--color-green-700) 0%, var(--color-green-800) 100%);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.btn--primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--secondary {
+  background: var(--color-brown-200);
+  color: var(--color-brown-800);
+  border: 1px solid var(--color-brown-300);
+}
+
+.btn--secondary:hover {
+  background: var(--color-brown-300);
+  border-color: var(--color-brown-400);
+}
+
+.btn--outline {
+  background: transparent;
+  border: 2px solid var(--color-green-600);
+  color: var(--color-green-700);
+}
+
+.btn--outline:hover {
+  background: var(--color-green-50);
+}
+
+.btn--sm {
+  padding: var(--space-6) var(--space-12);
+  font-size: var(--font-size-sm);
+}
+
+.btn--small {
+  padding: var(--space-6) var(--space-16);
+  font-size: var(--font-size-sm);
+}
+
+.btn--full-width {
+  width: 100%;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Form Elements */
+.form-control {
+  display: block;
+  width: 100%;
+  padding: var(--space-10) var(--space-12);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: var(--color-white);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-base);
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.form-control:focus {
+  border-color: var(--color-green-500);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(45, 157, 95, 0.1);
+}
+
+.form-label,
+label {
+  display: block;
+  margin-bottom: var(--space-8);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+}
+
+.form-group {
+  margin-bottom: var(--space-16);
+}
+
+.form-grid-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-20);
+  margin-bottom: var(--space-20);
+}
+
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.info-box {
+  font-size: var(--font-size-sm);
+  color: var(--color-brown-700);
+  padding: var(--space-12);
+  background: var(--color-brown-100);
+  border-radius: var(--radius-base);
+  margin: 0;
+  border: 1px solid var(--color-brown-200);
+  border-left: 4px solid var(--color-brown-500);
+}
+
+/* Font Face */
+@font-face {
+  font-family: 'FKGroteskNeue';
+  src: url('https://r2cdn.perplexity.ai/fonts/FKGroteskNeue.woff2') format('woff2');
+}
+/* ========================================
+   CAFESYNC POS SYSTEM - PART 2
+   Components, Tables, Modals, Responsive
+   ======================================== */
+
+/* POS Layout */
+.pos-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-24);
+  height: calc(100vh - 140px);
+}
+
+.pos-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+/* Category Tabs */
+.category-tabs-container {
+  margin-bottom: var(--space-16);
+  padding: var(--space-8);
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--color-border);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.category-tab {
+  padding: var(--space-10) var(--space-20);
+  margin-right: var(--space-8);
+  border: none;
+  background: var(--color-brown-100);
+  color: var(--color-brown-700);
+  border-radius: var(--radius-base);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+  transition: all var(--duration-normal) var(--ease-standard);
+  white-space: nowrap;
+}
+
+.category-tab:hover {
+  background: var(--color-brown-200);
+  transform: translateY(-2px);
+}
+
+.category-tab.active {
+  background: linear-gradient(135deg, var(--color-green-600) 0%, var(--color-green-700) 100%);
+  color: var(--color-white);
+  font-weight: var(--font-weight-bold);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Product Grid */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-16);
+  overflow-y: auto;
+  padding-right: var(--space-8);
+}
+
+.product-card {
+  position: relative;
+  background: var(--color-white);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-20);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-standard);
+  text-align: center;
+}
+
+.product-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-green-400);
+  transform: translateY(-4px);
+}
+
+
+
+.product-name {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-green-800);
+  margin-bottom: var(--space-6);
+  font-size: var(--font-size-md);
+}
+
+.product-category {
+  color: var(--color-brown-600);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-8);
+  font-weight: var(--font-weight-medium);
+}
+
+.product-price {
+  color: var(--color-green-600);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xl);
+  margin-top: var(--space-8);
+}
+
+.product-stock {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-top: var(--space-6);
+}
+
+/* Cart Section */
+.pos-right {
+  background: linear-gradient(135deg, var(--color-white) 0%, var(--color-brown-50) 100%);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-24);
+  height: fit-content;
+  box-shadow: var(--shadow-lg);
+}
+
+.cart-section h3 {
+  margin: 0 0 var(--space-20) 0;
+  color: var(--color-green-800);
+  font-size: var(--font-size-2xl);
+  border-bottom: 3px solid var(--color-green-600);
+  padding-bottom: var(--space-12);
+}
+
+.cart-items {
+  min-height: 200px;
+  max-height: 350px;
+  overflow-y: auto;
+  margin-bottom: var(--space-20);
+}
+
+.empty-cart {
+  text-align: center;
+  color: var(--color-text-secondary);
+  padding: var(--space-32);
+  margin: 0;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-12) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cart-item:last-child {
+  border-bottom: none;
+}
+
+.cart-item-info {
+  flex: 1;
+}
+
+.cart-item-name {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  margin-bottom: var(--space-4);
+}
+
+.cart-item-price {
+  color: var(--color-green-600);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.cart-item-quantity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+}
+
+.qty-btn {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--color-green-600);
+  background: var(--color-white);
+  border-radius: var(--radius-base);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-green-600);
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.qty-btn:hover {
+  background: var(--color-green-600);
+  color: var(--color-white);
+}
+
+.cart-total {
+  border-top: 2px solid var(--color-border);
+  padding-top: var(--space-16);
+  margin-bottom: var(--space-16);
+  background: var(--color-white);
+  border-radius: var(--radius-base);
+  padding: var(--space-16);
+}
+
+.total-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-10);
+  color: var(--color-text);
+  font-weight: var(--font-weight-medium);
+}
+
+.total-final {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xl);
+  border-top: 2px solid var(--color-green-600);
+  padding-top: var(--space-12);
+  margin-top: var(--space-12);
+  color: var(--color-green-700);
+}
+
+.payment-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+}
+
+/* Data Tables */
+.table-container {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--color-border);
+  overflow-x: auto;
+  box-shadow: var(--shadow-md);
+}
+
+.data-table,
+#reservationTable,
+#feedbackTable,
+.transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td,
+#reservationTable th,
+#reservationTable td,
+#feedbackTable th,
+#feedbackTable td,
+.transactions-table th,
+.transactions-table td {
+  padding: var(--space-16);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.data-table th,
+#reservationTable th,
+#feedbackTable th,
+.transactions-table th {
+  background: linear-gradient(135deg, var(--color-green-600) 0%, var(--color-green-700) 100%);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.data-table td,
+#reservationTable td,
+#feedbackTable td,
+.transactions-table td {
+  color: var(--color-text);
+}
+
+.data-table tbody tr:hover,
+#reservationTable tbody tr:hover,
+#feedbackTable tbody tr:hover,
+.transactions-table tbody tr:hover {
+  background-color: var(--color-green-50);
+}
+
+.data-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Action Buttons */
+.action-btn {
+  padding: var(--space-6) var(--space-12);
+  font-size: var(--font-size-xs);
+  margin-right: var(--space-6);
+  border-radius: var(--radius-base);
+  border: none;
+  cursor: pointer;
+  font-weight: var(--font-weight-semibold);
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.action-btn.view {
+  background: var(--color-blue-500);
+  color: var(--color-white);
+}
+
+.action-btn.view:hover {
+  background: #2563eb;
+}
+
+.action-btn.complete {
+  background: var(--color-green-600);
+  color: var(--color-white);
+}
+
+.action-btn.complete:hover {
+  background: var(--color-green-700);
+}
+
+.action-btn.delete {
+  background: var(--color-red-500);
+  color: var(--color-white);
+}
+
+.action-btn.delete:hover {
+  background: var(--color-red-600);
+}
+
+/* Status Indicators */
+.status {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-6) var(--space-12);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status.pending,
+.status-pending {
+  background-color: rgba(234, 179, 8, 0.15);
+  color: var(--color-yellow-500);
+  border: 1px solid var(--color-yellow-500);
+}
+
+.status.approved,
+.status-reviewed {
+  background-color: rgba(45, 157, 95, 0.15);
+  color: var(--color-green-600);
+  border: 1px solid var(--color-green-600);
+}
+
+.status.rejected {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--color-red-500);
+  border: 1px solid var(--color-red-500);
+}
+.status.pending,
+.status-pending {
+  background-color: rgba(234, 179, 8, 0.15);
+  color: var(--color-yellow-500);
+  border: 1px solid var(--color-yellow-500);
+}
+
+.status.approved,
+.status-reviewed {
+  background-color: rgba(45, 157, 95, 0.15);
+  color: var(--color-green-600);
+  border: 1px solid var(--color-green-600);
+}
+
+.status.rejected,
+.status-blocked {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--color-red-500);
+  border: 1px solid var(--color-red-500);
+}
+
+/* Stock Status */
+.stock-low {
+  color: var(--color-red-500);
+  font-weight: var(--font-weight-bold);
+}
+
+.stock-medium {
+  color: var(--color-orange-500);
+  font-weight: var(--font-weight-semibold);
+}
+
+.stock-high {
+  color: var(--color-green-600);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: var(--color-white);
+  padding: var(--space-32);
+  border-radius: var(--radius-xl);
+  width: 400px;
+  max-width: 90%;
+  box-shadow: var(--shadow-xl);
+  border: 2px solid var(--color-border);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-content--wide {
+  max-width: 900px;
+  width: 90%;
+}
+
+.modal-content h2,
+#menu-modal-title,
+#modal-title {
+  text-align: center;
+  margin-bottom: var(--space-20);
+  color: var(--color-green-800);
+  font-size: var(--font-size-3xl);
+  border-bottom: 3px solid var(--color-green-600);
+  padding-bottom: var(--space-12);
+}
+
+.modal-content form,
+#product-form,
+#menu-item-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.modal-actions,
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-12);
+  margin-top: var(--space-20);
+}
+
+.modal-actions button,
+.modal-buttons button {
+  flex: 1;
+}
+
+/* Recipe/Ingredient Section */
+#recipe-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: var(--space-12);
+  padding: var(--space-12);
+  background: var(--color-brown-50);
+  border-radius: var(--radius-base);
+  border: 1px solid var(--color-border);
+}
+
+.ingredient-row {
+  display: flex;
+  gap: var(--space-8);
+  margin-bottom: var(--space-8);
+  align-items: center;
+}
+
+.ingredient-row .form-control {
+  margin: 0;
+}
+
+.ingredient-row select {
+  flex: 2;
+}
+
+.ingredient-row input[type="number"],
+.ingredient-row input[type="text"] {
+  flex: 1;
+}
+
+.remove-ingredient {
+  padding: var(--space-6) var(--space-12);
+  font-size: var(--font-size-base);
+  min-width: auto;
+  background: var(--color-red-500);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-base);
+  cursor: pointer;
+  font-weight: var(--font-weight-bold);
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.remove-ingredient:hover {
+  background: var(--color-red-600);
+}
+
+#add-ingredient-btn {
+  margin-top: var(--space-8);
+}
+
+/* Filter Controls */
+.filter-controls,
+.filter-container {
+  display: flex;
+  gap: var(--space-12);
+  align-items: center;
+}
+
+.filter-container label {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.filter-container select,
+#filterRange {
+  padding: var(--space-8) var(--space-16);
+  border-radius: var(--radius-base);
+  border: 2px solid var(--color-border);
+  background-color: var(--color-white);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  color: var(--color-text);
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.filter-container select:focus,
+#filterRange:focus {
+  border-color: var(--color-green-500);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(45, 157, 95, 0.1);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-16);
+  margin-top: var(--space-20);
+  padding: var(--space-16);
+}
+
+.pagination button,
+#prevPage,
+#nextPage {
+  background: linear-gradient(135deg, var(--color-green-600) 0%, var(--color-green-700) 100%);
+  color: var(--color-white);
+  border: none;
+  padding: var(--space-10) var(--space-20);
+  border-radius: var(--radius-base);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-standard);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--font-size-sm);
+}
+
+.pagination button:hover,
+#prevPage:hover:not(:disabled),
+#nextPage:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--color-green-700) 0%, var(--color-green-800) 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.pagination button:disabled,
+#prevPage:disabled,
+#nextPage:disabled {
+  background: var(--color-gray-300);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+#pageInfo {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-green-800);
+  font-size: var(--font-size-lg);
+  padding: 0 var(--space-16);
+}
+
+/* Feedback Buttons */
+.feedback-actions {
+  display: flex;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+}
+
+.feedback-btn,
+.approve-btn,
+.reject-btn {
+  border: none;
+  border-radius: var(--radius-base);
+  padding: var(--space-8) var(--space-16);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-standard);
+  font-weight: var(--font-weight-semibold);
+}
+
+.feedback-btn.view {
+  background-color: var(--color-brown-200);
+  color: var(--color-brown-800);
+}
+
+.feedback-btn.view:hover {
+  background-color: var(--color-brown-300);
+}
+
+.feedback-btn.approve,
+.approve-btn {
+  background-color: var(--color-green-500);
+  color: var(--color-white);
+}
+
+.feedback-btn.approve:hover,
+.approve-btn:hover {
+  background-color: var(--color-green-600);
+  transform: translateY(-1px);
+}
+
+.feedback-btn.reject,
+.reject-btn {
+  background-color: var(--color-red-500);
+  color: var(--color-white);
+}
+
+.feedback-btn.reject:hover,
+.reject-btn:hover {
+  background-color: var(--color-red-600);
+  transform: translateY(-1px);
+}
+
+/* Transactions Section */
+#transactions-section {
+  background-color: var(--color-background);
+  padding: var(--space-24);
+  border-radius: var(--radius-xl);
+}
+
+#transactions-section .section-header {
+  margin-bottom: var(--space-24);
+}
+
+.transactions-container {
+  max-height: 500px;
+  overflow-y: auto;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--color-border);
+  background: var(--color-white);
+  box-shadow: var(--shadow-md);
+}
+
+#transactions-list {
+  width: 100%;
+}
+
+/* Reservations Section */
+#reservations-section {
+  padding: var(--space-24);
+  background-color: var(--color-background);
+  border-radius: var(--radius-xl);
+}
+
+#reservations-section .section-header {
+  margin-bottom: var(--space-24);
+}
+
+#reservationTable tbody {
+  background: var(--color-white);
+}
+
+/* Feedback Section */
+#feedback-section {
+  padding: var(--space-24);
+  background-color: var(--color-background);
+  border-radius: var(--radius-xl);
+}
+
+#feedback-section .section-header {
+  margin-bottom: var(--space-24);
+}
+
+#feedbackTable tbody {
+  background: var(--color-white);
+}
+
+/* Accounts Section */
+#accounts-section {
+  background-color: var(--color-background);
+  padding: var(--space-24);
+}
+
+#accounts-section .section-header {
+  margin-bottom: var(--space-24);
+}
+
+#accounts-table {
+  width: 100%;
+  background: var(--color-white);
+}
+
+/* Inventory Section */
+#inventory-section {
+  background-color: var(--color-background);
+}
+
+#inventory-section .section-header {
+  margin-bottom: var(--space-24);
+}
+
+#inventory-table {
+  width: 100%;
+  background: var(--color-white);
+}
+
+/* POS Section */
+#pos-section {
+  background-color: var(--color-background);
+}
+
+/* Utility Classes */
+.hidden {
+  display: none ;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-4 {
+  gap: var(--space-4);
+}
+
+.gap-8 {
+  gap: var(--space-8);
+}
+
+.gap-16 {
+  gap: var(--space-16);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-brown-100);
+  border-radius: var(--radius-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-brown-400);
+  border-radius: var(--radius-base);
+  transition: background var(--duration-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brown-500);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-brown-400) var(--color-brown-100);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  body {
+    grid-template-columns: 200px 1fr;
+  }
+  
+  .pos-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+    height: auto;
+  }
+  
+  .pos-right {
+    position: sticky;
+    bottom: 0;
+    z-index: 50;
+  }
+
+  .form-grid-two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    grid-template-areas: 
+      "navbar"
+      "main";
+    grid-template-columns: 1fr;
+    grid-template-rows: 60px 1fr;
+  }
+  
+  .sidebar {
+    display: none;
+  }
+  
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--space-12);
+  }
+
+  .section-header-row,
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-16);
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .header-actions button {
+    width: 100%;
+  }
+
+  .modal-content {
+    padding: var(--space-24);
+    width: 95%;
+  }
+
+  .modal-content--wide {
+    width: 95%;
+    max-width: 100%;
+    padding: var(--space-20);
+  }
+
+  .data-table th,
+  .data-table td,
+  #reservationTable th,
+  #reservationTable td,
+  #feedbackTable th,
+  #feedbackTable td,
+  .transactions-table th,
+  .transactions-table td {
+    padding: var(--space-10);
+    font-size: var(--font-size-xs);
+  }
+
+  .cart-section h3 {
+    font-size: var(--font-size-xl);
+  }
+
+  .total-final {
+    font-size: var(--font-size-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .top-navbar {
+    padding: 0 var(--space-12);
+  }
+
+  .company-logo {
+    font-size: var(--font-size-xl);
+  }
+
+  .employee-name {
+    display: none;
+  }
+
+  .employee-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .main-content {
+    padding: var(--space-12);
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: var(--space-10);
+  }
+
+  .product-card {
+    padding: var(--space-12);
+  }
+
+  .product-name {
+    font-size: var(--font-size-sm);
+  }
+
+  .product-price {
+    font-size: var(--font-size-lg);
+  }
+
+  .cart-section {
+    padding: var(--space-16);
+  }
+
+  .cart-section h3 {
+    font-size: var(--font-size-lg);
+  }
+
+  .section-header h1,
+  .section-header-row h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .modal-content h2,
+  #menu-modal-title,
+  #modal-title {
+    font-size: var(--font-size-xl);
+  }
+
+  .btn {
+    padding: var(--space-8) var(--space-16);
+    font-size: var(--font-size-sm);
+  }
+
+  .pagination {
+    gap: var(--space-8);
+    padding: var(--space-12);
+  }
+
+  .pagination button {
+    padding: var(--space-8) var(--space-12);
+    font-size: var(--font-size-xs);
+  }
+
+  #pageInfo {
+    font-size: var(--font-size-base);
+    padding: 0 var(--space-8);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .sidebar,
+  .top-navbar,
+  .header-actions,
+  .action-btn,
+  .pagination,
+  .filter-container {
+    display: none !important;
+  }
+
+  body {
+    grid-template-areas: "main";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .main-content {
+    padding: 0;
+  }
+
+  .table-container {
+    box-shadow: none;
+    border: 1px solid var(--color-border);
+  }
+}
+
+/* --- Replace existing Analytics Styles with these --- */
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 columns for stat cards */
+    gap: var(--space-20);
+}
+
+.stat-card {
+    background: var(--color-white);
+    padding: var(--space-20);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-card h5 {
+    font-size: var(--font-size-md);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-8);
+    text-transform: uppercase;
+}
+
+.stat-card h2 {
+    font-size: var(--font-size-3xl);
+    color: var(--color-green-700);
+    margin: 0;
+}
+
+.chart-card {
+    background: var(--color-white);
+    padding: var(--space-20);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    display: flex; /* Added for better alignment */
+    flex-direction: column; /* Added */
+    height: 400px;
+}
+
+.chart-card h5 {
+    font-size: var(--font-size-lg);
+    color: var(--color-text);
+    margin-bottom: var(--space-16);
+    text-align: center;
+    flex-shrink: 0; /* Prevent title from shrinking */
+}
+
+.chart-card canvas {
+    flex-grow: 1; /* Allow canvas to fill space */
+    min-height: 0; /* Important for flex layout */
+}
+
+/* --- New styles for layout --- */
+
+/* Span stat cards across the top row */
+.stat-card {
+    grid-column: span 1;
+}
+
+/* Sales chart takes the first ~60% of width below stats */
+.chart-card-medium {
+    grid-column: span 2; /* Adjust span based on your preference */
+    grid-row: 2; /* Place it on the second row */
+}
+
+/* Right column container for smaller charts */
+.right-chart-column {
+    grid-column: span 2; /* Takes remaining width */
+    grid-row: 2; /* Place it on the second row */
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-20); /* Space between the two small charts */
+}
+
+/* Adjust height for smaller charts */
+.chart-card-small {
+    height: calc(200px - (var(--space-20) / 2));
+}
+
+
+/* --- Responsive Adjustments --- */
+
+@media (max-width: 992px) { /* Adjust breakpoint if needed */
+    .analytics-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns for stats on medium screens */
+    }
+    .stat-card {
+        grid-column: span 1;
+    }
+    .chart-card-medium {
+        grid-column: span 2; /* Full width */
+        grid-row: 3; /* Move below stats */
+    }
+    .right-chart-column {
+        grid-column: span 2; /* Full width */
+        grid-row: 4; /* Move below sales chart */
+    }
+    .chart-card-small {
+       height: 350px;
+    }
+
+}
+
+@media (max-width: 576px) { /* Mobile screens */
+    .analytics-grid {
+        grid-template-columns: 1fr; /* Single column */
+    }
+    .stat-card,
+    .chart-card-medium,
+    .right-chart-column {
+        grid-column: span 1; /* All items take full width */
+    }
+     .chart-card-medium {
+        grid-row: 5; /* Adjust row based on number of stat cards */
+    }
+     .right-chart-column {
+        grid-row: 6; 
+    }
+    .chart-card {
+       height: 300px; 
+    }
+     .chart-card-small {
+       height: 300px; 
+    }
+}
+
+
+/* Category Tab Bar */
+#category-tabs-container {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    background: var(--color-white);
+    border-radius: var(--radius-base);
+    padding: var(--space-8);
+    margin-bottom: var(--space-16);
+    border: 1px solid var(--color-border);
+}
+
+.category-tab {
+    padding: var(--space-8) var(--space-16);
+    margin-right: var(--space-8);
+    border: none;
+    background: var(--color-gray-100);
+    color: var(--color-gray-600);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    transition: all 0.2s ease;
+    white-space: nowrap; /* Prevent tabs from breaking line */
+}
+
+.category-tab:hover {
+    background: var(--color-gray-200);
+}
+
+.category-tab.active {
+    background: var(--color-green-600);
+    color: var(--color-white);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Display Mode Styles */
+.product-card.is-hidden {
+    opacity: 0.5;
+    background: var(--color-gray-100);
+    border-style: dashed;
+}
+
+
+
+/* 1. Collapsible Sidebar Styles */
+
+.sidebar-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--color-white);
+    cursor: pointer;
+    margin-right: var(--space-12);
+    padding: 0 var(--space-8);
+}
+.sidebar-toggle-btn .material-icons {
+    font-size: 28px;
+    vertical-align: middle;
+}
+
+/* Remove the grid-based body layout */
+body {
+    grid-template-areas: none;
+    grid-template-columns: none;
+    grid-template-rows: none;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Make top-navbar fixed */
+.top-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    height: 60px; /* Explicit height */
+}
+
+/* New Main Container for sidebar + content */
+.main-container {
+    display: flex;
+    margin-top: 60px; /* Offset for fixed navbar */
+    height: calc(100vh - 60px);
+}
+
+.sidebar {
+    width: 250px;
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
+    transition: margin-left 0.3s ease-in-out;
+    position: relative; /* Keep it in the flow */
+    z-index: 900; /* Below navbar */
+}
+
+.main-content {
+    flex-grow: 1; /* Allow content to grow */
+    transition: all 0.3s ease-in-out;
+    padding: var(--space-24);
+    overflow-y: auto;
+}
+
+/* Collapsed State */
+body.sidebar-collapsed .sidebar {
+    margin-left: -250px;
+}
+
+/* 2. POS Grid Header and Scrolling Styles */
+
+/* Make POS grid scrollable */
+.product-grid {
+    /* Adjust height as needed. 
+       This calc subtracts navbar, pos-header, and category tabs. */
+    max-height: calc(100vh - 60px - 80px - 70px);
+    overflow-y: auto;
+    padding-right: var(--space-8); /* Add space for scrollbar */
+}
+
+/* Category Tab Bar */
+#category-tabs-container {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    background: var(--color-white);
+    border-radius: var(--radius-base);
+    padding: var(--space-8);
+    margin-bottom: var(--space-16);
+    border: 1px solid var(--color-border);
+}
+
+.category-tab {
+    padding: var(--space-8) var(--space-16);
+    margin-right: var(--space-8);
+    border: none;
+    background: var(--color-gray-100);
+    color: var(--color-gray-600);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.category-tab:hover { background: var(--color-gray-200); }
+.category-tab.active {
+    background: var(--color-green-600);
+    color: var(--color-white);
+    box-shadow: var(--shadow-sm);
+}
+
+/* POS Category Header */
+.product-category-header {
+    grid-column: 1 / -1; /* Span full grid width */
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-green-700);
+    padding: var(--space-12) 0;
+    margin-top: var(--space-16);
+    border-bottom: 2px solid var(--color-border);
+}
+
+
+/* 1. Pending Orders Line */
+#orders-line-container {
+    padding: var(--space-12);
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-16);
+    box-shadow: var(--shadow-sm);
+}
+.orders-line-title {
+    font-size: var(--font-size-lg);
+    color: var(--color-text);
+    margin: 0 0 var(--space-12) 0;
+    padding-left: var(--space-4);
+}
+.orders-line {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: var(--space-12);
+    padding-bottom: var(--space-12); /* For scrollbar spacing */
+}
+
+/* 2. Order Card */
+.order-card {
+    flex: 0 0 180px; /* Don't grow, don't shrink, base width 180px */
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: var(--space-12);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-xs);
+}
+.order-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary);
+}
+.order-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-8);
+}
+.order-card-id {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+}
+.order-card-wait-time {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+}
+/* Color Coding */
+.wait-short { background: #dcf4e4; color: #1f7d4a; }
+.wait-medium { background: #fef3c7; color: #b45309; }
+.wait-long { background: #fee2e2; color: #b91c1c; }
+
+.order-card-customer {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: var(--space-12);
+}
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--color-gray-200);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+.progress-bar-inner {
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease;
+}
+
+/* 3. Order Details Modal */
+.order-modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: var(--space-24);
+}
+.order-modal-info p {
+    font-size: var(--font-size-lg);
+    color: var(--color-text);
+    margin-bottom: var(--space-12);
+}
+.order-modal-info p strong {
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-medium);
+    display: inline-block;
+    width: 100px;
+}
+.order-modal-items {
+    background: var(--color-gray-50);
+    border-radius: var(--radius-base);
+    padding: var(--space-16);
+    max-height: 300px;
+    overflow-y: auto;
+}
+.order-modal-items h5 {
+    border-bottom: 2px solid var(--color-border);
+    padding-bottom: var(--space-8);
+    margin: 0 0 var(--space-12) 0;
+}
+#order-modal-item-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+#order-modal-item-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--space-8) 0;
+    border-bottom: 1px solid var(--color-border);
+}
+#order-modal-item-list li:last-child {
+    border-bottom: none;
+}
+#order-modal-item-list .item-wait-time {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    margin-left: var(--space-12);
+}
+.order-modal-progress {
+    margin-top: var(--space-24);
+}
+.order-modal-progress label {
+    display: block;
+    margin-bottom: var(--space-8);
+    font-weight: var(--font-weight-semibold);
+}
+#order-modal-status-text {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+}
+
+/* --- Pending Order Enhancements --- */
+
+/* 1. Overdue Dot on Order Card */
+.order-card {
+    position: relative; /* Needed for dot positioning */
+}
+
+.overdue-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 12px;
+    height: 12px;
+    background-color: var(--color-red-500);
+    border-radius: 50%;
+    border: 2px solid var(--color-white);
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+    animation: blink 1.5s infinite;
+}
+
+/* 2. Order Modal Item Checkbox */
+#order-modal-item-list li {
+    gap: 12px;
+    align-items: center;
+}
+
+.item-check-btn {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border: 2px solid var(--color-gray-400);
+    background: var(--color-white);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--color-green-600);
+    transition: all 0.2s ease;
+    padding: 0; /* Ensure text is centered */
+    line-height: 24px; /* Adjust line height */
+}
+
+.item-check-btn.done {
+    background: var(--color-green-500);
+    border-color: var(--color-green-500);
+    color: var(--color-white);
+}
+
+.item-check-btn:disabled,
+.item-check-btn.disabled {
+    background: var(--color-gray-200);
+    border-color: var(--color-gray-300);
+    cursor: not-allowed;
+    color: var(--color-gray-500);
+}
+
+/* 3. Modal Item Text */
+#order-modal-item-list li > span {
+    flex-grow: 1; /* Make name/qty take up space */
+}
+
+#order-modal-item-list li .item-wait-time {
+    flex-shrink: 0;
+    margin-left: auto; /* Push to the end */
+}
+
+/* --- Order Card Status Text --- */
+.order-card-status {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+}
+/* Color-coding for status */
+.order-card-status.status-pending { background: #fef3c7; color: #b45309; }
+.order-card-status.status-preparing { background: #dbeafe; color: #1e40af; }
+.order-card-status.status-ready { background: #dcf4e4; color: #1f7d4a; }
+
+.order-card-wait-info {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-8);
+}
+.order-card-wait-info .wait-text {
+    /* Styles for wait-short, wait-medium, wait-long are already defined */
+    padding: 2px 6px;
+    border-radius: var(--radius-full);
+}
+
+/* Adjust card progress bar margin */
+.order-card .progress-bar {
+    margin-top: var(--space-12);
+}
+
+/* --- Order Modal Payment UI --- */
+.order-modal-items-payment {
+    background: var(--color-gray-50);
+    border-radius: var(--radius-base);
+    padding: var(--space-16);
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+/* Make grid columns more balanced */
+.order-modal-grid {
+    grid-template-columns: 1fr 1.2fr;
+}
+
+/* Style the text-based status */
+#order-modal-status-text {
+    display: inline-block;
+    vertical-align: middle;
+    /* Uses existing .status styles */
+}
+
+/* Payment Details Section */
+.payment-method {
+    margin-bottom: var(--space-20);
+}
+.payment-method label {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-8);
+}
+.payment-method > div {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    margin: var(--space-4) 0;
+}
+.payment-method input[type="radio"] {
+    width: 18px;
+    height: 18px;
+}
+
+#payment-cash-details.hidden {
+    display: none;
+}
+
+.payment-change {
+    margin-top: var(--space-16);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+}
+.payment-change span {
+    display: inline-block;
+    margin-left: var(--space-12);
+    color: var(--color-text);
+}
+
+/* --- Product Stock Status Labels (POS Grid) --- */
+.product-stock-label {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 3px 10px;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-white);
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+    box-shadow: var(--shadow-sm);
+    pointer-events: none; /* Don't interfere with clicks */
+}
+
+.product-stock-label.low-stock {
+    background: var(--color-orange-500);
+}
+
+.product-stock-label.out-of-stock {
+    background: var(--color-red-600);
+}
+
+/* Ensure payment details look right in the customer modal */
+#customer-info-modal .payment-method {
+    margin-top: var(--space-20);
+    padding-top: var(--space-16);
+    border-top: 1px solid var(--color-border);
+}
+#customer-info-modal .payment-change {
+    margin-top: var(--space-12);
+    padding-top: var(--space-12);
+    border-top: 1px solid var(--color-border);
+}
+#customer-info-modal .form-group {
+    margin-bottom: var(--space-12); /* Tighter spacing */
+}
+
+/* --- Product Card Image (Creative Display) --- */
+.product-card-image {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px 8px 0 0; /* Rounded corners at the top */
+    margin-bottom: 12px;
+}
+
+.product-card {
+    padding: 0; /* Remove padding to let image fill */
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card-info {
+    padding: 16px;
+    padding-top: 0;
+    text-align: center;
+}
+
+/* --- Add/Edit Menu Modal Image Upload --- */
+.image-upload-container {
+    width: 100%;
+    padding: 16px;
+    background: var(--color-gray-50);
+    border: 2px dashed var(--color-gray-300);
+    border-radius: var(--radius-base);
+    text-align: center;
+}
+
+#menu-image-preview {
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+    margin-top: 16px;
+    border: 1px solid var(--color-border);
+}
+
+.image-upload-label {
+    padding: 10px 20px;
+    background: var(--color-secondary);
+    color: white;
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    font-weight: var(--font-weight-semibold);
+    transition: background var(--duration-fast);
+}
+.image-upload-label:hover {
+    background: var(--color-secondary-hover);
+}
+#menu-image-upload {
+    display: none; /* Hide the default input */
+}
+
+/* --- Edit Menu Mode Buttons --- */
+.product-card-edit-controls {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+
+/* Common styles for all 3 buttons */
+.product-edit-btn,
+.product-toggle-btn,
+.product-delete-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+    padding: 0; /* Ensures icons are centered */
+    line-height: 1; /* Ensures icons are centered */
+}
+
+/* Edit Button (Pencil) */
+.product-edit-btn {
+    background: var(--color-blue-500);
+    color: white;
+}
+.product-edit-btn:hover {
+    background: #2563eb;
+    transform: scale(1.1);
+}
+
+/* Visibility Toggle Button */
+.product-toggle-btn {
+    background: var(--color-orange-500);
+    color: white;
+}
+.product-toggle-btn.is-visible {
+    background: var(--color-green-500);
+}
+.product-toggle-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Delete Button (Trash Can) */
+.product-delete-btn {
+    background: var(--color-red-500);
+    color: white;
+}
+.product-delete-btn:hover {
+    background: #dc2626; /* A darker red */
+    transform: scale(1.1);
+}
+
+/* --- Account Management Styles --- */
+.account-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--color-border);
+}
+
+.account-tab-btn {
+    padding: 12px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    border-bottom: 3px solid transparent;
+    /* Aligns button with the 2px border of its parent */
+    position: relative;
+    top: 2px;
+}
+
+.account-tab-btn.active {
+    color: var(--color-primary);
+    font-weight: 600;
+    border-bottom-color: var(--color-primary);
+}
+
+.account-table-container {
+    display: none;
+}
+
+.account-table-container.active {
+    display: block;
+}
+
+.permissions-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    background: var(--color-gray-50);
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.permission-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.permission-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+.permission-item input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.permission-item label {
+    margin: 0;
+    font-weight: 500;
+    cursor: pointer;
+}
+.permission-item input[type="checkbox"]:disabled + label {
+    cursor: not-allowed;
+    color: var(--color-text-secondary);
+}
+
+
+.status-blocked {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: var(--color-red-600);
+    border: 1px solid var(--color-red-500);
+}
+
+#employee-accounts-table-body .permission-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+}
+
+#employee-accounts-table-body .permission-list li {
+    padding: 2px 0;
+}
+
+/* Button colors */
+.block-btn {
+    background: var(--color-orange-500);
+    color: white;
+}
+.block-btn:hover {
+    background: #f97316; /* Darker orange */
+}
+
+.delete-btn {
+    background: var(--color-red-500);
+    color: white;
+}
+.delete-btn:hover {
+    background: #dc2626; /* Darker red */
+}
+
+.edit-btn {
+    background: var(--color-blue-500);
+    color: white;
+}
+.edit-btn:hover {
+    background: #2563eb; /* Darker blue */
+}
+
+/* --- Account Management Styles --- */
+.account-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--color-border);
+}
+
+.account-tab-btn {
+    padding: 12px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    border-bottom: 3px solid transparent;
+    position: relative;
+    top: 2px;
+}
+
+.account-tab-btn.active {
+    color: var(--color-primary);
+    font-weight: 600;
+    border-bottom-color: var(--color-primary);
+}
+
+.account-table-container {
+    display: none;
+}
+
+.account-table-container.active {
+    display: block;
+}
+
+.permissions-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    background: var(--color-gray-50);
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.permission-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.permission-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+.permission-item input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.permission-item label {
+    margin: 0;
+    font-weight: 500;
+    cursor: pointer;
+}
+.permission-item input[type="checkbox"]:disabled + label {
+    cursor: not-allowed;
+    color: var(--color-text-secondary);
+}
+
+
+.status-blocked {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: var(--color-red-600);
+    border: 1px solid var(--color-red-500);
+}
+.status-approved {
+  background-color: rgba(45, 157, 95, 0.15);
+  color: var(--color-green-600);
+  border: 1px solid var(--color-green-600);
+}
+
+
+#employee-accounts-table-body .permission-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+}
+
+#employee-accounts-table-body .permission-list li {
+    padding: 2px 0;
+}
+
+/* Button colors */
+.block-btn {
+    background: var(--color-orange-500);
+    color: white;
+}
+.block-btn:hover {
+    background: #f97316; /* Darker orange */
+}
+
+.delete-btn {
+    background: var(--color-red-500);
+    color: white;
+}
+.delete-btn:hover {
+    background: #dc2626; /* Darker red */
+}
+
+.edit-btn {
+    background: var(--color-blue-500);
+    color: white;
+}
+.edit-btn:hover {
+    background: #2563eb; /* Darker blue */
+}
+
+/* --- TABLE LAYOUT --- */
+#reservationTable,
+#feedbackTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* Prevent column shifting */
+}
+
+#reservationTable th,
+#reservationTable td,
+#feedbackTable th,
+#feedbackTable td {
+  text-align: center;
+  padding: 8px;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Keep “Status” column width stable */
+#reservationTable th:nth-last-child(2),
+#reservationTable td.status,
+#feedbackTable th:nth-last-child(2),
+#feedbackTable td.status {
+  width: 120px;
+  text-align: center;
+}
+
+/* Fixed width for the Action buttons column */
+#reservationTable th:last-child,
+#reservationTable td.actions-cell,
+#feedbackTable th:last-child,
+#feedbackTable td.actions-cell {
+  width: 160px;
+  text-align: center;
+}
+
+/* Optional: Prevent text-heavy columns (like Notes) from squishing */
+#reservationTable th:nth-child(7),
+#reservationTable td:nth-child(7),
+#feedbackTable th:nth-child(7),
+#feedbackTable td:nth-child(7) {
+  max-width: 200px;
+}
+
+/* --- TABLE ACTION ICON BUTTONS --- */
+
+
+/* Base style for all icon buttons */
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+.btn-icon:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
+}
+
+/* Color Variants */
+.btn--icon-edit {
+  background: var(--color-blue-500);
+  color: white;
+}
+.btn--icon-edit:hover {
+  background: #2563eb;
+}
+
+.btn--icon-approve {
+  background: var(--color-green-500);
+  color: white;
+}
+.btn--icon-approve:hover {
+  background: var(--color-green-600);
+}
+
+/* Cancel / Reject / Dark Gray Button */
+.btn--icon-cancel {
+    background: var(--color-gray-600); /* This is a dark gray */
+    color: white;
+}
+.btn--icon-cancel:hover {
+    background: var(--color-gray-700); /* This is a darker gray */
+}
+.btn--icon-delete {
+  background: var(--color-red-500);
+  color: white;
+}
+.btn--icon-delete:hover {
+  background: #dc2626;
+}
+
+/* --- New Info Button Style --- */
+.btn--info {
+  background-color: var(--color-blue-500);
+  color: var(--color-white);
+  box-shadow: var(--shadow-sm);
+}
+.btn--info:hover {
+  background-color: #2563eb; /* Darker blue */
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Inventory Filter Bar */
+.inventory-filter-bar {
+  display: flex;
+  flex-wrap: wrap; /* Allows filters to wrap on smaller screens */
+  gap: 16px;
+  padding: 16px;
+  background-color: var(--color-white);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--color-border);
+  margin-bottom: 24px;
+  align-items: flex-end; /* Aligns button with inputs */
+}
+
+.inventory-filter-bar .filter-group {
+  flex: 1; /* Each filter group will grow */
+  min-width: 180px; /* Prevents them from becoming too small */
+}
+
+.inventory-filter-bar .filter-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+}
+
+.inventory-filter-bar .form-control {
+  width: 100%; /* Make inputs/selects fill the group */
+  padding: var(--space-8) var(--space-12); /* Slightly smaller padding */
+}
+
+/* Ensure the reset button doesn't stretch */
+.inventory-filter-bar .btn {
+  flex-shrink: 0; 
+}
+/* --- Discount Controls --- */
+.discount-controls {
+  padding: 16px;
+  background-color: var(--color-brown-100);
+  border-radius: var(--radius-base);
+  margin-bottom: 16px;
+  border: 1px solid var(--color-border);
+}
+
+.discount-controls .form-group {
+  margin-bottom: 0; /* Remove default margin */
+}
+
+/* Specific style for the discount line in cart totals */
+.cart-total .total-line.discount-line span:last-child {
+  color: var(--color-red-600); /* Make discount red */
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Hide custom input wrapper */
+.discount-controls .form-group.hidden {
+  display: none;
+}
+#custom-discount-wrapper {
+  margin-top: 10px;
+}
+/* --- Transaction Export Buttons --- */
+#transactions-section .header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* Ensure buttons use the right colors */
+.export-buttons .btn--secondary {
+  background: var(--color-brown-200);
+  color: var(--color-brown-800);
+}
+.export-buttons .btn--secondary:hover {
+  background: var(--color-brown-300);
+}
+/* --- Feedback Image Thumbnail & Rating --- */
+.feedback-image-thumb {
+    width: 60px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.feedback-image-thumb:hover {
+    transform: scale(1.1);
+}
+.feedback-rating {
+    font-size: 1.5rem;
+    vertical-align: middle;
+}
+
+/* Close button for image modal */
+.close-modal {
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #999;
+}
+.close-modal:hover {
+    color: #ff4444;
+}
+/* --- Analytics Chart Header --- */
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+.chart-header h5 {
+    margin: 0; /* Remove default margin */
+    flex-grow: 1; /* Allow title to take space */
+    text-align: left; /* Align title left */
+}
+
+.chart-header .filter-container {
+    flex-shrink: 0;
+    min-width: 150px;
+    margin: 0; /* Reset margin */
+}
+
+.chart-header .filter-container .form-control {
+    padding: var(--space-8) var(--space-12);
+    font-size: var(--font-size-sm);
+    /* Make it look like a standard form-control */
+    line-height: 1.5;
+    color: var(--color-text);
+    background-color: var(--color-white);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-base);
+    transition: all var(--duration-fast) var(--ease-standard);
+}
+/* --- Analytics Section Header --- */
+#analytics-section .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#analytics-section .header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* --- Product Variation Styles (Admin Modal) --- */
+#variations-wrapper.hidden {
+    display: none;
+}
+#single-price-wrapper.hidden {
+    display: none;
+}
+
+#product-variations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    padding: 10px;
+    border-radius: var(--radius-base);
+}
+
+
+.variation-row .form-control {
+    margin: 0;
+}
+.variation-row input[placeholder="Name"] {
+    flex: 2; /* e.g., "8oz" */
+}
+.variation-row input[placeholder="Price"] {
+    flex: 1; /* e.g., "120" */
+}
+.variation-row .remove-variation-btn {
+    padding: 6px 12px;
+    background: var(--color-red-500);
+    color: white;
+    border: none;
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    font-weight: bold;
+}
+.variation-row .remove-variation-btn:hover {
+    background: var(--color-red-600);
+}
+
+
+/* --- Variation Choice Modal (POS) --- */
+#variation-options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.variation-btn {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    text-align: left;
+    
+    /* Use primary button style */
+    background: linear-gradient(135deg, var(--color-green-600) 0%, var(--color-green-700) 100%);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    transition: all var(--duration-normal) var(--ease-standard);
+}
+
+.variation-btn:hover {
+    background: linear-gradient(135deg, var(--color-green-700) 0%, var(--color-green-800) 100%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.variation-btn .variation-price {
+    float: right;
+    font-weight: var(--font-weight-bold);
+}
+/* --- Pre-Order List in Reservation Table --- */
+.pre-order-item-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+.pre-order-item-list li {
+    padding: 2px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px; /* Adjust as needed */
+}
+
+/* --- Updated Ingredient Row Styles --- */
+.ingredient-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+}
+.ingredient-row .inv-category-filter {
+    flex: 1.5; /* Give category dropdown slightly more space */
+    min-width: 150px;
+}
+.ingredient-row .ingredient-id {
+    flex: 2; /* Give ingredient dropdown the most space */
+    min-width: 180px;
+}
+.ingredient-row .ingredient-qty {
+    flex: 0.5;
+    min-width: 60px;
+}
+.ingredient-row .ingredient-unit {
+    flex: 0.5;
+    min-width: 80px;
+}
+.ingredient-row .remove-ingredient {
+    flex-shrink: 0;
+}
+
+/* --- Kitchen Stub Modal Styles --- */
+#kitchen-stub-content {
+    background: #fdfdfd;
+    border: 1px dashed #333;
+    padding: 15px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #000;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+#kitchen-stub-content .stub-header {
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 0 10px 0;
+    border-bottom: 1px dashed #333;
+    padding-bottom: 5px;
+}
+
+#kitchen-stub-content p {
+    margin: 0 0 5px 0;
+    font-size: 12px;
+}
+
+#kitchen-stub-content .stub-item-list {
+    list-style: none;
+    padding: 10px 0;
+    margin: 10px 0;
+    border-top: 1px dashed #333;
+    border-bottom: 1px dashed #333;
+}
+
+#kitchen-stub-content .stub-item-list li {
+    display: flex;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+#kitchen-stub-content .stub-item-list li strong {
+    margin-right: 10px;
+    min-width: 25px; /* Aligns quantities */
+}
+
+/* --- All-in-One Variation Row Styles --- */
+#product-variations-list .ingredient-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px;
+    border-radius: var(--radius-sm);
+    background-color: var(--color-gray-50);
+    border: 1px solid var(--color-border);
+}
+
+/* This CSS hides the Name/Price on subsequent rows for the same variation */
+#product-variations-list .ingredient-row:not(:first-child) .variation-name-price-group {
+    visibility: hidden; 
+}
+
+/* This group holds Name and Price */
+.variation-name-price-group {
+    display: flex;
+    gap: 8px;
+    flex: 3; /* Give this group 3 "parts" of the width */
+    min-width: 220px; /* Prevent it from being too squished */
+}
+
+.variation-name-price-group .variation-name {
+    flex: 2; /* 2/3 of the group's space */
+}
+
+.variation-name-price-group .variation-price {
+    flex: 1; /* 1/3 of the group's space */
+}
+
+/* Target all the other elements in the row */
+#product-variations-list .ingredient-row .inv-category-filter {
+    flex: 2;
+    min-width: 120px;
+}
+
+#product-variations-list .ingredient-row .ingredient-id {
+    flex: 3;
+    min-width: 150px;
+}
+
+#product-variations-list .ingredient-row .ingredient-qty {
+    flex: 1;
+    min-width: 60px;
+}
+
+#product-variations-list .ingredient-row .ingredient-unit {
+    flex: 1;
+    min-width: 60px;
+}
+
+#product-variations-list .ingredient-row .remove-ingredient {
+    flex-shrink: 0; /* Don't shrink the 'X' button */
+    padding: 6px 12px;
+    background: var(--color-red-500);
+    color: white;
+    border: none;
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    font-weight: bold;
+}
+#product-variations-list .ingredient-row .remove-ingredient:hover {
+    background: var(--color-red-600);
+}
+/* ========================================
+   NEW FEEDBACK DASHBOARD STYLES
+   ======================================== */
+
+/* Average Rating Card in Header */
+.average-rating-card {
+    background: var(--color-surface);
+    color: var(--color-text);
+    padding: 12px 20px;
+    border-radius: var(--radius-lg);
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    min-width: 150px;
+}
+.average-rating-card h5 {
+    margin: 0 0 5px 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+}
+.average-rating-card h2 {
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-primary);
+}
+
+/* Feedback Grid Layout */
+.feedback-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+/* Individual Feedback Card */
+.feedback-card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition-fast);
+}
+.feedback-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* Highlight pending reviews */
+.feedback-card.pending {
+    border-color: var(--color-orange);
+    background-color: var(--color-orange-light);
+}
+
+.feedback-card .feedback-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.feedback-card.pending .feedback-header {
+    border-bottom-color: #ffe0b2; /* Lighter orange */
+}
+
+.feedback-card h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.feedback-card .overall-stars {
+    font-size: 1.1rem;
+    color: var(--color-secondary);
+    font-weight: 700;
+}
+.feedback-card .feedback-rating-emoji {
+    font-size: 1.5rem;
+}
+
+.feedback-card .feedback-comment {
+    padding: 16px;
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    flex-grow: 1;
+}
+
+/* Detailed Star Ratings */
+.feedback-card .detailed-ratings {
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--color-border);
+    margin-top: auto;
+}
+.feedback-card .rating-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+}
+.feedback-card .rating-item span:first-child {
+    font-weight: 500;
+    color: var(--color-text);
+}
+.feedback-card .rating-display-stars {
+    font-size: 1rem;
+    color: var(--color-secondary);
+}
+
+/* Feedback Photo */
+.feedback-card .feedback-photo {
+    padding: 0 16px 16px;
+}
+.feedback-card .feedback-photo img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+}
+
+/* Footer (Date & Actions) */
+.feedback-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-bg);
+}
+.feedback-card.pending .feedback-footer {
+    background-color: #fffaf0;
+    border-top-color: #ffe0b2;
+}
+
+.feedback-card .feedback-date {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+.feedback-card .feedback-actions {
+    display: flex;
+    gap: 10px;
+}
+.feedback-card .feedback-actions .btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+.btn--icon-approve {
+    background-color: var(--color-primary);
+    color: white;
+    font-weight: 600;
+}
+.btn--icon-approve:hover {
+    background-color: var(--color-primary-hover);
+}
+/* ========================================
+   NEW FEEDBACK DASHBOARD STYLES
+   ======================================== */
+
+/* Average Rating Card in Header */
+.average-rating-card {
+    background: var(--color-white);
+    color: var(--color-text);
+    padding: 12px 20px;
+    border-radius: var(--radius-lg);
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    min-width: 150px;
+}
+.average-rating-card h5 {
+    margin: 0 0 5px 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+}
+.average-rating-card h2 {
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-primary);
+}
+
+/* Feedback Grid Layout */
+.feedback-grid {
+    display: grid;
+    /* This creates 1 column on mobile, 2 on tablet, 3 on desktop */
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+/* Individual Feedback Card */
+.feedback-card {
+    background-color: var(--color-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.2s ease;
+}
+.feedback-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* Highlight pending reviews */
+.feedback-card.pending {
+    border-color: var(--color-orange-500);
+    background-color: var(--color-brown-50); /* A light yellow/beige */
+}
+
+.feedback-card .feedback-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.feedback-card.pending .feedback-header {
+    border-bottom-color: var(--color-brown-200);
+}
+
+.feedback-card h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.feedback-card .overall-stars {
+    font-size: 1.1rem;
+    color: var(--color-secondary);
+    font-weight: 700;
+}
+.feedback-card .feedback-rating-emoji {
+    font-size: 1.5rem;
+}
+
+.feedback-card .feedback-comment {
+    padding: 16px;
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    flex-grow: 1; /* This makes the card grow to fill space */
+}
+
+/* Detailed Star Ratings */
+.feedback-card .detailed-ratings {
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--color-border);
+    margin-top: auto; /* Pushes to the bottom */
+}
+.feedback-card .rating-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+}
+.feedback-card .rating-item span:first-child {
+    font-weight: 500;
+    color: var(--color-text);
+}
+.feedback-card .rating-display-stars {
+    font-size: 1rem;
+    color: var(--color-secondary);
+}
+
+/* Feedback Photo */
+.feedback-card .feedback-photo {
+    padding: 0 16px 16px;
+}
+.feedback-card .feedback-photo img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+}
+
+/* Footer (Date & Actions) */
+.feedback-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-gray-50);
+}
+.feedback-card.pending .feedback-footer {
+    background-color: var(--color-brown-100);
+    border-top-color: var(--color-brown-200);
+}
+
+.feedback-card .feedback-date {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+.feedback-card .feedback-actions {
+    display: flex;
+    gap: 10px;
+}
+.feedback-card .feedback-actions .btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+
+/* Use existing button styles but ensure they are styled if base .btn-icon isn't present */
+.btn--icon-approve {
+    background-color: var(--color-primary);
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-base);
+    cursor: pointer;
+}
+.btn--icon-approve:hover {
+    background-color: var(--color-primary-hover);
+}
+
+/* Use the existing green "approved" style for "completed" */
+.status.completed {
+  background-color: rgba(45, 157, 95, 0.15);
+  color: var(--color-green-600);
+  border: 1px solid var(--color-green-600);
+}
+
+/* NEW: Style for the "Approved" status (Blue) */
+.status.approved {
+  background-color: rgba(59, 130, 246, 0.15); /* blue-500 */
+  color: var(--color-blue-500);
+  border: 1px solid var(--color-blue-500);
+}
+
+/* Style for text in completed/canceled rows */
+.status-text {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
+}
+
+/* NEW: Style for the "Complete" button (darker green) */
+.btn--icon-complete {
+  background: var(--color-green-700);
+  color: white;
+}
+.btn--icon-complete:hover {
+  background: var(--color-green-800);
+}
+#reservation-message-modal textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+/* Reservation Dashboard Card Colors */
+#res-card-total {
+    border-left: 5px solid var(--color-blue-500);
+}
+#res-card-total h2 {
+    color: var(--color-blue-500);
+}
+
+#res-card-pending {
+    border-left: 5px solid var(--color-orange-500);
+}
+#res-card-pending h2 {
+    color: var(--color-orange-500);
+}
+
+#res-card-upcoming {
+    border-left: 5px solid var(--color-green-600);
+}
+#res-card-upcoming h2 {
+    color: var(--color-green-600);
+}
+
+/* Ensure filter bar from inventory styles applies */
+.inventory-filter-bar {
+  display: flex;
+  flex-wrap: wrap; 
+  gap: 16px;
+  padding: 16px;
+  background-color: var(--color-white);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--color-border);
+  margin-bottom: 24px;
+  align-items: flex-end; 
+}
+.inventory-filter-bar .filter-group {
+  flex: 1; 
+  min-width: 180px; 
+}
+.inventory-filter-bar .filter-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+}
+.inventory-filter-bar .form-control {
+  width: 100%;
+  padding: var(--space-8) var(--space-12); 
+}
+.inventory-filter-bar .btn {
+  flex-shrink: 0; 
+}
+/* ========================================
+   RESERVATION VIEW-DETAILS MODAL
+   ======================================== */
+
+/* 1. Style for the new modal's content area */
+.modal-details-content {
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: 16px;
+    min-height: 100px;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap; /* This respects line breaks in notes */
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+}
+
+/* 2. Style for the pre-order list *inside* the modal */
+.modal-details-content .pre-order-item-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 1rem; /* Make it larger than the table version */
+    color: var(--color-text);
+}
+.modal-details-content .pre-order-item-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--color-border);
+}
+.modal-details-content .pre-order-item-list li:last-child {
+    border-bottom: none;
+}
+.modal-details-content .pre-order-item-list li strong {
+    color: var(--color-primary);
+    margin-right: 8px;
+}
+
+/* 3. Style for the clickable table cells */
+#reservationTable td:nth-child(7), /* Pre-order */
+#reservationTable td:nth-child(9)  /* Notes */
+{
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    /* This ensures ... ellipsis still works */
+    max-width: 200px; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#reservationTable td:nth-child(7):hover,
+#reservationTable td:nth-child(9):hover
+{
+    background-color: var(--color-gray-50);
+    font-weight: 500;
+}
+/* Reservation Dashboard Card Colors */
+#res-card-total {
+    border-left: 5px solid var(--color-blue-500);
+}
+#res-card-total h2 {
+    color: var(--color-blue-500);
+}
+
+#res-card-pending {
+    border-left: 5px solid var(--color-orange-500);
+}
+#res-card-pending h2 {
+    color: var(--color-orange-500);
+}
+
+/* RENAMED: from #res-card-upcoming */
+#res-card-approved { 
+    border-left: 5px solid var(--color-green-600);
+}
+#res-card-approved h2 {
+    color: var(--color-green-600);
+}
+
+/* NEW: Style for Today's Reservation card */
+#res-card-today {
+    border-left: 5px solid var(--color-gray-600);
+}
+#res-card-today h2 {
+    color: var(--color-gray-600);
+}
