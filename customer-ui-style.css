@@ -2157,10 +2157,13 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: var(--radius-lg);
     width: 90%;
     max-width: 500px;
+    max-height: 90vh; /* Add max height */
     box-shadow: var(--shadow-lg);
     animation: modalSlideIn 0.3s ease-out;
-    padding: 0; /* Remove old padding */
-    overflow: hidden; /* For border-radius */
+    padding: 0;
+    overflow: hidden; /* Keep for border-radius */
+    display: flex; /* Add flexbox */
+    flex-direction: column; /* Stack header and form */
 }
 .modal-header {
     background: var(--color-dark-green); /* Use theme color */
@@ -2200,11 +2203,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .modal-content form {
-    padding: 30px; /* Add padding to the form */
+    padding: 30px;
+    overflow-y: auto; /* Make form scrollable */
+    flex: 1; /* Allow form to fill remaining space */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 .file-input-wrapper {
     position: relative;
-    margin-bottom: 10px; /* Add space */
+    margin-bottom: 10px;
+    display: flex; /* Add this */
+    flex-direction: column; /* Add this */
+    gap: 10px; /* Add this - creates space between button and preview */
 }
 .file-input {
     opacity: 0;
@@ -2234,6 +2243,8 @@ h1, h2, h3, h4, h5, h6 {
     margin-top: 15px;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--color-border);
+    position: relative; /* Add this */
+    z-index: 1; /* Add this - keeps it above other elements but below modals */
 }
 
 /* Modern Form Styles */
