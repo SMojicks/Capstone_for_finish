@@ -28,11 +28,14 @@ async function checkAuthState() {
             currentUserId = user.uid;
             const userDocRef = doc(db, "users", user.uid);
             const userDoc = await getDoc(userDocRef);
-            if (userDoc.exists()) {
+         if (userDoc.exists()) {
                 const userData = userDoc.data();
                 const nameInput = document.querySelector('input[name="customerName"]');
                 const contactInput = document.querySelector('input[name="contactNumber"]');
-                if (nameInput) nameInput.value = userData.fullName || "";
+                if (nameInput) {
+                    nameInput.value = userData.fullName || "";
+                    nameInput.readOnly = true; // Make it read-only
+                }
                 if (contactInput) contactInput.value = userData.phone || "";
             }
             
@@ -70,8 +73,8 @@ let currentUserId = null;
 
 // MODIFIED: Added new element variables
 let reservationDateInput, checkAvailabilityBtn, availabilityLoader, availabilityMessage;
-let reservationTimeInInput, reservationTimeOutInput, numberOfDinersInput, notesInput, agreeTermsCheckbox, confirmReservationBtn; // MODIFIED
-let reservationSectionMain, layoutBlurOverlay; // MODIFIED
+let reservationSectionMain, layoutBlurOverlay; // MOVE THIS HERE
+let reservationTimeInInput, numberOfDinersInput, notesInput, agreeTermsCheckbox, confirmReservationBtn; 
 let preOrderModal, preOrderCategories, preOrderGrid, preOrderCartItems, preOrderSubtotal, preOrderTax, preOrderTotal, preOrderCheckoutBtn, clearCartBtnMobile;
 let preOrderVariationModal, preOrderVariationTitle, preOrderVariationOptions, cancelPreOrderVariationBtn;
 let preOrderPaymentModal, cancelPaymentBtn, paymentTotalAmount, receiptFileInput, receiptPreview, uploadReceiptBtn, receiptPreviewLink;
@@ -131,27 +134,27 @@ async function uploadToCloudinary(file) {
 // ===================================
 // RESERVATION CHECKING
 // ===================================
-// MODIFIED: checkForPendingReservation
+
 async function checkForPendingReservation(userId) {
     const modal = document.getElementById('pending-reservation-modal');
     const mainSection = document.getElementById('reservation-section-main');
     
-    // --- NEW: Get modal sub-elements ---
     const rescheduleBtn = document.getElementById('reschedule-btn');
     const rescheduleWarning = document.getElementById('reschedule-warning');
     
     if (!modal || !mainSection || !rescheduleBtn || !rescheduleWarning) return;
 
-    // --- MODIFIED: Query for "pending" OR "approved" ---
+    // Query for pending reservations only (approved ones can have multiple)
     const q = query(
         reservationsRef, 
         where("userId", "==", userId),
-        where("status", "in", ["pending", "approved"]) // <-- CHANGED
+        where("status", "==", "pending") // Only block if pending
     );
     
     const snapshot = await getDocs(q);
 
     if (!snapshot.empty) {
+        // User HAS a pending reservation
         // --- User HAS an active reservation ---
         const reservationDoc = snapshot.docs[0]; 
         activeReservationId = reservationDoc.id; 
@@ -236,10 +239,9 @@ function setDateRestrictions() {
 
 // NEW: Function to populate time dropdowns
 function populateTimeDropdowns() {
-    if (!reservationTimeInInput || !reservationTimeOutInput) return;
+    if (!reservationTimeInInput) return;
 
-    reservationTimeInInput.innerHTML = '<option value="">Time In</option>';
-    reservationTimeOutInput.innerHTML = '<option value="">Time Out</option>';
+    reservationTimeInInput.innerHTML = '<option value="">Select Time</option>';
 
     // Cafe hours from 11:00 (11 AM) to 23:00 (11 PM)
     for (let hour = 11; hour <= 23; hour++) {
@@ -247,57 +249,26 @@ function populateTimeDropdowns() {
         let timeDisplay;
 
         if (hour === 12) {
-            timeDisplay = '12:00 PM'; // Noon
+            timeDisplay = '12:00 PM';
         } else if (hour > 12) {
-            timeDisplay = `${hour - 12}:00 PM`; // PM
+            timeDisplay = `${hour - 12}:00 PM`;
         } else {
-            timeDisplay = `${hour}:00 AM`; // AM
+            timeDisplay = `${hour}:00 AM`;
         }
         
-        // Add to "Time In" dropdown (all hours except the last one)
-        if (hour < 23) {
-            reservationTimeInInput.add(new Option(timeDisplay, timeValue));
-        }
-        
-        // Add to "Time Out" dropdown (all hours except the first one)
-        if (hour > 11) {
-             reservationTimeOutInput.add(new Option(timeDisplay, timeValue));
-        }
+        reservationTimeInInput.add(new Option(timeDisplay, timeValue));
     }
 }
 
 // NEW: Add listener to Time In to auto-suggest Time Out
+// NEW: Add listener to Time In (simplified since timeOut is removed)
 function setupTimeDropdownLogic() {
-    if (!reservationTimeInInput || !reservationTimeOutInput) return;
-
-    reservationTimeInInput.addEventListener('change', () => {
-        const timeInValue = reservationTimeInInput.value;
-        if (!timeInValue) {
-            reservationTimeOutInput.value = "";
-            return;
-        }
-
-        // Suggest a 1-hour slot by default
-        const timeInHour = parseInt(timeInValue.split(':')[0], 10);
-        const suggestedTimeOutHour = timeInHour + 1;
-        const suggestedTimeOutValue = `${suggestedTimeOutHour.toString().padStart(2, '0')}:00`;
-
-        // Check if this suggested time exists in the "Time Out" list
-        const optionExists = Array.from(reservationTimeOutInput.options).some(
-            opt => opt.value === suggestedTimeOutValue
-        );
-
-        if (optionExists) {
-            reservationTimeOutInput.value = suggestedTimeOutValue;
-        } else {
-            // if 10 PM is selected, 11 PM is the last option
-            if (timeInHour === 22) {
-                 reservationTimeOutInput.value = "23:00";
-            } else {
-                reservationTimeOutInput.value = ""; // Clear if invalid
-            }
-        }
-    });
+    // This function can be simplified or removed entirely
+    // since you're no longer using timeOut
+    // Keep it empty for now in case you need it later
+    if (!reservationTimeInInput) return;
+    
+    // You can add any time-related validation here if needed
 }
 
 
@@ -311,21 +282,33 @@ function updateTableVisuals() {
       spot.classList.add("available");
     }
   });
-  if (selectedTableId) {
-    if (occupiedTables.includes(String(selectedTableId))) {
-      selectedTableId = null;
-      document.getElementById("selectedTableInfo")?.classList.remove("show");
-    } else {
-      const mySpot = document.querySelector(`[data-id="${selectedTableId}"]`);
-      if (mySpot) {
-        mySpot.classList.remove("available", "occupied");
-        mySpot.classList.add("selected");
-        document.getElementById("selectedTableNumber").textContent = selectedTableId;
-        document.getElementById("selectedTableInfo").classList.add("show");
+  
+  // Re-apply selections if they still exist
+  if (selectedTableIds.length > 0) {
+      let allValid = true;
+      selectedTableIds.forEach(tableId => {
+          if (occupiedTables.includes(String(tableId))) {
+              allValid = false;
+          } else {
+              const spot = document.querySelector(`[data-id="${tableId}"]`);
+              if (spot) {
+                  spot.classList.remove("available", "occupied");
+                  spot.classList.add("selected");
+              }
+          }
+      });
+      
+      if (!allValid) {
+          // Some selected tables became occupied, clear selection
+          selectedTableIds = [];
+          isVipSelected = false;
+          document.getElementById("selectedTableInfo")?.classList.remove("show");
+      } else {
+          updateSelectedTableInfo();
       }
-    }
   }
 }
+let selectedTableIds = []; // Changed from single ID to array
 
 function initializeTableClicks() {
   const tableSpots = document.querySelectorAll(".table-spot, .vip-room-btn");
@@ -335,7 +318,7 @@ function initializeTableClicks() {
     spot.addEventListener("click", () => {
         // Check if steps are disabled
         if (numberOfDinersInput && numberOfDinersInput.disabled) {
-            alert("Please select a date, time range, and click 'Check Availability' first.");
+            alert("Please select a date, time, and click 'Check Availability' first.");
             return;
         }
       if (occupiedTables.includes(String(tableId))) {
@@ -343,44 +326,85 @@ function initializeTableClicks() {
         return;
       }
       
-      // NEW: Check if this is VIP
+      // Check if this is VIP
       const isVip = spot.classList.contains("vip-room-btn");
       
-      // NEW: Validate VIP minimum 3-hour requirement
-      if (isVip) {
-          const timeIn = reservationTimeInInput.value;
-          const timeOut = reservationTimeOutInput.value;
-          
-          if (timeIn && timeOut) {
-              const timeInHour = parseInt(timeIn.split(':')[0], 10);
-              const timeOutHour = parseInt(timeOut.split(':')[0], 10);
-              const duration = timeOutHour - timeInHour;
-              
-              if (duration < 3) {
-                  alert("VIP Room requires a minimum reservation of 3 hours. Please adjust your time range.");
-                  return;
-              }
-          }
+      // FIXED: Check if VIP is already selected and trying to deselect it
+      if (isVip && selectedTableIds.includes(String(tableId))) {
+          // Deselect VIP room
+          selectedTableIds = [];
+          isVipSelected = false;
+          spot.classList.remove("selected");
+          spot.classList.add("available");
+          updateSelectedTableInfo();
+          return;
       }
       
-      isVipSelected = isVip;
-      document.querySelectorAll(".table-spot.selected, .vip-room-btn.selected").forEach((s) => {
-        s.classList.remove("selected");
-        s.classList.add("available");
-      });
-      selectedTableId = String(tableId);
+      // If VIP is selected, clear all other selections
+      if (isVip) {
+          if (selectedTableIds.length > 0) {
+              alert("VIP Room must be reserved alone. Please deselect other tables first.");
+              return;
+          }
+          isVipSelected = true;
+          selectedTableIds = [String(tableId)];
+          document.querySelectorAll(".table-spot.selected, .vip-room-btn.selected").forEach((s) => {
+              s.classList.remove("selected");
+              s.classList.add("available");
+          });
+          spot.classList.remove("available");
+          spot.classList.add("selected");
+          updateSelectedTableInfo("VIP Room");
+          return;
+      }
+      
+      // If trying to select regular table but VIP is selected
+      if (isVipSelected) {
+          alert("Please deselect VIP Room before selecting regular tables.");
+          return;
+      }
+      
+      // Check if table is already selected (toggle off)
+      if (selectedTableIds.includes(String(tableId))) {
+          selectedTableIds = selectedTableIds.filter(id => id !== String(tableId));
+          spot.classList.remove("selected");
+          spot.classList.add("available");
+          updateSelectedTableInfo();
+          return;
+      }
+      
+      // Check if already have 2 tables selected
+      if (selectedTableIds.length >= 2) {
+          alert("You can only reserve up to 2 tables at once. Please deselect a table first.");
+          return;
+      }
+      
+      // Add table to selection
+      selectedTableIds.push(String(tableId));
       spot.classList.remove("available");
       spot.classList.add("selected");
-      updateSelectedTableInfo(isVipSelected ? "VIP Room" : selectedTableId);
+      updateSelectedTableInfo();
     });
   });
 }
 
-function updateSelectedTableInfo(tableId) {
+function updateSelectedTableInfo(customText = null) {
   const selectedTableInfo = document.getElementById("selectedTableInfo");
   const selectedTableNumber = document.getElementById("selectedTableNumber");
-  if (selectedTableNumber) selectedTableNumber.textContent = tableId;
-  if (selectedTableInfo) selectedTableInfo.classList.add("show");
+  
+  if (customText) {
+      // For VIP Room
+      if (selectedTableNumber) selectedTableNumber.textContent = customText;
+      if (selectedTableInfo) selectedTableInfo.classList.add("show");
+  } else if (selectedTableIds.length > 0) {
+      // For regular tables
+      const tableText = isVipSelected ? "VIP Room" : selectedTableIds.join(", ");
+      if (selectedTableNumber) selectedTableNumber.textContent = `Table ${tableText}`;
+      if (selectedTableInfo) selectedTableInfo.classList.add("show");
+  } else {
+      // No selection
+      if (selectedTableInfo) selectedTableInfo.classList.remove("show");
+  }
 }
 
 // MODIFIED: Renamed to setFormStepsDisabled and changed logic
@@ -391,14 +415,14 @@ function setFormStepsDisabled(disabled) {
     if (agreeTermsCheckbox) agreeTermsCheckbox.disabled = disabled;
     if (confirmReservationBtn) confirmReservationBtn.disabled = disabled;
     
-    // NEW: Show/Hide blur overlay
+    // Show/Hide blur overlay
     if (layoutBlurOverlay) {
         layoutBlurOverlay.classList.toggle("hidden", !disabled);
     }
     
     if (disabled) {
         // Reset table selection if we are disabling the form
-        selectedTableId = null;
+        selectedTableIds = []; // Changed to array
         isVipSelected = false;
         vipPaymentCompleted = false;
         document.getElementById("selectedTableInfo")?.classList.remove("show");
@@ -426,18 +450,10 @@ async function checkAvailability() {
     }
 
     const selectedDate = reservationDateInput.value;
-    // NEW: Get both times
     const selectedTimeIn = reservationTimeInInput.value;
-    const selectedTimeOut = reservationTimeOutInput.value;
 
-    if (!selectedDate || !selectedTimeIn || !selectedTimeOut) {
-        alert("Please select a valid date and both a 'Time In' and 'Time Out'.");
-        return;
-    }
-    
-    // NEW: Validate time range
-    if (selectedTimeIn >= selectedTimeOut) {
-        alert("'Time Out' must be later than 'Time In'.");
+    if (!selectedDate || !selectedTimeIn) {
+        alert("Please select a valid date and time.");
         return;
     }
 
@@ -448,6 +464,7 @@ async function checkAvailability() {
     occupiedTables = [];
     
     try {
+        // MODIFIED: Only check by date, ignore time
         const q = query(
             reservationsRef, 
             where("date", "==", selectedDate),
@@ -455,31 +472,33 @@ async function checkAvailability() {
         );
         const snapshot = await getDocs(q);
         
+        // MODIFIED: Mark all tables as occupied for the entire day
         snapshot.forEach(doc => {
             if (doc.id === activeReservationId) {
                 return; // Skip user's own active reservation
             }
             
             const res = doc.data();
-            const existingTimeIn = res.timeIn; // e.g., "13:00"
-            const existingTimeOut = res.timeOut; // e.g., "15:00"
-
-            if (!existingTimeIn || !existingTimeOut) {
-                return; // Skip reservations with invalid time data
-            }
-
-            // Classic Overlap Check: (StartA < EndB) and (EndA > StartB)
-            const hasOverlap = (selectedTimeIn < existingTimeOut) && (selectedTimeOut > existingTimeIn);
-
-            if (hasOverlap) {
-                occupiedTables.push(String(res.tableNumber));
+            
+            // Add all tables from this reservation to occupied list (regardless of time)
+            if (Array.isArray(res.tableNumbers)) {
+                // New format: array of tables
+                res.tableNumbers.forEach(tableNum => {
+                    if (!occupiedTables.includes(String(tableNum))) {
+                        occupiedTables.push(String(tableNum));
+                    }
+                });
+            } else if (res.tableNumber) {
+                // Old format: single table
+                if (!occupiedTables.includes(String(res.tableNumber))) {
+                    occupiedTables.push(String(res.tableNumber));
+                }
             }
         });
         
         updateTableVisuals();
         setFormStepsDisabled(false); // SUCCESS! Un-disable form
-        if (availabilityMessage) availabilityMessage.textContent = `Showing availability for ${selectedDate} from ${reservationTimeInInput.options[reservationTimeInInput.selectedIndex].text} to ${reservationTimeOutInput.options[reservationTimeOutInput.selectedIndex].text}.`;
-        
+        if (availabilityMessage) availabilityMessage.textContent = `Showing availability for ${selectedDate}. Tables shown as occupied are booked for the entire day.`;
         if (activeReservationId) {
             if (confirmReservationBtn) confirmReservationBtn.textContent = "Update Reservation";
         } else {
@@ -498,8 +517,8 @@ async function checkAvailability() {
 // --- MODIFIED ---
 async function handleReservation(event) {
   event.preventDefault();
-  if (!selectedTableId) {
-    alert("Please select an available table from the map.");
+  if (selectedTableIds.length === 0) {
+    alert("Please select at least one table from the map (up to 2 tables).");
     return;
   }
   // MODIFIED: Check timeIn input
@@ -525,26 +544,8 @@ async function handleReservation(event) {
   // =======================================================
 
   // MODIFIED: Get TimeIn and TimeOut
-  const timeIn = formData.get("reservationTimeIn");
-  const timeOut = formData.get("reservationTimeOut");
-
-  if (timeIn >= timeOut) {
-      alert("'Time Out' must be later than 'Time In'.");
-      return;
-  }
-
-// NEW: VIP validation - check 3-hour minimum
-  if (isVipSelected) {
-      const timeInHour = parseInt(timeIn.split(':')[0], 10);
-      const timeOutHour = parseInt(timeOut.split(':')[0], 10);
-      const duration = timeOutHour - timeInHour;
-      
-      if (duration < 3) {
-          alert("VIP Room requires a minimum reservation of 3 hours.");
-          if(confirmReservationBtn) confirmReservationBtn.disabled = false;
-          return;
-      }
-  }
+const timeIn = formData.get("reservationTimeIn");
+  const timeOut = timeIn; // Set timeOut same as timeIn since we removed it
   
   // REMOVED: VIP modal popup logic (no longer needed)
 
@@ -557,16 +558,17 @@ async function handleReservation(event) {
       // THIS IS A FIX: We were creating the update before payment.
       
       // 1. Store all form data in the global object
-      currentReservationData = {
+    currentReservationData = {
           name: formData.get("customerName"),
           contactNumber: contactNumber,
           numOfDiners: formData.get("numberOfDiners"),
           date: formData.get("reservationDate"),
           timeIn: timeIn,
-          timeOut: timeOut,
+          timeOut: timeIn,
           time: timeIn,
           notes: formData.get("notes") || "None",
-          tableNumber: String(selectedTableId),
+          tableNumber: selectedTableIds[0], // Keep for backward compatibility
+          tableNumbers: selectedTableIds, // New: array of selected tables
           isVip: isVipSelected,
           vipPaymentStatus: (isVipSelected && vipPaymentCompleted) ? "paid" : (isVipSelected ? "pending" : "n/a"),
           rescheduleCount: 1, // Mark as rescheduled
@@ -602,16 +604,17 @@ async function handleReservation(event) {
   } else {
       // --- This is a NEW reservation ---
       // 1. Store form data globally
-      currentReservationData = {
+ currentReservationData = {
         name: formData.get("customerName"),
         contactNumber: contactNumber,
         numOfDiners: formData.get("numberOfDiners"),
         date: formData.get("reservationDate"),
         timeIn: timeIn,
-        timeOut: timeOut,
+        timeOut: timeIn,
         time: timeIn,
         notes: formData.get("notes") || "None",
-        tableNumber: String(selectedTableId),
+        tableNumber: selectedTableIds[0], // Keep for backward compatibility
+        tableNumbers: selectedTableIds, // New: array of selected tables
         status: "pending",
         isVip: isVipSelected,
         vipPaymentStatus: vipPaymentCompleted ? "paid" : "n/a",
@@ -892,9 +895,8 @@ function openPaymentModal() {
         if (summaryName) summaryName.textContent = currentReservationData.name;
         if (summaryDate) summaryDate.textContent = currentReservationData.date;
         if (summaryTime) {
-            const timeIn = formatTimeDisplay(currentReservationData.timeIn);
-            const timeOut = formatTimeDisplay(currentReservationData.timeOut);
-            summaryTime.textContent = `${timeIn} to ${timeOut}`;
+      const timeIn = formatTimeDisplay(currentReservationData.timeIn);
+        summaryTime.textContent = timeIn;
         }
         if (summaryDiners) summaryDiners.textContent = currentReservationData.numOfDiners;
     }
@@ -1054,7 +1056,7 @@ async function saveReservation() {
 
         // We run the transaction to CREATE or UPDATE
         await runTransaction(db, async (transaction) => {
-            // 1. Check for conflicts
+// 1. Check for conflicts - now checking entire date, not specific time and allow up to 2 reservations per table
             const q = query(
                 reservationsRef, 
                 where("date", "==", finalData.date),
@@ -1063,21 +1065,31 @@ async function saveReservation() {
             const snapshot = await getDocs(q); 
             
             let conflict = false;
+            const conflictTables = [];
+            
             snapshot.forEach(doc => {
-                // If we are updating, skip checking against our own doc
                 if (currentReservationId && doc.id === currentReservationId) {
                     return; 
                 }
                 const res = doc.data();
-                if (!res.timeIn || !res.timeOut) return; 
-                const hasOverlap = (finalData.timeIn < res.timeOut) && (finalData.timeOut > res.timeIn);
-                if (hasOverlap && res.tableNumber === finalData.tableNumber) {
-                    conflict = true;
-                }
+                
+                // MODIFIED: Check for any table overlap on the same date (ignore time)
+                const reservedTables = res.tableNumbers || [res.tableNumber];
+                const myTables = finalData.tableNumbers || [finalData.tableNumber];
+                
+                // Check for any overlap in tables
+                myTables.forEach(myTable => {
+                    if (reservedTables.includes(myTable)) {
+                        conflict = true;
+                        if (!conflictTables.includes(myTable)) {
+                            conflictTables.push(myTable);
+                        }
+                    }
+                });
             });
 
             if (conflict) {
-                throw new Error("Sorry, that table was just booked or is not available for your new time slot! Please select another table or time.");
+                throw new Error(`Sorry, the following table(s) are already booked at this time: ${conflictTables.join(", ")}. Please select different tables.`);
             }
             
             // 2. No conflict, so either CREATE or UPDATE
@@ -1137,8 +1149,8 @@ function resetMainForm() {
     document.getElementById("reservationForm")?.reset();
     setFormStepsDisabled(true); // This will also show the blur overlay
     if (reservationDateInput) reservationDateInput.value = "";
-    if (reservationTimeInInput) reservationTimeInInput.value = ""; // NEW
-    if (reservationTimeOutInput) reservationTimeOutInput.value = ""; // NEW
+   if (reservationTimeInInput) reservationTimeInInput.value = "";
+    // if (reservationTimeOutInput) reservationTimeOutInput.value = ""; // NEW
     
     updateTableVisuals(); 
     
@@ -1180,8 +1192,10 @@ function showFinalSuccessMessage(savedId, savedData, savedCart) {
         const timeIn = formatTimeDisplay(savedData.timeIn);
         const timeOut = formatTimeDisplay(savedData.timeOut);
         document.getElementById('final-summary-time').textContent = `${timeIn} to ${timeOut}`;
-        document.getElementById('final-summary-table').textContent = savedData.isVip ? "VIP Room" : savedData.tableNumber;
-        document.getElementById('final-summary-diners').textContent = savedData.numOfDiners;
+const tableDisplay = savedData.isVip 
+            ? "VIP Room" 
+            : (savedData.tableNumbers ? savedData.tableNumbers.join(", ") : savedData.tableNumber);
+        document.getElementById('final-summary-table').textContent = tableDisplay;        document.getElementById('final-summary-diners').textContent = savedData.numOfDiners;
 
         const itemsEl = document.getElementById('final-summary-items');
         const totalEl = document.getElementById('final-summary-total');
@@ -1251,7 +1265,6 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // MODIFIED: Assign new time inputs
   reservationTimeInInput = document.getElementById("reservationTimeIn");
-  reservationTimeOutInput = document.getElementById("reservationTimeOut");
   
   numberOfDinersInput = document.getElementById("numberOfDiners");
   notesInput = document.getElementById("notes");
@@ -1335,8 +1348,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (checkAvailabilityBtn) checkAvailabilityBtn.addEventListener("click", checkAvailability);
   
   // MODIFIED: Date/Time inputs should reset the form
-  const resetInputs = [reservationDateInput, reservationTimeInInput, reservationTimeOutInput];
-  resetInputs.forEach(input => {
+// MODIFIED: Date/Time inputs should reset the form
+  const resetInputs = [reservationDateInput, reservationTimeInInput];
+    resetInputs.forEach(input => {
       if (input) {
           input.addEventListener("input", () => {
               setFormStepsDisabled(true); // Re-disable form steps and show blur
@@ -1441,7 +1455,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   if (receiptFileInputDesktop) receiptFileInputDesktop.addEventListener("change", (e) => handleReceiptFileSelect(e, true)); 
   if (uploadReceiptBtnDesktop) uploadReceiptBtnDesktop.addEventListener("click", finalizePreOrder);
-  if (preorderBackBtnDesktop && preOrderSection) {
+ if (preorderBackBtnDesktop && preOrderSection && reservationSectionMain) {
       preorderBackBtnDesktop.addEventListener('click', handleBackSkip);
   }
   if (cartIconContainerDesktop && preOrderCartItemsWrapperDesktop) {

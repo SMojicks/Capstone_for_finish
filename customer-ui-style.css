@@ -124,7 +124,8 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
+    flex-wrap: nowrap; /* CHANGE from wrap to nowrap */
+    min-height: 64px; /* ADD THIS */
 }
 
 #ihtxj {
@@ -145,6 +146,7 @@ h1, h2, h3, h4, h5, h6 {
 .nav-links {
     display: flex;
     gap: 10px;
+    align-items: center; /* ADD THIS */
 }
 
 .nav-links a {
@@ -156,6 +158,7 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 0.95rem;
     border-radius: var(--radius-md);
     transition: var(--transition-fast);
+    white-space: nowrap; /* ADD THIS - prevents text wrapping */
 }
 
 .nav-links a:hover {
@@ -3539,4 +3542,266 @@ h1, h2, h3, h4, h5, h6 {
 
 #final-reservation-summary-modal .auth-modal-content p {
     text-align: center;
+}
+/* NEW AUTOMATIC CAROUSEL WITH CENTER FOCUS */
+.carousel-container-new {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 60px 80px;
+    overflow: visible;
+}
+
+.carousel-track-container {
+    overflow: hidden;
+    position: relative;
+}
+
+.carousel-track {
+    display: flex;
+    gap: 30px;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    padding: 40px 0;
+}
+
+.carousel-slide-new {
+    flex: 0 0 320px;
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    opacity: 0.5;
+    transform: scale(0.85);
+    position: relative;
+}
+
+/* Center slide (active) */
+.carousel-slide-new.active {
+    opacity: 1;
+    transform: scale(1.15);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    z-index: 10;
+}
+
+/* Adjacent slides */
+.carousel-slide-new.adjacent {
+    opacity: 0.8;
+    transform: scale(0.95);
+}
+
+.carousel-slide-new img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    transition: var(--transition-slow);
+}
+
+.carousel-slide-new.active img {
+    height: 280px;
+}
+
+.slide-content-new {
+    padding: 25px;
+    text-align: left;
+    transition: var(--transition-slow);
+}
+
+.carousel-slide-new.active .slide-content-new {
+    padding: 30px;
+}
+
+.slide-content-new h2 {
+    margin: 0 0 10px;
+    font-size: 1.3rem;
+    color: var(--color-text);
+    transition: var(--transition-slow);
+}
+
+.carousel-slide-new.active .slide-content-new h2 {
+    font-size: 1.5rem;
+    color: var(--color-gold);
+}
+
+.slide-content-new p {
+    font-size: 0.95rem;
+    color: var(--color-text-light);
+    line-height: 1.5;
+    transition: var(--transition-slow);
+}
+
+.carousel-slide-new.active .slide-content-new p {
+    font-size: 1rem;
+}
+
+/* Navigation Buttons */
+.carousel-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--color-gold);
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 2rem;
+    cursor: pointer;
+    z-index: 20;
+    transition: var(--transition-fast);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.carousel-nav:hover {
+    background: var(--color-cta-hover);
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: var(--shadow-lg);
+}
+
+.carousel-nav.prev {
+    left: 10px;
+}
+
+.carousel-nav.next {
+    right: 10px;
+}
+
+/* Indicators */
+.carousel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.carousel-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-border);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    border: none;
+    padding: 0;
+}
+
+.carousel-indicator.active {
+    background: var(--color-gold);
+    transform: scale(1.3);
+}
+
+.carousel-indicator:hover {
+    background: var(--color-gold-light);
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .carousel-container-new {
+        padding: 40px 60px;
+    }
+    
+    .carousel-slide-new {
+        flex: 0 0 280px;
+    }
+    
+    .carousel-nav {
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .carousel-container-new {
+        padding: 30px 50px;
+    }
+    
+    .carousel-slide-new {
+        flex: 0 0 250px;
+    }
+    
+    .carousel-slide-new.active {
+        transform: scale(1.1);
+    }
+    
+    .carousel-slide-new.active img {
+        height: 260px;
+    }
+}
+
+@media (max-width: 480px) {
+    .carousel-container-new {
+        padding: 20px 40px;
+    }
+    
+    .carousel-track {
+        gap: 20px;
+    }
+    
+    .carousel-slide-new {
+        flex: 0 0 220px;
+    }
+    
+    .carousel-slide-new.active {
+        transform: scale(1.05);
+    }
+    
+    .carousel-nav {
+        width: 35px;
+        height: 35px;
+        font-size: 1.2rem;
+    }
+    
+    .carousel-nav.prev {
+        left: 5px;
+    }
+    
+    .carousel-nav.next {
+        right: 5px;
+    }
+}
+/* ========================================
+   ANTI-GLITCH FIX
+   ======================================== */
+
+/* Prevent layout shifts during auth state changes */
+.header-controls {
+    min-height: 50px;
+    position: relative;
+}
+
+/* Smooth fade transitions instead of pop-in */
+#i1mew.cta-button,
+.profile-avatar-container,
+#notification-bell {
+    transition: opacity 0.2s ease !important;
+}
+
+/* Hide elements smoothly */
+[style*="display: none"] {
+    opacity: 0 !important;
+}
+
+/* Prevent page content from shifting */
+body {
+    opacity: 0;
+    animation: fadeInPage 0.3s ease-out forwards;
+}
+
+@keyframes fadeInPage {
+    to { opacity: 1; }
+}
+
+/* Prevent navigation flicker on page load */
+#iyd2 {
+    min-height: 64px;
+}
+
+#it00l .nav-links a {
+    display: inline-block;
 }
