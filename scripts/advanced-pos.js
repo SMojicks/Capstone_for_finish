@@ -514,47 +514,80 @@ function updateAllProductStockStatusAndRender() {
   for (const product of allProducts) {
     let status = "in-stock";
     
-    if (product.variations && product.variations.length > 0) {
-        let atLeastOneVariationInStock = false;
-        let lowestStockStatus = "in-stock"; // Track if any variation is low-stock
+// FIND AND REPLACE THIS ENTIRE SECTION:
+if (product.variations && product.variations.length > 0) {
+    let atLeastOneVariationInStock = false;
+    let atLeastOneVariationLowStock = false;
 
-        for (const variation of product.variations) {
-            let varStatus = "in-stock";
-            if (!variation.recipe || variation.recipe.length === 0) {
-                varStatus = "out-of-stock";
-            } else {
-                for (const recipe of variation.recipe) {
-                    const ingredient = ingredientStockMap.get(recipe.ingredientId);
-                    const neededQty = parseFloat(recipe.qtyPerProduct);
-                    if (!ingredient) { varStatus = "out-of-stock"; break; }
-                    if (ingredient.stock <= 0 || ingredient.stock < neededQty) { varStatus = "out-of-stock"; break; }
-                    if (ingredient.stock <= ingredient.minStock) { varStatus = "low-stock"; }
+    for (const variation of product.variations) {
+        let varStatus = "in-stock";
+        if (!variation.recipe || variation.recipe.length === 0) {
+            varStatus = "out-of-stock";
+        } else {
+            for (const recipe of variation.recipe) {
+                const ingredient = ingredientStockMap.get(recipe.ingredientId);
+                const neededQty = parseFloat(recipe.qtyPerProduct);
+                
+                if (!ingredient) { 
+                  varStatus = "out-of-stock"; 
+                  break; 
+                }
+                
+                // Check if we have enough stock to make at least ONE item
+                if (ingredient.stock < neededQty) { 
+                  varStatus = "out-of-stock"; 
+                  break; 
+                }
+                
+                // If stock is low but we can still make items
+                if (ingredient.stock <= ingredient.minStock && varStatus !== "out-of-stock") { 
+                  varStatus = "low-stock"; 
                 }
             }
-            if (varStatus === "in-stock") atLeastOneVariationInStock = true;
-            if (varStatus === "low-stock") lowestStockStatus = "low-stock";
         }
         
-        if (!atLeastOneVariationInStock) {
-            status = "out-of-stock";
-        } else if (lowestStockStatus === "low-stock") {
-            status = "low-stock"; // If at least one is in stock, but one is low, show low
+        if (varStatus === "in-stock" || varStatus === "low-stock") {
+            atLeastOneVariationInStock = true;
         }
-        
-    } else {
-        const productRecipes = allRecipesCache.filter(r => r.productId === product.id);
-        if (productRecipes.length === 0) {
-          status = "out-of-stock";
-        } else {
-          for (const recipe of productRecipes) {
-            const ingredient = ingredientStockMap.get(recipe.ingredientId);
-            const neededQty = parseFloat(recipe.qtyPerProduct);
-            if (!ingredient) { status = "out-of-stock"; break; }
-            if (ingredient.stock <= 0 || ingredient.stock < neededQty) { status = "out-of-stock"; break; }
-            if (ingredient.stock <= ingredient.minStock) { status = "low-stock"; }
-          }
+        if (varStatus === "low-stock") {
+            atLeastOneVariationLowStock = true;
         }
     }
+    
+    // Final status for the product
+    if (!atLeastOneVariationInStock) {
+        status = "out-of-stock";
+    } else if (atLeastOneVariationLowStock) {
+        status = "low-stock";
+    }
+    
+} else {
+    const productRecipes = allRecipesCache.filter(r => r.productId === product.id);
+    if (productRecipes.length === 0) {
+      status = "out-of-stock";
+    } else {
+      for (const recipe of productRecipes) {
+        const ingredient = ingredientStockMap.get(recipe.ingredientId);
+        const neededQty = parseFloat(recipe.qtyPerProduct);
+        
+        if (!ingredient) { 
+          status = "out-of-stock"; 
+          break; 
+        }
+        
+        // Check if we have enough stock to make at least ONE item
+        if (ingredient.stock < neededQty) { 
+          status = "out-of-stock"; 
+          break; 
+        }
+        
+        // If stock is low but we can still make items, mark as low-stock
+        if (ingredient.stock <= ingredient.minStock && status !== "out-of-stock") { 
+          status = "low-stock"; 
+        }
+      }
+    }
+}
     productStockStatus.set(product.id, status);
   }
   renderProducts();
@@ -930,6 +963,8 @@ function listenForPendingOrders() {
 function checkOverdueStatus() {
   const waitTimes = { short: 5, medium: 10, long: 20 };
   const now = new Date();
+  let hasOverdueOrders = false; // Track if any orders are overdue
+  
   allPendingOrders.forEach(order => {
     if (order.status !== "Pending" && order.status !== "Preparing") {
         const card = document.querySelector(`.order-card[data-id="${order.id}"]`);
@@ -943,6 +978,12 @@ function checkOverdueStatus() {
     const isOverdue = order.items.some(item =>
         !item.isDone && minutesPassed > waitTimes[item.waitingTime]
     );
+    
+    // Update global flag
+    if (isOverdue) {
+        hasOverdueOrders = true;
+    }
+    
     const card = document.querySelector(`.order-card[data-id="${order.id}"]`);
     if (card) {
         const dot = card.querySelector('.overdue-dot');
@@ -955,6 +996,12 @@ function checkOverdueStatus() {
         }
     }
   });
+  
+  // Update sidebar alert dot
+  const ordersAlertDot = document.getElementById('orders-alert-dot');
+  if (ordersAlertDot) {
+      ordersAlertDot.style.display = hasOverdueOrders ? 'inline-block' : 'none';
+  }
 }
 function createOrderCard(order) {
   const card = document.createElement("div");

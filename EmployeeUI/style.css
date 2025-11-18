@@ -309,6 +309,7 @@ p {
 }
 
 /* Inventory Alert Dot */
+.sidebar-alert-dot,
 #inventory-alert-dot {
   display: none;
   position: absolute;
@@ -2104,16 +2105,17 @@ body.sidebar-collapsed .sidebar {
 /* --- Product Stock Status Labels (POS Grid) --- */
 .product-stock-label {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    padding: 3px 10px;
+    top: 8px;  /* Top position */
+    left: 8px; /* Changed from right: 8px to left: 8px */
+    padding: 4px 12px;
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-bold);
     color: var(--color-white);
     border-radius: var(--radius-full);
     text-transform: uppercase;
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-md);
     pointer-events: none; /* Don't interfere with clicks */
+    z-index: 5; /* Ensure it's above the image */
 }
 
 .product-stock-label.low-stock {
@@ -3505,4 +3507,14 @@ body.sidebar-collapsed .sidebar {
 }
 #res-card-today h2 {
     color: var(--color-gray-600);
+}
+#reservationTable th:nth-child(3),
+#reservationTable td:nth-child(3) {
+  min-width: 100px; /* Adjust as needed */
+}
+.status.deleted {
+  background-color: rgba(100, 100, 100, 0.15);
+  color: var(--color-gray-600);
+  border: 1px solid var(--color-gray-500);
+  text-decoration: line-through;
 }

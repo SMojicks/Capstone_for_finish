@@ -208,9 +208,7 @@ function setupSidebarToggle() {
   }
 }
 
-// ---
-// --- NEW FUNCTION TO TOGGLE INVENTORY/LOGS ---
-// ---
+
 /**
  * Sets up the toggle between Inventory and Inventory Log sections.
  */
@@ -244,26 +242,24 @@ function setupInventoryToggle() {
 function setupReservationHistoryToggle() {
     const viewHistoryBtn = document.getElementById('view-reservation-history-btn');
     const backToResBtn = document.getElementById('back-to-reservations-btn');
-    const reservationMainSection = document.querySelector('#reservations-section > .section-header').parentElement;
+    const reservationsSection = document.getElementById('reservations-section');
     const historySection = document.getElementById('reservation-history-section');
 
-    if (viewHistoryBtn && backToResBtn && historySection) {
+    if (viewHistoryBtn && backToResBtn && reservationsSection && historySection) {
         viewHistoryBtn.addEventListener('click', () => {
-            // Hide main reservation content, show history
-            const mainContent = reservationMainSection.querySelectorAll('.inventory-filter-bar, .analytics-grid, .table-container');
-            mainContent.forEach(el => el.style.display = 'none');
-            reservationMainSection.querySelector('.section-header').style.display = 'none';
+            reservationsSection.classList.remove('active');
+            reservationsSection.classList.add('hidden');
+            
             historySection.classList.remove('hidden');
-            historySection.style.display = 'block';
+            historySection.classList.add('active');
         });
 
         backToResBtn.addEventListener('click', () => {
-            // Show main reservation content, hide history
-            const mainContent = reservationMainSection.querySelectorAll('.inventory-filter-bar, .analytics-grid, .table-container');
-            mainContent.forEach(el => el.style.display = '');
-            reservationMainSection.querySelector('.section-header').style.display = '';
+            historySection.classList.remove('active');
             historySection.classList.add('hidden');
-            historySection.style.display = 'none';
+            
+            reservationsSection.classList.remove('hidden');
+            reservationsSection.classList.add('active');
         });
     } else {
         console.warn("Could not find reservation history toggle buttons or sections.");

@@ -417,7 +417,80 @@ form.addEventListener('submit', async (e) => {
     alert("Failed to save ingredient.");
   }
 });
+// --- Export Functions ---
+async function exportInventoryToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    const tableData = allIngredients.map(ing => {
+        const { statusDisplay } = getIngredientStatus(ing);
+        const displayStock = formatStockDisplay(ing.stockQuantity, ing.stockUnit, ing.baseUnit, ing.conversionFactor);
+        
+        return [
+            ing.ingredientId || ing.id,
+            ing.name || '-',
+            ing.category || '-',
+            statusDisplay,
+            displayStock,
+            `${ing.minStockThreshold || 0} ${ing.baseUnit}`,
+            ing.expiryDate ? new Date(ing.expiryDate + 'T00:00:00').toLocaleDateString() : 'N/A',
+            `1 ${ing.stockUnit} = ${ing.conversionFactor} ${ing.baseUnit}`
+        ];
+    });
 
+    doc.setFontSize(18);
+    doc.text('Inventory Report', 14, 20);
+    doc.setFontSize(11);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 28);
+
+    doc.autoTable({
+        startY: 35,
+        head: [['ID', 'Name', 'Category', 'Status', 'Stock', 'Min Stock', 'Expiry', 'Conversion']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [139, 69, 19] },
+        styles: { fontSize: 9 }
+    });
+
+    doc.save(`Inventory_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
+function exportInventoryToExcel() {
+    const tableData = allIngredients.map(ing => {
+        const { statusDisplay } = getIngredientStatus(ing);
+        const displayStock = formatStockDisplay(ing.stockQuantity, ing.stockUnit, ing.baseUnit, ing.conversionFactor);
+        
+        return {
+            'Item ID': ing.ingredientId || ing.id,
+            'Name': ing.name || '-',
+            'Category': ing.category || '-',
+            'Status': statusDisplay,
+            'Stock': displayStock,
+            'Min Stock': `${ing.minStockThreshold || 0} ${ing.baseUnit}`,
+            'Expiry Date': ing.expiryDate ? new Date(ing.expiryDate + 'T00:00:00').toLocaleDateString() : 'N/A',
+            'Last Updated': ing.lastUpdated && ing.lastUpdated.toDate ? ing.lastUpdated.toDate().toLocaleDateString() : 'N/A',
+            'Conversion': `1 ${ing.stockUnit} = ${ing.conversionFactor} ${ing.baseUnit}`
+        };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(tableData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Inventory');
+    
+    XLSX.writeFile(workbook, `Inventory_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+// Add event listeners for export buttons
+const exportPdfBtn = document.getElementById('export-inventory-pdf-btn');
+const exportExcelBtn = document.getElementById('export-inventory-excel-btn');
+
+if (exportPdfBtn) {
+    exportPdfBtn.addEventListener('click', exportInventoryToPDF);
+}
+
+if (exportExcelBtn) {
+    exportExcelBtn.addEventListener('click', exportInventoryToExcel);
+}
 // --- Initial Load & NEW Event Listeners ---
 document.addEventListener('DOMContentLoaded', () => {
     loadInventory(); // Main function to load data

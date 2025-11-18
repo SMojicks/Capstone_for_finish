@@ -241,15 +241,34 @@ function loadFeedback() {
 
     // 2. Set up real-time listener for all feedback
     const q = query(feedbackCollection, orderBy("timestamp", "desc"));
-    onSnapshot(q, (snapshot) => {
+onSnapshot(q, (snapshot) => {
         feedbackGrid.innerHTML = ""; // Clear old data
 
         if (snapshot.empty) {
             feedbackGrid.innerHTML = "<p>No customer feedback yet.</p>";
+            // Hide alert dot when no feedback
+            const feedbackAlertDot = document.getElementById('feedback-alert-dot');
+            if (feedbackAlertDot) {
+                feedbackAlertDot.style.display = 'none';
+            }
             return;
         }
         
-        snapshot.forEach(renderFeedbackCard);
+        // --- NEW: Count pending feedback ---
+        let pendingCount = 0;
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            if (data.status === "pending") {
+                pendingCount++;
+            }
+            renderFeedbackCard(docSnap);
+        });
+
+        // --- NEW: Update sidebar alert dot ---
+        const feedbackAlertDot = document.getElementById('feedback-alert-dot');
+        if (feedbackAlertDot) {
+            feedbackAlertDot.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+        }
 
     }, (error) => {
         console.error("Error loading feedback: ", error);
