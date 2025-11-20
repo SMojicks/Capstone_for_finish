@@ -27,6 +27,7 @@ let ordersLine;
 let discountTypeSelect, customDiscountWrapper, customDiscountAmount, applyDiscountBtn, cartDiscountEl;
 let kitchenStubModal, kitchenStubContent, kitchenStubSendBtn, kitchenStubCancelBtn;
 let mainRecipeContainer;
+let secondaryStockToggle, secondaryStockWrapper, secondaryStockList;
 
 
 // --- State Variables ---
@@ -219,37 +220,133 @@ function addIngredientRowUI(ingredient = {}, container) {
  * @param {object} variation - The variation data (name, price) to pre-fill
  * @param {object} ingredient - The ingredient data to pre-fill
  */
-function addVariationRowUI(variation = {}, ingredient = {}) {
+/**
+ * Creates a variation container with name, price, and its own recipe list
+ * @param {object} variation - The variation data (name, price, recipe) to pre-fill
+ */
+function addVariationRowUI(variation = {}) {
     if (!variationListContainer) return;
 
-    const row = document.createElement("div");
-    row.className = "ingredient-row"; // Reuse the existing class for structure
+    const variationIndex = variationListContainer.children.length;
+    const container = document.createElement("div");
+    container.className = "variation-container";
+    container.dataset.variationIndex = variationIndex;
 
-    // Create the combined row HTML (NO inline styles)
-    row.innerHTML = `
-        <div class="variation-name-price-group">
-            <input type="text" class="form-control variation-name" placeholder="Variation Name" value="${variation.name || ''}" required>
-            <input type="number" class="form-control variation-price" placeholder="Price" value="${variation.price || ''}" step="0.01" min="0" required>
+    container.innerHTML = `
+        <div class="variation-header">
+            <span class="variation-title">Variation ${variationIndex + 1}</span>
+            <button type="button" class="remove-variation-btn">Remove Variation</button>
         </div>
-        <select class="inv-category-filter form-control"><option value="">Category...</option></select>
-        <select class="ingredient-id form-control" required><option value="">Select Ingredient...</option></select>
-        <input type="number" class="ingredient-qty form-control" placeholder="Qty" step="any" min="0" required>
-        <input type="text" class="ingredient-unit form-control" placeholder="Unit" readonly required>
-        <button type="button" class="remove-ingredient">X</button>
+        <div class="variation-name-price-row">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Variation Name:</label>
+                <input type="text" class="form-control variation-name" placeholder="e.g., 8oz, 12oz, Large" value="${variation.name || ''}" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Price (₱):</label>
+                <input type="number" class="form-control variation-price" placeholder="0.00" value="${variation.price || ''}" step="0.01" min="0" required>
+            </div>
+        </div>
+        <div class="variation-recipe-section">
+            <label class="variation-recipe-label">Recipe for this Variation:</label>
+            <div class="variation-recipe-list" data-variation-index="${variationIndex}"></div>
+            <button type="button" class="btn btn--secondary btn--small add-ingredient-to-variation-btn" data-variation-index="${variationIndex}">+ Add Ingredient</button>
+        </div>
     `;
 
-    variationListContainer.appendChild(row);
+    variationListContainer.appendChild(container);
 
-    // --- All the logic below remains the same ---
-    const categorySelect = row.querySelector(".inv-category-filter");
-    const ingredientSelect = row.querySelector(".ingredient-id");
-    const unitInput = row.querySelector(".ingredient-unit");
-    const qtyInput = row.querySelector(".ingredient-qty");
+    // Get the recipe list container for this specific variation
+    const recipeListContainer = container.querySelector('.variation-recipe-list');
 
-    // Populate category dropdown
+    // Add event listener for "Add Ingredient" button
+    const addIngredientBtn = container.querySelector('.add-ingredient-to-variation-btn');
+    addIngredientBtn.addEventListener('click', () => {
+        addIngredientToVariationUI({}, recipeListContainer);
+    });
+
+    // Add event listener for "Remove Variation" button
+    const removeBtn = container.querySelector('.remove-variation-btn');
+    removeBtn.addEventListener('click', () => {
+        if (confirm('Remove this variation and its recipe?')) {
+            container.remove();
+            updateVariationNumbers();
+        }
+    });
+
+    // Pre-fill recipe if editing
+    if (variation.recipe && variation.recipe.length > 0) {
+        variation.recipe.forEach(ingredient => {
+            addIngredientToVariationUI(ingredient, recipeListContainer);
+        });
+    }
+}
+
+/**
+ * Updates the variation numbers after deletion
+ */
+function updateVariationNumbers() {
+    const containers = variationListContainer.querySelectorAll('.variation-container');
+    containers.forEach((container, index) => {
+        container.dataset.variationIndex = index;
+        container.querySelector('.variation-title').textContent = `Variation ${index + 1}`;
+        
+        const recipeList = container.querySelector('.variation-recipe-list');
+        recipeList.dataset.variationIndex = index;
+        
+        const addBtn = container.querySelector('.add-ingredient-to-variation-btn');
+        addBtn.dataset.variationIndex = index;
+    });
+}
+
+/**
+ * Adds an ingredient row to a specific variation's recipe list
+ * @param {object} ingredient - The ingredient data to pre-fill
+ * @param {HTMLElement} container - The variation's recipe list container
+ */
+function addIngredientToVariationUI(ingredient = {}, container) {
+    if (!container) {
+        console.error("No container specified for addIngredientToVariationUI");
+        return;
+    }
+
+    const row = document.createElement("div");
+    row.className = "ingredient-row";
+
+    // Create Category Dropdown
+    const categorySelect = document.createElement("select");
+    categorySelect.className = "inv-category-filter form-control";
+    categorySelect.innerHTML = `<option value="">All Categories</option>`;
     allInventoryCategories.forEach(cat => {
         categorySelect.add(new Option(cat, cat));
     });
+
+    // Create Ingredient Dropdown
+    const ingredientSelect = document.createElement("select");
+    ingredientSelect.className = "ingredient-id form-control";
+    ingredientSelect.required = true;
+    
+    // Create Qty, Unit, and Delete Button
+    const qtyInput = document.createElement("input");
+    qtyInput.type = "number";
+    qtyInput.className = "ingredient-qty form-control";
+    qtyInput.placeholder = "Qty";
+    qtyInput.step = "any";
+    qtyInput.min = "0";
+    qtyInput.required = true;
+
+    const unitInput = document.createElement("input");
+    unitInput.type = "text";
+    unitInput.className = "ingredient-unit form-control";
+    unitInput.placeholder = "Unit";
+    unitInput.readOnly = true;
+    unitInput.required = true;
+    
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "btn btn--secondary remove-ingredient";
+    deleteBtn.textContent = "X";
+    deleteBtn.onclick = () => row.remove();
 
     // Function to populate ingredients based on category
     const populateIngredients = (category) => {
@@ -267,28 +364,205 @@ function addVariationRowUI(variation = {}, ingredient = {}) {
     // Add Event Listeners
     categorySelect.addEventListener("change", () => {
         populateIngredients(categorySelect.value);
-        unitInput.value = ""; // Clear unit
+        unitInput.value = "";
     });
 
     ingredientSelect.addEventListener("change", () => {
         const selectedOption = ingredientSelect.options[ingredientSelect.selectedIndex];
         unitInput.value = selectedOption.dataset.baseUnit || "";
     });
-    
-    row.querySelector(".remove-ingredient").addEventListener("click", () => row.remove());
+
+    // Append all elements
+    row.appendChild(categorySelect);
+    row.appendChild(ingredientSelect);
+    row.appendChild(qtyInput);
+    row.appendChild(unitInput);
+    row.appendChild(deleteBtn);
+    container.appendChild(row);
 
     // Pre-fill logic (for editing)
     if (ingredient.ingredientId) {
         const fullIngredient = allIngredientsCache.find(ing => ing.id === ingredient.ingredientId);
         if (fullIngredient) {
             categorySelect.value = fullIngredient.category;
-            populateIngredients(fullIngredient.category); // Populate before setting value
+            populateIngredients(fullIngredient.category);
             ingredientSelect.value = ingredient.ingredientId;
             qtyInput.value = ingredient.qtyPerProduct;
             unitInput.value = ingredient.unitUsed;
         }
     } else {
-        populateIngredients(""); // Populate with all ingredients for a new row
+        populateIngredients("");
+    }
+}
+/**
+ * Creates secondary stock recipe containers (one per variation or one for single-price items)
+ * @param {Array} variations - Array of variation objects (empty for single-price items)
+ * @param {object} secondaryStock - Existing secondary stock data for editing
+ */
+function setupSecondaryStockUI(variations = [], secondaryStock = null) {
+    if (!secondaryStockList) return;
+    
+    secondaryStockList.innerHTML = "";
+    
+    if (variations.length > 0) {
+        // Create secondary stock for each variation
+        variations.forEach((variation, index) => {
+            const container = document.createElement("div");
+            container.className = "secondary-stock-container";
+            container.dataset.variationName = variation.name;
+            
+            container.innerHTML = `
+                <div class="secondary-stock-header">
+                    <span class="secondary-stock-title">
+                        <span class="secondary-variation-name">${variation.name}</span>
+                        <span class="secondary-stock-badge">BACKUP</span>
+                    </span>
+                </div>
+                <div class="secondary-stock-recipe-section">
+                    <label class="secondary-stock-recipe-label">Secondary Ingredients:</label>
+                    <div class="secondary-stock-recipe-list" data-variation-name="${variation.name}"></div>
+                    <button type="button" class="btn btn--secondary btn--small add-ingredient-to-secondary-btn" data-variation-name="${variation.name}">+ Add Ingredient</button>
+                </div>
+            `;
+            
+            secondaryStockList.appendChild(container);
+            
+            const recipeListContainer = container.querySelector('.secondary-stock-recipe-list');
+            const addIngredientBtn = container.querySelector('.add-ingredient-to-secondary-btn');
+            
+            addIngredientBtn.addEventListener('click', () => {
+                addIngredientToSecondaryUI({}, recipeListContainer);
+            });
+            
+            // Pre-fill if editing
+            if (secondaryStock && secondaryStock[variation.name]) {
+                secondaryStock[variation.name].forEach(ingredient => {
+                    addIngredientToSecondaryUI(ingredient, recipeListContainer);
+                });
+            }
+        });
+    } else {
+        // Create single secondary stock for non-variation items
+        const container = document.createElement("div");
+        container.className = "secondary-stock-container";
+        
+        container.innerHTML = `
+            <div class="secondary-stock-header">
+                <span class="secondary-stock-title">
+                    <span class="secondary-stock-badge">BACKUP RECIPE</span>
+                </span>
+            </div>
+            <div class="secondary-stock-recipe-section">
+                <label class="secondary-stock-recipe-label">Secondary Ingredients:</label>
+                <div class="secondary-stock-recipe-list" data-variation-name="default"></div>
+                <button type="button" class="btn btn--secondary btn--small add-ingredient-to-secondary-btn" data-variation-name="default">+ Add Ingredient</button>
+            </div>
+        `;
+        
+        secondaryStockList.appendChild(container);
+        
+        const recipeListContainer = container.querySelector('.secondary-stock-recipe-list');
+        const addIngredientBtn = container.querySelector('.add-ingredient-to-secondary-btn');
+        
+        addIngredientBtn.addEventListener('click', () => {
+            addIngredientToSecondaryUI({}, recipeListContainer);
+        });
+        
+        // Pre-fill if editing
+        if (secondaryStock && secondaryStock.default) {
+            secondaryStock.default.forEach(ingredient => {
+                addIngredientToSecondaryUI(ingredient, recipeListContainer);
+            });
+        }
+    }
+}
+
+/**
+ * Adds an ingredient row to a secondary stock recipe list
+ * @param {object} ingredient - The ingredient data to pre-fill
+ * @param {HTMLElement} container - The secondary stock recipe list container
+ */
+function addIngredientToSecondaryUI(ingredient = {}, container) {
+    if (!container) {
+        console.error("No container specified for addIngredientToSecondaryUI");
+        return;
+    }
+
+    const row = document.createElement("div");
+    row.className = "ingredient-row";
+
+    const categorySelect = document.createElement("select");
+    categorySelect.className = "inv-category-filter form-control";
+    categorySelect.innerHTML = `<option value="">All Categories</option>`;
+    allInventoryCategories.forEach(cat => {
+        categorySelect.add(new Option(cat, cat));
+    });
+
+    const ingredientSelect = document.createElement("select");
+    ingredientSelect.className = "ingredient-id form-control";
+    ingredientSelect.required = true;
+    
+    const qtyInput = document.createElement("input");
+    qtyInput.type = "number";
+    qtyInput.className = "ingredient-qty form-control";
+    qtyInput.placeholder = "Qty";
+    qtyInput.step = "any";
+    qtyInput.min = "0";
+    qtyInput.required = true;
+
+    const unitInput = document.createElement("input");
+    unitInput.type = "text";
+    unitInput.className = "ingredient-unit form-control";
+    unitInput.placeholder = "Unit";
+    unitInput.readOnly = true;
+    unitInput.required = true;
+    
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "btn btn--secondary remove-ingredient";
+    deleteBtn.textContent = "X";
+    deleteBtn.onclick = () => row.remove();
+
+    const populateIngredients = (category) => {
+        let filtered = (category)
+            ? allIngredientsCache.filter(ing => ing.category === category)
+            : allIngredientsCache;
+        
+        ingredientSelect.innerHTML = `<option value="">Select Ingredient...</option>`;
+        filtered.forEach(ing => {
+            ingredientSelect.add(new Option(`${ing.name} (${ing.baseUnit})`, ing.id));
+            ingredientSelect.options[ingredientSelect.options.length - 1].dataset.baseUnit = ing.baseUnit;
+        });
+    };
+
+    categorySelect.addEventListener("change", () => {
+        populateIngredients(categorySelect.value);
+        unitInput.value = "";
+    });
+
+    ingredientSelect.addEventListener("change", () => {
+        const selectedOption = ingredientSelect.options[ingredientSelect.selectedIndex];
+        unitInput.value = selectedOption.dataset.baseUnit || "";
+    });
+
+    row.appendChild(categorySelect);
+    row.appendChild(ingredientSelect);
+    row.appendChild(qtyInput);
+    row.appendChild(unitInput);
+    row.appendChild(deleteBtn);
+    container.appendChild(row);
+
+    if (ingredient.ingredientId) {
+        const fullIngredient = allIngredientsCache.find(ing => ing.id === ingredient.ingredientId);
+        if (fullIngredient) {
+            categorySelect.value = fullIngredient.category;
+            populateIngredients(fullIngredient.category);
+            ingredientSelect.value = ingredient.ingredientId;
+            qtyInput.value = ingredient.qtyPerProduct;
+            unitInput.value = ingredient.unitUsed;
+        }
+    } else {
+        populateIngredients("");
     }
 }
 
@@ -308,60 +582,86 @@ async function handleMenuFormSubmit(e) {
       else { alert("Please enter a name for the new category."); return; }
   }
 
-  const productData = {
-      name: document.getElementById("menu-name").value,
-      category: productCategory,
-      waitingTime: menuWaitTimeSelect.value,
-      isVisible: true,
-      imageUrl: currentImageUrl || null,
-      price: 0, 
-      variations: []
-  };
+const productData = {
+    name: document.getElementById("menu-name").value,
+    category: productCategory,
+    waitingTime: menuWaitTimeSelect.value,
+    isVisible: true,
+    imageUrl: currentImageUrl || null,
+    price: 0, 
+    variations: [],
+    hasSecondaryStock: secondaryStockToggle.checked,  // ADD THIS
+    secondaryStock: null  // ADD THIS
+};
   
   if (!productData.waitingTime) { alert("Please select an average waiting time."); return; }
 
   let mainRecipeData = [];
   let recipeError = false; 
 
-  if (variationToggle.checked) {
-      const variationMap = new Map();
-      const ingredientRows = variationListContainer.querySelectorAll(".ingredient-row");
-      if (ingredientRows.length === 0) { alert("Please add at least one variation ingredient."); return; }
+if (variationToggle.checked) {
+    const variationContainers = variationListContainer.querySelectorAll(".variation-container");
+    if (variationContainers.length === 0) { 
+        alert("Please add at least one variation."); 
+        return; 
+    }
 
-      let variationError = false;
-      ingredientRows.forEach(row => {
-          const varName = row.querySelector(".variation-name").value.trim();
-          const varPrice = parseFloat(row.querySelector(".variation-price").value);
+    let variationError = false;
+    const variations = [];
 
-          if (!varName || isNaN(varPrice) || varPrice <= 0) {
-              variationError = true;
-          }
+    variationContainers.forEach(container => {
+        const varName = container.querySelector(".variation-name").value.trim();
+        const varPrice = parseFloat(container.querySelector(".variation-price").value);
 
-          const ingredient = {
-              ingredientId: row.querySelector(".ingredient-id").value,
-              qtyPerProduct: parseFloat(row.querySelector(".ingredient-qty").value),
-              unitUsed: row.querySelector(".ingredient-unit").value
-          };
+        if (!varName || isNaN(varPrice) || varPrice <= 0) {
+            variationError = true;
+            return;
+        }
 
-          if (!ingredient.ingredientId || isNaN(ingredient.qtyPerProduct) || !ingredient.unitUsed) {
-              recipeError = true;
-          }
+        const recipe = [];
+        const ingredientRows = container.querySelectorAll(".ingredient-row");
+        
+        if (ingredientRows.length === 0) {
+            alert(`Variation "${varName}" must have at least one ingredient.`);
+            recipeError = true;
+            return;
+        }
 
-          if (!variationMap.has(varName)) {
-              variationMap.set(varName, { name: varName, price: varPrice, recipe: [] });
-          }
-          variationMap.get(varName).recipe.push(ingredient);
-      });
+        ingredientRows.forEach(row => {
+            const ingredient = {
+                ingredientId: row.querySelector(".ingredient-id").value,
+                qtyPerProduct: parseFloat(row.querySelector(".ingredient-qty").value),
+                unitUsed: row.querySelector(".ingredient-unit").value
+            };
 
-      if (variationError) { alert("Please ensure every variation has a valid Name and Price."); return; }
-      if (recipeError) { alert("Please ensure every ingredient row is completely filled out."); return; }
+            if (!ingredient.ingredientId || isNaN(ingredient.qtyPerProduct) || !ingredient.unitUsed) {
+                recipeError = true;
+            }
 
-      productData.variations = Array.from(variationMap.values());
-      if (productData.variations.length > 0) {
-          productData.price = productData.variations[0].price; // Set base price
-      }
+            recipe.push(ingredient);
+        });
 
-  } else {
+        variations.push({
+            name: varName,
+            price: varPrice,
+            recipe: recipe
+        });
+    });
+
+    if (variationError) { 
+        alert("Please ensure every variation has a valid Name and Price."); 
+        return; 
+    }
+    if (recipeError) { 
+        alert("Please ensure every ingredient row is completely filled out."); 
+        return; 
+    }
+
+    productData.variations = variations;
+    if (productData.variations.length > 0) {
+        productData.price = productData.variations[0].price;
+    }
+}else {
       const singlePrice = parseFloat(document.getElementById("menu-price").value);
       if (isNaN(singlePrice) || singlePrice <= 0) { alert("Please enter a valid price for the product."); return; }
       productData.price = singlePrice;
@@ -379,7 +679,65 @@ async function handleMenuFormSubmit(e) {
       });
       if (recipeError) { alert("Please check your recipe ingredients."); return; }
   }
-  
+  // --- Handle Secondary Stock ---
+if (secondaryStockToggle.checked) {
+    const secondaryStockData = {};
+    
+    if (productData.variations.length > 0) {
+        // Secondary stock for variations
+        const secondaryContainers = secondaryStockList.querySelectorAll(".secondary-stock-container");
+        
+        secondaryContainers.forEach(container => {
+            const varName = container.dataset.variationName;
+            const ingredientRows = container.querySelectorAll(".ingredient-row");
+            const recipe = [];
+            
+            ingredientRows.forEach(row => {
+                const ingredient = {
+                    ingredientId: row.querySelector(".ingredient-id").value,
+                    qtyPerProduct: parseFloat(row.querySelector(".ingredient-qty").value),
+                    unitUsed: row.querySelector(".ingredient-unit").value
+                };
+                
+                if (ingredient.ingredientId && !isNaN(ingredient.qtyPerProduct) && ingredient.unitUsed) {
+                    recipe.push(ingredient);
+                }
+            });
+            
+            if (recipe.length > 0) {
+                secondaryStockData[varName] = recipe;
+            }
+        });
+    } else {
+        // Secondary stock for single-price items
+        const container = secondaryStockList.querySelector(".secondary-stock-container");
+        if (container) {
+            const ingredientRows = container.querySelectorAll(".ingredient-row");
+            const recipe = [];
+            
+            ingredientRows.forEach(row => {
+                const ingredient = {
+                    ingredientId: row.querySelector(".ingredient-id").value,
+                    qtyPerProduct: parseFloat(row.querySelector(".ingredient-qty").value),
+                    unitUsed: row.querySelector(".ingredient-unit").value
+                };
+                
+                if (ingredient.ingredientId && !isNaN(ingredient.qtyPerProduct) && ingredient.unitUsed) {
+                    recipe.push(ingredient);
+                }
+            });
+            
+            if (recipe.length > 0) {
+                secondaryStockData.default = recipe;
+            }
+        }
+    }
+    
+    productData.secondaryStock = Object.keys(secondaryStockData).length > 0 ? secondaryStockData : null;
+} else {
+    productData.hasSecondaryStock = false;
+    productData.secondaryStock = null;
+}
   try {
       const saveBtn = menuForm.querySelector('button[type="submit"]');
       if (currentImageFile) {
@@ -445,7 +803,10 @@ function closeMenuModal() {
     currentImageFile = null;
     currentImageUrl = null;
   }
-}
+  if (secondaryStockToggle) secondaryStockToggle.checked = false;
+  if (secondaryStockWrapper) secondaryStockWrapper.classList.add("hidden");
+  if (secondaryStockList) secondaryStockList.innerHTML = "";
+    }
 
 // --- Edit Mode Toggle ---
 function handleToggleVisibility(productId, currentVisibility) {
@@ -500,7 +861,7 @@ function listenForRecipes() {
 }
 
 function updateAllProductStockStatusAndRender() {
-  if (allIngredientsCache.length === 0 || allProducts.length === 0) {
+    if (allIngredientsCache.length === 0 || allProducts.length === 0) {
     return;
   }
 
@@ -514,80 +875,79 @@ function updateAllProductStockStatusAndRender() {
   for (const product of allProducts) {
     let status = "in-stock";
     
-// FIND AND REPLACE THIS ENTIRE SECTION:
-if (product.variations && product.variations.length > 0) {
-    let atLeastOneVariationInStock = false;
-    let atLeastOneVariationLowStock = false;
+    // Helper function to check if a recipe has stock
+    const checkRecipeStock = (recipe) => {
+        let recipeStatus = "in-stock";
+        for (const recipeItem of recipe) {
+            const ingredient = ingredientStockMap.get(recipeItem.ingredientId);
+            const neededQty = parseFloat(recipeItem.qtyPerProduct);
+            
+            if (!ingredient) { 
+                recipeStatus = "out-of-stock"; 
+                break; 
+            }
+            
+            if (ingredient.stock < neededQty) { 
+                recipeStatus = "out-of-stock"; 
+                break; 
+            }
+            
+            if (ingredient.stock <= ingredient.minStock && recipeStatus !== "out-of-stock") { 
+                recipeStatus = "low-stock"; 
+            }
+        }
+        return recipeStatus;
+    };
+    
+    if (product.variations && product.variations.length > 0) {
+        let atLeastOneVariationInStock = false;
+        let atLeastOneVariationLowStock = false;
 
-    for (const variation of product.variations) {
-        let varStatus = "in-stock";
-        if (!variation.recipe || variation.recipe.length === 0) {
-            varStatus = "out-of-stock";
-        } else {
-            for (const recipe of variation.recipe) {
-                const ingredient = ingredientStockMap.get(recipe.ingredientId);
-                const neededQty = parseFloat(recipe.qtyPerProduct);
+        for (const variation of product.variations) {
+            let varStatus = "in-stock";
+            
+            if (!variation.recipe || variation.recipe.length === 0) {
+                varStatus = "out-of-stock";
+            } else {
+                // Check primary recipe
+                varStatus = checkRecipeStock(variation.recipe);
                 
-                if (!ingredient) { 
-                  varStatus = "out-of-stock"; 
-                  break; 
+                // If primary is out of stock, check secondary stock
+                if (varStatus === "out-of-stock" && product.hasSecondaryStock && product.secondaryStock && product.secondaryStock[variation.name]) {
+                    varStatus = checkRecipeStock(product.secondaryStock[variation.name]);
                 }
-                
-                // Check if we have enough stock to make at least ONE item
-                if (ingredient.stock < neededQty) { 
-                  varStatus = "out-of-stock"; 
-                  break; 
-                }
-                
-                // If stock is low but we can still make items
-                if (ingredient.stock <= ingredient.minStock && varStatus !== "out-of-stock") { 
-                  varStatus = "low-stock"; 
-                }
+            }
+            
+            if (varStatus === "in-stock" || varStatus === "low-stock") {
+                atLeastOneVariationInStock = true;
+            }
+            if (varStatus === "low-stock") {
+                atLeastOneVariationLowStock = true;
             }
         }
         
-        if (varStatus === "in-stock" || varStatus === "low-stock") {
-            atLeastOneVariationInStock = true;
+        if (!atLeastOneVariationInStock) {
+            status = "out-of-stock";
+        } else if (atLeastOneVariationLowStock) {
+            status = "low-stock";
         }
-        if (varStatus === "low-stock") {
-            atLeastOneVariationLowStock = true;
-        }
-    }
-    
-    // Final status for the product
-    if (!atLeastOneVariationInStock) {
-        status = "out-of-stock";
-    } else if (atLeastOneVariationLowStock) {
-        status = "low-stock";
-    }
-    
-} else {
-    const productRecipes = allRecipesCache.filter(r => r.productId === product.id);
-    if (productRecipes.length === 0) {
-      status = "out-of-stock";
+        
     } else {
-      for (const recipe of productRecipes) {
-        const ingredient = ingredientStockMap.get(recipe.ingredientId);
-        const neededQty = parseFloat(recipe.qtyPerProduct);
+        const productRecipes = allRecipesCache.filter(r => r.productId === product.id);
         
-        if (!ingredient) { 
-          status = "out-of-stock"; 
-          break; 
+        if (productRecipes.length === 0) {
+            status = "out-of-stock";
+        } else {
+            // Check primary recipe
+            status = checkRecipeStock(productRecipes);
+            
+            // If primary is out of stock, check secondary stock
+            if (status === "out-of-stock" && product.hasSecondaryStock && product.secondaryStock && product.secondaryStock.default) {
+                status = checkRecipeStock(product.secondaryStock.default);
+            }
         }
-        
-        // Check if we have enough stock to make at least ONE item
-        if (ingredient.stock < neededQty) { 
-          status = "out-of-stock"; 
-          break; 
-        }
-        
-        // If stock is low but we can still make items, mark as low-stock
-        if (ingredient.stock <= ingredient.minStock && status !== "out-of-stock") { 
-          status = "low-stock"; 
-        }
-      }
     }
-}
+    
     productStockStatus.set(product.id, status);
   }
   renderProducts();
@@ -720,27 +1080,20 @@ async function openEditModal(product) {
     document.getElementById("menu-waiting-time").value = product.waitingTime;
     document.getElementById("menu-category").value = product.category;
 
-    if (product.variations && product.variations.length > 0) {
-        variationToggle.checked = true;
-        singlePriceWrapper.classList.add("hidden");
-        variationsWrapper.classList.remove("hidden");
-        variationListContainer.innerHTML = ""; 
-        
-        product.variations.forEach(variation => {
-            if (variation.recipe && variation.recipe.length > 0) {
-                variation.recipe.forEach(ingredient => {
-                    addVariationRowUI(variation, ingredient);
-                });
-            } else {
-                addVariationRowUI(variation, {});
-            }
-        });
-        
-        if (mainRecipeContainer) mainRecipeContainer.classList.add("disabled");
-        if (recipeList) recipeList.innerHTML = "";
-        if (addIngredientBtn) addIngredientBtn.disabled = true;
-
-    } else {
+if (product.variations && product.variations.length > 0) {
+    variationToggle.checked = true;
+    singlePriceWrapper.classList.add("hidden");
+    variationsWrapper.classList.remove("hidden");
+    variationListContainer.innerHTML = ""; 
+    
+    product.variations.forEach(variation => {
+        addVariationRowUI(variation);
+    });
+    
+    if (mainRecipeContainer) mainRecipeContainer.classList.add("disabled");
+    if (recipeList) recipeList.innerHTML = "";
+    if (addIngredientBtn) addIngredientBtn.disabled = true;
+}else {
         variationToggle.checked = false;
         singlePriceWrapper.classList.remove("hidden");
         variationsWrapper.classList.add("hidden");
@@ -767,6 +1120,18 @@ async function openEditModal(product) {
             menuImagePreview.classList.add("hidden");
             menuImagePreview.src = "";
         }
+    }
+    // Handle Secondary Stock
+    if (product.hasSecondaryStock && product.secondaryStock) {
+        secondaryStockToggle.checked = true;
+        secondaryStockWrapper.classList.remove("hidden");
+        
+        const currentVariations = product.variations || [];
+        setupSecondaryStockUI(currentVariations, product.secondaryStock);
+    } else {
+        secondaryStockToggle.checked = false;
+        secondaryStockWrapper.classList.add("hidden");
+        secondaryStockList.innerHTML = "";
     }
 }
 
@@ -859,8 +1224,8 @@ function updateCartTotals() {
   let discountAmount = 0;
   if (currentDiscount.type === "PWD" || currentDiscount.type === "Senior") {
     discountAmount = subtotal * 0.20;
-  } else if (currentDiscount.type === "Custom") {
-    discountAmount = currentDiscount.amount;
+  } else if (currentDiscount.type === "Custom" && currentDiscount.percentage) {
+    discountAmount = subtotal * (currentDiscount.percentage / 100);
   }
   if (discountAmount > subtotal) {
       discountAmount = subtotal;
@@ -873,7 +1238,13 @@ function updateCartTotals() {
   const total = netSubtotal; // Total is already VAT-inclusive
   
   if (subtotalEl) subtotalEl.textContent = `₱${subtotal.toFixed(2)}`;
-  if (cartDiscountEl) cartDiscountEl.textContent = `(₱${discountAmount.toFixed(2)})`;
+  if (cartDiscountEl) {
+      let discountText = `(₱${discountAmount.toFixed(2)})`;
+      if (currentDiscount.type === "Custom" && currentDiscount.percentage) {
+          discountText = `(${currentDiscount.percentage}% - ₱${discountAmount.toFixed(2)})`;
+      }
+      cartDiscountEl.textContent = discountText;
+  }
   if (taxEl) taxEl.textContent = `₱${vatAmount.toFixed(2)}`;
   if (totalEl) totalEl.textContent = `₱${total.toFixed(2)}`;
 }
@@ -910,6 +1281,7 @@ async function processSale(customerName, orderType, totalAmount, subtotal, tax, 
       tax: tax,
       discountType: discountInfo.type,
       discountAmount: discountInfo.amount,
+      discountPercentage: discountInfo.percentage || null, // ADD THIS LINE
       ...paymentDetails,
       items: cart.map(item => ({
         productId: item.id.split('-')[0],
@@ -1206,58 +1578,157 @@ async function completeOrder(order, paymentDetails) {
   try {
     const allRecipes = []; 
     
-    if (order.items && Array.isArray(order.items)) {
-        for (const item of order.items) { 
-          const productDoc = await getDoc(doc(db, "products", item.productId));
-          if (!productDoc.exists()) { throw new Error(`Product "${item.name}" not found.`); }
-          
-          const product = productDoc.data();
-          
-          if (product.variations && product.variations.length > 0) {
-              const variationName = item.name.split(' - ')[1];
-              const variation = product.variations.find(v => v.name === variationName);
-              
-              if (!variation || !variation.recipe) { throw new Error(`Recipe not found for variation "${item.name}".`); }
-              
-              variation.recipe.forEach(recipeItem => {
-                  allRecipes.push({ ...recipeItem, cartQuantity: item.quantity });
-              });
-              
-          } else {
-              const q = query(recipesRef, where("productId", "==", item.productId));
-              const recipeSnapshot = await getDocs(q);
-              if (recipeSnapshot.empty) { throw new Error(`No recipe found for "${item.name}".`); }
-              recipeSnapshot.forEach(recipeDoc => {
-                allRecipes.push({ ...recipeDoc.data(), cartQuantity: item.quantity });
-              });
-          }
+if (order.items && Array.isArray(order.items)) {
+    for (const item of order.items) { 
+        const productDoc = await getDoc(doc(db, "products", item.productId));
+        if (!productDoc.exists()) { throw new Error(`Product "${item.name}" not found.`); }
+        
+        const product = productDoc.data();
+        
+        // Helper function to check and get available recipe
+        const getAvailableRecipe = (primaryRecipe, secondaryRecipe = null) => {
+            // Check if primary recipe has stock
+            let primaryHasStock = true;
+            if (primaryRecipe && primaryRecipe.length > 0) {
+                for (const recipeItem of primaryRecipe) {
+                    const ingRef = doc(db, "ingredients", recipeItem.ingredientId);
+                    const ingredientStockMap = new Map();
+                    // We'll validate this during the transaction
+                }
+            }
+            
+            return { primaryRecipe, secondaryRecipe };
+        };
+        
+        if (product.variations && product.variations.length > 0) {
+            const variationName = item.name.split(' - ')[1];
+            const variation = product.variations.find(v => v.name === variationName);
+            
+            if (!variation || !variation.recipe) { 
+                throw new Error(`Recipe not found for variation "${item.name}".`); 
+            }
+            
+            // Get primary recipe
+            variation.recipe.forEach(recipeItem => {
+                allRecipes.push({ 
+                    ...recipeItem, 
+                    cartQuantity: item.quantity,
+                    isSecondary: false,
+                    variationName: variationName
+                });
+            });
+            
+            // Store secondary recipe if available
+            if (product.hasSecondaryStock && product.secondaryStock && product.secondaryStock[variationName]) {
+                product.secondaryStock[variationName].forEach(recipeItem => {
+                    allRecipes.push({ 
+                        ...recipeItem, 
+                        cartQuantity: item.quantity,
+                        isSecondary: true,
+                        variationName: variationName
+                    });
+                });
+            }
+            
+        } else {
+            const q = query(recipesRef, where("productId", "==", item.productId));
+            const recipeSnapshot = await getDocs(q);
+            if (recipeSnapshot.empty) { 
+                throw new Error(`No recipe found for "${item.name}".`); 
+            }
+            
+            // Get primary recipe
+            recipeSnapshot.forEach(recipeDoc => {
+                allRecipes.push({ 
+                    ...recipeDoc.data(), 
+                    cartQuantity: item.quantity,
+                    isSecondary: false
+                });
+            });
+            
+            // Store secondary recipe if available
+            if (product.hasSecondaryStock && product.secondaryStock && product.secondaryStock.default) {
+                product.secondaryStock.default.forEach(recipeItem => {
+                    allRecipes.push({ 
+                        ...recipeItem, 
+                        cartQuantity: item.quantity,
+                        isSecondary: true
+                    });
+                });
+            }
         }
     }
+}
 
-    await runTransaction(db, async (transaction) => {
-      const ingredientDeductions = new Map();
-      for (const recipe of allRecipes) {
-        if (recipe.ingredientId && recipe.ingredientId.trim() !== "") {
-          const qtyPer = parseFloat(recipe.qtyPerProduct);
-          const cartQty = parseFloat(recipe.cartQuantity);
-          if (isNaN(qtyPer) || isNaN(cartQty)) {
-             console.error(`Invalid recipe data. qtyPer: ${recipe.qtyPerProduct}, cartQty: ${recipe.cartQuantity}`);
-             throw new Error(`Invalid recipe/order data for an item.`);
-          }
-          const totalDeduction = qtyPer * cartQty;
-          const existing = ingredientDeductions.get(recipe.ingredientId) || { amountToDeduction: 0, unit: recipe.unitUsed };
-          existing.amountToDeduction += totalDeduction;
-          ingredientDeductions.set(recipe.ingredientId, existing);
-        } else {
-          console.warn(`Skipping recipe with missing ingredientId.`);
+await runTransaction(db, async (transaction) => {
+    const ingredientDeductions = new Map();
+    const usedSecondaryStock = new Set(); // Track which items used secondary stock
+    
+    // Group recipes by variation/item
+    const recipesByItem = new Map();
+    for (const recipe of allRecipes) {
+        const key = recipe.variationName || 'default';
+        if (!recipesByItem.has(key)) {
+            recipesByItem.set(key, { primary: [], secondary: [] });
         }
-      }
-      
-      const ingredientDataMap = new Map();
-      for (const [ingId, deduction] of ingredientDeductions.entries()) {
+        if (recipe.isSecondary) {
+            recipesByItem.get(key).secondary.push(recipe);
+        } else {
+            recipesByItem.get(key).primary.push(recipe);
+        }
+    }
+    
+    // For each item, try primary first, then secondary if needed
+    for (const [itemKey, recipes] of recipesByItem.entries()) {
+        let usePrimary = true;
+        
+        // Check if primary recipe has enough stock
+        for (const recipe of recipes.primary) {
+            if (recipe.ingredientId && recipe.ingredientId.trim() !== "") {
+                const ingRef = doc(db, "ingredients", recipe.ingredientId);
+                const ingDoc = await transaction.get(ingRef);
+                
+                if (ingDoc.exists()) {
+                    const ingData = ingDoc.data();
+                    const currentStockInBase = (ingData.stockQuantity || 0) * (ingData.conversionFactor || 1);
+                    const qtyPer = parseFloat(recipe.qtyPerProduct);
+                    const cartQty = parseFloat(recipe.cartQuantity);
+                    const totalDeduction = qtyPer * cartQty;
+                    
+                    if (currentStockInBase < totalDeduction) {
+                        usePrimary = false;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Use secondary if primary doesn't have stock
+        const recipesToUse = usePrimary ? recipes.primary : recipes.secondary;
+        
+        if (!usePrimary && recipes.secondary.length > 0) {
+            usedSecondaryStock.add(itemKey);
+        }
+        
+        // Add to deduction map
+        for (const recipe of recipesToUse) {
+            if (recipe.ingredientId && recipe.ingredientId.trim() !== "") {
+                const qtyPer = parseFloat(recipe.qtyPerProduct);
+                const cartQty = parseFloat(recipe.cartQuantity);
+                const totalDeduction = qtyPer * cartQty;
+                const existing = ingredientDeductions.get(recipe.ingredientId) || { amountToDeduction: 0, unit: recipe.unitUsed };
+                existing.amountToDeduction += totalDeduction;
+                ingredientDeductions.set(recipe.ingredientId, existing);
+            }
+        }
+    }
+    
+    // Validate and deduct stock
+    const ingredientDataMap = new Map();
+    for (const [ingId, deduction] of ingredientDeductions.entries()) {
         if (!ingId || typeof ingId !== 'string' || ingId.trim() === "") {
-          console.warn("⚠️ Skipping ingredient with invalid ID:", ingId);
-          continue;
+            console.warn("⚠️ Skipping ingredient with invalid ID:", ingId);
+            continue;
         }
         const ingRef = doc(db, "ingredients", ingId);
         const ingDoc = await transaction.get(ingRef);
@@ -1265,42 +1736,49 @@ async function completeOrder(order, paymentDetails) {
         const ingData = ingDoc.data();
         const currentStockInBaseUnits = (ingData.stockQuantity || 0) * (ingData.conversionFactor || 1);
         if (deduction.unit !== ingData.baseUnit) { throw new Error(`Unit mismatch for ${ingData.name}.`); }
-        if (currentStockInBaseUnits < deduction.amountToDeduction) { throw new Error(`Not enough stock for ${ingData.name}. Order cannot be completed.`); }
+        if (currentStockInBaseUnits < deduction.amountToDeduction) { 
+            throw new Error(`Not enough stock for ${ingData.name}. Order cannot be completed.`); 
+        }
         ingredientDataMap.set(ingId, {
-          ref: ingRef,
-          data: ingData,
-          currentStockInBaseUnits: currentStockInBaseUnits,
-          deduction: deduction
+            ref: ingRef,
+            data: ingData,
+            currentStockInBaseUnits: currentStockInBaseUnits,
+            deduction: deduction
         });
-      }
-      for (const [ingId, info] of ingredientDataMap.entries()) {
+    }
+    
+    // Apply deductions
+    for (const [ingId, info] of ingredientDataMap.entries()) {
         const newStockInBaseUnits = info.currentStockInBaseUnits - info.deduction.amountToDeduction;
         const newStockInStockUnits = newStockInBaseUnits / info.data.conversionFactor;
         transaction.update(info.ref, { stockQuantity: newStockInStockUnits });
-stockMovements.push({
-    timestamp: serverTimestamp(),
-    employeeName: order.processedBy || "System",
-    actionType: "Sale Deduction",
-    itemName: info.data.name,
-    category: info.data.category,
-    qtyChange: -info.deduction.amountToDeduction, // Negative number for deduction
-    unit: info.deduction.unit,
-    prevQty: info.currentStockInBaseUnits,
-    newQty: newStockInBaseUnits,
-    reason: `Sale (Order #${order.orderId})`
-});
-      }
-      const saleRef = doc(db, "sales", order.id); 
-      const pendingOrderRef = doc(db, "pending_orders", order.id);
-      transaction.set(saleRef, { 
+        
+        stockMovements.push({
+            timestamp: serverTimestamp(),
+            employeeName: order.processedBy || "System",
+            actionType: "Sale Deduction",
+            itemName: info.data.name,
+            category: info.data.category,
+            qtyChange: -info.deduction.amountToDeduction,
+            unit: info.deduction.unit,
+            prevQty: info.currentStockInBaseUnits,
+            newQty: newStockInBaseUnits,
+            reason: `Sale (Order #${order.orderId})${usedSecondaryStock.size > 0 ? ' [Secondary Stock Used]' : ''}`
+        });
+    }
+    
+    const saleRef = doc(db, "sales", order.id); 
+    const pendingOrderRef = doc(db, "pending_orders", order.id);
+    transaction.set(saleRef, { 
         ...order, 
         ...paymentDetails,
         status: "Completed", 
         completedAt: serverTimestamp(),
-        timestamp: order.createdAt
-      });
-      transaction.delete(pendingOrderRef);
+        timestamp: order.createdAt,
+        usedSecondaryStock: usedSecondaryStock.size > 0 ? Array.from(usedSecondaryStock) : null
     });
+    transaction.delete(pendingOrderRef);
+});
     const logBatch = writeBatch(db);
 stockMovements.forEach(log => logBatch.set(doc(collection(db, "inventoryLogs")), log));
     await logBatch.commit();
@@ -1375,7 +1853,7 @@ const vatAmount = netAmount - vatable;
 
 const subtotal = `${'Subtotal:'.padEnd(30)}${order.subtotal.toFixed(2).padStart(10)}`;
 const discount = (order.discountAmount && order.discountAmount > 0) ? 
-    `${'Discount:'.padEnd(30)}${('-' + order.discountAmount.toFixed(2)).padStart(10)}` : '';
+    `${'Discount'.padEnd(20)}${(order.discountPercentage ? `(${order.discountPercentage}%)` : '').padEnd(10)}${('-' + order.discountAmount.toFixed(2)).padStart(10)}` : '';
 const vatableSales = `${'Vatable Sales:'.padEnd(30)}${vatable.toFixed(2).padStart(10)}`;
 const vat = `${'VAT (12%):'.padEnd(30)}${vatAmount.toFixed(2).padStart(10)}`;
 const total = `${'Total Amount:'.padEnd(30)}${order.totalAmount.toFixed(2).padStart(10)}`;
@@ -1523,9 +2001,79 @@ document.addEventListener("DOMContentLoaded", () => {
     kitchenStubSendBtn = document.getElementById("kitchen-stub-send-btn");
     kitchenStubCancelBtn = document.getElementById("kitchen-stub-cancel-btn");
     mainRecipeContainer = document.getElementById("main-recipe-container");
-
+    secondaryStockToggle = document.getElementById("secondary-stock-toggle");
+    secondaryStockWrapper = document.getElementById("secondary-stock-wrapper");
+    secondaryStockList = document.getElementById("secondary-stock-list");
     // --- ATTACH ALL EVENT LISTENERS ---
 
+    // --- Secondary Stock Toggle Listener ---
+    if (secondaryStockToggle) {
+        secondaryStockToggle.addEventListener("change", () => {
+            if (secondaryStockToggle.checked) {
+                secondaryStockWrapper.classList.remove("hidden");
+                
+                // Get current variations or empty array
+                const variationContainers = variationListContainer.querySelectorAll(".variation-container");
+                const currentVariations = [];
+                
+                variationContainers.forEach(container => {
+                    const varName = container.querySelector(".variation-name").value.trim();
+                    if (varName) {
+                        currentVariations.push({ name: varName });
+                    }
+                });
+                
+                setupSecondaryStockUI(currentVariations);
+            } else {
+                secondaryStockWrapper.classList.add("hidden");
+                secondaryStockList.innerHTML = "";
+            }
+        });
+    }
+
+    // --- Update secondary stock when variations change ---
+    if (addVariationBtn) {
+        const originalAddVariation = addVariationBtn.onclick;
+        addVariationBtn.onclick = function() {
+            if (originalAddVariation) originalAddVariation.call(this);
+            
+            // Update secondary stock UI if enabled
+            if (secondaryStockToggle && secondaryStockToggle.checked) {
+                setTimeout(() => {
+                    const variationContainers = variationListContainer.querySelectorAll(".variation-container");
+                    const currentVariations = [];
+                    
+                    variationContainers.forEach(container => {
+                        const varName = container.querySelector(".variation-name").value.trim();
+                        if (varName) {
+                            currentVariations.push({ name: varName });
+                        }
+                    });
+                    
+                    // Preserve existing secondary stock data
+                    const existingData = {};
+                    const existingContainers = secondaryStockList.querySelectorAll(".secondary-stock-container");
+                    existingContainers.forEach(container => {
+                        const varName = container.dataset.variationName;
+                        const rows = container.querySelectorAll(".ingredient-row");
+                        const recipe = [];
+                        rows.forEach(row => {
+                            recipe.push({
+                                ingredientId: row.querySelector(".ingredient-id").value,
+                                qtyPerProduct: parseFloat(row.querySelector(".ingredient-qty").value),
+                                unitUsed: row.querySelector(".ingredient-unit").value
+                            });
+                        });
+                        if (recipe.length > 0) {
+                            existingData[varName] = recipe;
+                        }
+                    });
+                    
+                    setupSecondaryStockUI(currentVariations, existingData);
+                }, 100);
+            }
+        };
+    }
     // --- Menu Form Submit ---
     if (menuForm) {
         menuForm.addEventListener("submit", handleMenuFormSubmit);
@@ -1712,119 +2260,168 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- Customer/Payment Modal ---
-    if (processPaymentBtn) {
-        processPaymentBtn.addEventListener("click", () => { 
-             if (cart.length === 0) {
-                alert("Cart is empty."); return;
-              }
-              updateCartTotals(); 
-              const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-              let discountAmount = currentDiscount.amount;
-              if (currentDiscount.type === "PWD" || currentDiscount.type === "Senior") {
-                  discountAmount = subtotal * 0.20;
-              }
-              if (discountAmount > subtotal) discountAmount = subtotal;
-              const total = (subtotal - discountAmount) + ((subtotal - discountAmount) * 0.12);
-              const customerModalTotal = document.getElementById("customer-modal-total");
-              if (customerModalTotal) customerModalTotal.textContent = `₱${total.toFixed(2)}`;
-              const paymentMethodRadios = document.querySelectorAll('#customer-info-modal input[name="paymentMethod"]');
-              const cashDetails = document.getElementById("payment-cash-details");
-              const paymentAmountInput = document.getElementById("payment-amount");
-              const changeDisplay = document.getElementById("payment-change-display");
-              if (paymentAmountInput) {
-                  paymentAmountInput.oninput = () => {
-                    const paid = parseFloat(paymentAmountInput.value) || 0;
-                    const change = paid - total;
+if (processPaymentBtn) {
+    processPaymentBtn.addEventListener("click", () => { 
+        if (cart.length === 0) {
+            alert("Cart is empty."); 
+            return;
+        }
+        
+        // Calculate totals first
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        
+        let discountAmount = 0;
+        if (currentDiscount.type === "PWD" || currentDiscount.type === "Senior") {
+            discountAmount = subtotal * 0.20;
+        } else if (currentDiscount.type === "Custom" && currentDiscount.percentage) {
+            discountAmount = subtotal * (currentDiscount.percentage / 100);
+        }
+        if (discountAmount > subtotal) {
+            discountAmount = subtotal;
+        }
+        
+        const netSubtotal = subtotal - discountAmount;
+        const vatable = netSubtotal / 1.12;
+        const vatAmount = netSubtotal - vatable;
+        const total = netSubtotal;
+        
+        // Update the modal with the calculated total
+        const customerModalTotal = document.getElementById("customer-modal-total");
+        if (customerModalTotal) {
+            customerModalTotal.textContent = `₱${total.toFixed(2)}`;
+        }
+        
+        // Setup payment method listeners
+        const paymentMethodRadios = document.querySelectorAll('#customer-info-modal input[name="paymentMethod"]');
+        const cashDetails = document.getElementById("payment-cash-details");
+        const paymentAmountInput = document.getElementById("payment-amount");
+        const changeDisplay = document.getElementById("payment-change-display");
+        
+        if (paymentAmountInput) {
+            paymentAmountInput.oninput = () => {
+                const paid = parseFloat(paymentAmountInput.value) || 0;
+                const change = paid - total;
+                if (changeDisplay) {
                     if (change >= 0) {
-                      changeDisplay.textContent = `₱${change.toFixed(2)}`;
-                      changeDisplay.style.color = "var(--color-green-700)";
+                        changeDisplay.textContent = `₱${change.toFixed(2)}`;
+                        changeDisplay.style.color = "var(--color-green-700)";
                     } else {
-                      changeDisplay.textContent = `₱${change.toFixed(2)} (Insufficient)`;
-                      changeDisplay.style.color = "var(--color-red-500)";
+                        changeDisplay.textContent = `₱${change.toFixed(2)} (Insufficient)`;
+                        changeDisplay.style.color = "var(--color-red-500)";
                     }
-                  };
-              }
-              paymentMethodRadios.forEach(radio => {
-                radio.onchange = () => {
-                  if (radio.value === 'Cash') {
+                }
+            };
+        }
+        
+        paymentMethodRadios.forEach(radio => {
+            radio.onchange = () => {
+                if (cashDetails) {
+                    cashDetails.classList.toggle('hidden', radio.value !== 'Cash');
+                }
+                if (radio.value === 'Cash') {
                     if (paymentAmountInput) {
                         paymentAmountInput.disabled = false;
                         paymentAmountInput.value = '';
                     }
-                    if (changeDisplay) changeDisplay.textContent = '₱0.00';
-                  } else {
+                    if (changeDisplay) {
+                        changeDisplay.textContent = '₱0.00';
+                    }
+                } else {
                     if (paymentAmountInput) {
                         paymentAmountInput.disabled = true;
                         paymentAmountInput.value = '';
                     }
-                    if (changeDisplay) changeDisplay.textContent = '₱0.00';
-                  }
-                };
-              });
-              const payCashRadio = document.getElementById('pay-cash');
-              if (payCashRadio) payCashRadio.checked = true;
-              if (cashDetails) cashDetails.classList.remove('hidden');
-              if (paymentAmountInput) {
-                  paymentAmountInput.disabled = false;
-                  paymentAmountInput.value = '';
-              }
-              if (changeDisplay) {
-                  changeDisplay.textContent = '₱0.00';
-                  changeDisplay.style.color = "var(--color-text)";
-              }
-              if (customerInfoModal) customerInfoModal.style.display = "flex";
-              if (customerInfoForm) customerInfoForm.reset();
+                    if (changeDisplay) {
+                        changeDisplay.textContent = '₱0.00';
+                    }
+                }
+            };
         });
-    }
+        
+        // Set default payment method to Cash
+        const payCashRadio = document.getElementById('pay-cash');
+        if (payCashRadio) {
+            payCashRadio.checked = true;
+        }
+        if (cashDetails) {
+            cashDetails.classList.remove('hidden');
+        }
+        if (paymentAmountInput) {
+            paymentAmountInput.disabled = false;
+            paymentAmountInput.value = '';
+        }
+        if (changeDisplay) {
+            changeDisplay.textContent = '₱0.00';
+            changeDisplay.style.color = "var(--color-text)";
+        }
+        
+        // Open the modal
+        if (customerInfoModal) {
+            customerInfoModal.style.display = "flex";
+        }
+        if (customerInfoForm) {
+            customerInfoForm.reset();
+        }
+    });
+}
     if (cancelCustomerInfoBtn) {
         cancelCustomerInfoBtn.addEventListener("click", () => {
             if (customerInfoModal) customerInfoModal.style.display = "none";
         });
     }
 
-    if (customerInfoForm) {
-        customerInfoForm.addEventListener("submit", (e) => {
-          e.preventDefault();
-          const customerName = document.getElementById("customer-name").value;
-          const orderType = document.getElementById("order-type").value;
-          const paymentMethodRadio = document.querySelector('#customer-info-modal input[name="paymentMethod"]:checked');
-          if (!paymentMethodRadio) { alert("Please select a payment method."); return; }
-          const paymentMethod = paymentMethodRadio.value;
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-let discountAmount = 0;
-if (currentDiscount.type === "PWD" || currentDiscount.type === "Senior") {
-  discountAmount = subtotal * 0.20;
-} else if (currentDiscount.type === "Custom") {
-  discountAmount = currentDiscount.amount;
-}
-if (discountAmount > subtotal) discountAmount = subtotal;
+if (customerInfoForm) {
+    customerInfoForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const customerName = document.getElementById("customer-name").value;
+      const orderType = document.getElementById("order-type").value;
+      const paymentMethodRadio = document.querySelector('#customer-info-modal input[name="paymentMethod"]:checked');
+      if (!paymentMethodRadio) { alert("Please select a payment method."); return; }
+      const paymentMethod = paymentMethodRadio.value;
+      
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      let discountAmount = 0;
+      if (currentDiscount.type === "PWD" || currentDiscount.type === "Senior") {
+        discountAmount = subtotal * 0.20;
+      } else if (currentDiscount.type === "Custom" && currentDiscount.percentage) {
+        discountAmount = subtotal * (currentDiscount.percentage / 100);
+      }
+      if (discountAmount > subtotal) discountAmount = subtotal;
 
-// Calculate VAT-inclusive amounts
-const netSubtotal = subtotal - discountAmount;
-const vatable = netSubtotal / 1.12;
-const vatAmount = netSubtotal - vatable;
-const total = netSubtotal;
-          let paymentAmount = 0;
-          let change = 0;
-          if (paymentMethod === 'Cash') {
-            paymentAmount = parseFloat(document.getElementById('payment-amount').value);
-            if (isNaN(paymentAmount) || paymentAmount < total) {
-              alert("Payment amount is insufficient or invalid."); return;
-            }
-            change = paymentAmount - total;
-          } else {
-            paymentAmount = total;
-            change = 0;
-          }
-          const paymentDetails = {
-            paymentMethod,
-            paymentAmount,
-            change,
-            processedBy: document.querySelector(".employee-name").textContent || "Cashier"
-          };
-          if (customerInfoModal) customerInfoModal.style.display = "none";
-processSale(customerName, orderType, total, subtotal, vatAmount, paymentDetails, currentDiscount);        });
-    }
+      // Calculate VAT-inclusive amounts
+      const netSubtotal = subtotal - discountAmount;
+      const vatable = netSubtotal / 1.12;
+      const vatAmount = netSubtotal - vatable;
+      const total = netSubtotal;
+      
+      let paymentAmount = 0;
+      let change = 0;
+      if (paymentMethod === 'Cash') {
+        paymentAmount = parseFloat(document.getElementById('payment-amount').value);
+        if (isNaN(paymentAmount) || paymentAmount < total) {
+          alert("Payment amount is insufficient or invalid."); return;
+        }
+        change = paymentAmount - total;
+      } else {
+        paymentAmount = total;
+        change = 0;
+      }
+      const paymentDetails = {
+        paymentMethod,
+        paymentAmount,
+        change,
+        processedBy: document.querySelector(".employee-name").textContent || "Cashier"
+      };
+      if (customerInfoModal) customerInfoModal.style.display = "none";
+      
+      // UPDATE THIS LINE to pass the full discount object
+      processSale(customerName, orderType, total, subtotal, vatAmount, paymentDetails, { 
+          type: currentDiscount.type, 
+          amount: discountAmount,
+          percentage: currentDiscount.percentage || null
+      });
+    });
+}
 
     // --- Order Details Modal (Kitchen) ---
     if (orderModalBackBtn) {
@@ -1876,37 +2473,39 @@ processSale(customerName, orderType, total, subtotal, vatAmount, paymentDetails,
     }
 
     // --- Discount Listeners (MERGED from the second listener) ---
-    if (discountTypeSelect) { 
-        discountTypeSelect.addEventListener("change", () => {
-            const selectedType = discountTypeSelect.value;
-            if (selectedType === "Custom") {
-                customDiscountWrapper.classList.remove("hidden");
-                customDiscountAmount.value = "";
-                applyDiscountBtn.classList.remove("hidden");
+if (discountTypeSelect) { 
+    discountTypeSelect.addEventListener("change", () => {
+        const selectedType = discountTypeSelect.value;
+        if (selectedType === "Custom") {
+            customDiscountWrapper.classList.remove("hidden");
+            customDiscountAmount.value = "";
+            customDiscountAmount.placeholder = "e.g., 15 (for 15%)";
+            applyDiscountBtn.classList.remove("hidden");
+        } else {
+            customDiscountWrapper.classList.add("hidden");
+            customDiscountAmount.value = "";
+            if (selectedType === "PWD" || selectedType === "Senior") {
+                currentDiscount = { type: selectedType, amount: 0 };
             } else {
-                customDiscountWrapper.classList.add("hidden");
-                customDiscountAmount.value = "";
-                if (selectedType === "PWD" || selectedType === "Senior") {
-                    currentDiscount = { type: selectedType, amount: 0 };
-                } else {
-                    currentDiscount = { type: "none", amount: 0 };
-                }
-                updateCartTotals();
+                currentDiscount = { type: "none", amount: 0 };
             }
-        });
-    }
+            updateCartTotals();
+        }
+    });
+}
 
-    if (applyDiscountBtn) {
-        applyDiscountBtn.addEventListener("click", () => {
-            const amount = parseFloat(customDiscountAmount.value);
-            if (!isNaN(amount) && amount > 0) {
-                currentDiscount = { type: "Custom", amount: amount };
-                updateCartTotals();
-            } else {
-                alert("Please enter a valid discount amount.");
-            }
-        });
-    }
+if (applyDiscountBtn) {
+    applyDiscountBtn.addEventListener("click", () => {
+        const percentage = parseFloat(customDiscountAmount.value);
+        if (!isNaN(percentage) && percentage > 0 && percentage <= 100) {
+            currentDiscount = { type: "Custom", percentage: percentage };
+            updateCartTotals();
+            alert(`${percentage}% discount applied successfully!`);
+        } else {
+            alert("Please enter a valid percentage between 1 and 100.");
+        }
+    });
+}
 
     // --- Initial Data Loaders ---
     listenForProducts();

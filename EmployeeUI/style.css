@@ -1011,7 +1011,77 @@ label {
 .ingredient-row input[type="text"] {
   flex: 1;
 }
+.variation-container {
+    border: 2px solid var(--color-brown-200);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background-color: var(--color-brown-50);
+}
 
+.variation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--color-brown-300);
+}
+
+.variation-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--color-brown-900);
+}
+
+.variation-name-price-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.variation-recipe-section {
+    margin-top: 12px;
+}
+
+.variation-recipe-label {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: block;
+    color: var(--color-brown-700);
+}
+
+.variation-recipe-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--color-brown-200);
+    padding: 8px;
+    border-radius: 4px;
+    background-color: white;
+}
+
+.add-ingredient-to-variation-btn {
+    margin-top: 8px;
+    font-size: 13px;
+    padding: 6px 12px;
+}
+
+.remove-variation-btn {
+    background-color: var(--color-red-500);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.remove-variation-btn:hover {
+    background-color: var(--color-red-600);
+}
 .remove-ingredient {
   padding: var(--space-6) var(--space-12);
   font-size: var(--font-size-base);
@@ -3517,4 +3587,72 @@ body.sidebar-collapsed .sidebar {
   color: var(--color-gray-600);
   border: 1px solid var(--color-gray-500);
   text-decoration: line-through;
+}
+.secondary-stock-container {
+    border: 2px solid var(--color-blue-200);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background-color: var(--color-blue-50);
+}
+
+.secondary-stock-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--color-blue-300);
+}
+
+.secondary-stock-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--color-blue-900);
+}
+
+.secondary-stock-badge {
+    background-color: var(--color-blue-500);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.secondary-stock-recipe-section {
+    margin-top: 12px;
+}
+
+.secondary-stock-recipe-label {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: block;
+    color: var(--color-blue-700);
+}
+
+.secondary-stock-recipe-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--color-blue-200);
+    padding: 8px;
+    border-radius: 4px;
+    background-color: white;
+}
+
+.add-ingredient-to-secondary-btn {
+    margin-top: 8px;
+    font-size: 13px;
+    padding: 6px 12px;
+}
+
+.secondary-variation-name {
+    display: inline-block;
+    background-color: var(--color-blue-100);
+    color: var(--color-blue-900);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-bottom: 8px;
 }

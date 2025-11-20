@@ -139,11 +139,27 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div id="variations-wrapper" class="form-group hidden">
-                                    <label>Product Variations</label>
-                                    <div id="product-variations-list"></div>
-                                    <button type="button" id="add-variation-btn" class="btn btn--secondary btn--small" style="margin-top: 10px;">+ Add Variation</button>
-                                </div>
+                                 <div id="variations-wrapper" class="form-group hidden">
+                                        <label>Product Variations</label>
+                                        <div id="product-variations-list"></div>
+                                        <button type="button" id="add-variation-btn" class="btn btn--secondary btn--small" style="margin-top: 10px;">+ Add Variation</button>
+                                    </div>
+
+                                    <!-- ADD THIS NEW SECTION -->
+                                    <div class="form-group">
+                                        <label>Secondary Stock (Optional)</label>
+                                        <div class="permission-item">
+                                            <input type="checkbox" id="secondary-stock-toggle">
+                                            <label for="secondary-stock-toggle" style="font-weight: 500; cursor: pointer;">Enable secondary stock for this product</label>
+                                            <p style="font-size: 12px; color: #666; margin-top: 4px;">When primary ingredients run out, these alternatives will be used automatically.</p>
+                                        </div>
+                                    </div>
+
+                                    <div id="secondary-stock-wrapper" class="form-group hidden">
+                                        <label>Secondary Stock Recipes</label>
+                                        <div id="secondary-stock-list"></div>
+                                    </div>
+
                                 <div class="form-group">
                                     <label>Recipe (Ingredients):</label>
                                     <div id="recipe-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 8px;"></div>
@@ -207,9 +223,9 @@
                                         </select>
                                     </div>
                                     <div class="form-group hidden" id="custom-discount-wrapper">
-                                        <label for="custom-discount-amount">Custom Amount (₱)</label>
+                                        <label for="custom-discount-amount">Custom Discount (%)</label>
                                         <div style="display: flex; gap: 8px;">
-                                            <input type="number" id="custom-discount-amount" class="form-control" placeholder="0.00" step="0.01" min="0">
+                                            <input type="number" id="custom-discount-amount" class="form-control" placeholder="e.g., 15 (for 15%)" step="0.01" min="0" max="100">
                                             <button type="button" id="apply-discount-btn" class="btn btn--secondary">Apply</button>
                                         </div>
                                     </div>
