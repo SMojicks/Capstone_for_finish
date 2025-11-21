@@ -422,7 +422,15 @@ async function exportInventoryToPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
-    const tableData = allIngredients.map(ing => {
+    // Use filtered data instead of allIngredients
+    const filteredData = getFilteredInventoryData();
+    
+    if (filteredData.length === 0) {
+        alert('No data to export. Please adjust your filters.');
+        return;
+    }
+    
+    const tableData = filteredData.map(ing => {
         const { statusDisplay } = getIngredientStatus(ing);
         const displayStock = formatStockDisplay(ing.stockQuantity, ing.stockUnit, ing.baseUnit, ing.conversionFactor);
         
@@ -442,9 +450,12 @@ async function exportInventoryToPDF() {
     doc.text('Inventory Report', 14, 20);
     doc.setFontSize(11);
     doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 28);
+    doc.setFontSize(10);
+    doc.text(getFilterDescription(), 14, 35);
+    doc.text(`Total Items: ${filteredData.length}`, 14, 42);
 
     doc.autoTable({
-        startY: 35,
+        startY: 48,
         head: [['ID', 'Name', 'Category', 'Status', 'Stock', 'Min Stock', 'Expiry', 'Conversion']],
         body: tableData,
         theme: 'striped',
@@ -452,11 +463,26 @@ async function exportInventoryToPDF() {
         styles: { fontSize: 9 }
     });
 
-    doc.save(`Inventory_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+    // Generate filename with filter info
+    let filename = 'Inventory_Report';
+    if (inventoryFilterStatus.value) {
+        filename += `_${inventoryFilterStatus.value}`;
+    }
+    filename += `_${new Date().toISOString().split('T')[0]}.pdf`;
+    
+    doc.save(filename);
 }
 
 function exportInventoryToExcel() {
-    const tableData = allIngredients.map(ing => {
+    // Use filtered data instead of allIngredients
+    const filteredData = getFilteredInventoryData();
+    
+    if (filteredData.length === 0) {
+        alert('No data to export. Please adjust your filters.');
+        return;
+    }
+    
+    const tableData = filteredData.map(ing => {
         const { statusDisplay } = getIngredientStatus(ing);
         const displayStock = formatStockDisplay(ing.stockQuantity, ing.stockUnit, ing.baseUnit, ing.conversionFactor);
         
@@ -474,10 +500,45 @@ function exportInventoryToExcel() {
     });
 
     const worksheet = XLSX.utils.json_to_sheet(tableData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Inventory');
     
-    XLSX.writeFile(workbook, `Inventory_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+    // Add filter info as header rows
+    XLSX.utils.sheet_add_aoa(worksheet, [
+        ['Inventory Report'],
+        [`Generated: ${new Date().toLocaleString()}`],
+        [getFilterDescription()],
+        [`Total Items: ${filteredData.length}`],
+        [] // Empty row before data
+    ], { origin: 'A1' });
+    
+    // Shift the data down to accommodate headers
+    const range = XLSX.utils.decode_range(worksheet['!ref']);
+    range.e.r += 5; // Add 5 rows for headers
+    worksheet['!ref'] = XLSX.utils.encode_range(range);
+    
+    // Re-create worksheet with headers
+    const wsWithHeaders = XLSX.utils.aoa_to_sheet([
+        ['Inventory Report'],
+        [`Generated: ${new Date().toLocaleString()}`],
+        [getFilterDescription()],
+        [`Total Items: ${filteredData.length}`],
+        [], // Empty row
+        ['Item ID', 'Name', 'Category', 'Status', 'Stock', 'Min Stock', 'Expiry Date', 'Last Updated', 'Conversion']
+    ]);
+    
+    // Add data rows
+    XLSX.utils.sheet_add_json(wsWithHeaders, tableData, { origin: 'A7', skipHeader: true });
+    
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, wsWithHeaders, 'Inventory');
+    
+    // Generate filename with filter info
+    let filename = 'Inventory_Report';
+    if (inventoryFilterStatus.value) {
+        filename += `_${inventoryFilterStatus.value}`;
+    }
+    filename += `_${new Date().toISOString().split('T')[0]}.xlsx`;
+    
+    XLSX.writeFile(workbook, filename);
 }
 
 // Add event listeners for export buttons
@@ -491,6 +552,91 @@ if (exportPdfBtn) {
 if (exportExcelBtn) {
     exportExcelBtn.addEventListener('click', exportInventoryToExcel);
 }
+
+// NEW: Helper to get currently filtered data
+function getFilteredInventoryData() {
+    const searchName = inventorySearchName.value.toLowerCase();
+    const searchCategory = inventoryFilterCategory.value;
+    const searchStatus = inventoryFilterStatus.value;
+    const searchExpiry = inventoryFilterExpiry.value;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const sevenDaysFromNow = new Date(today);
+    sevenDaysFromNow.setDate(today.getDate() + 7);
+
+    return allIngredients.filter(ing => {
+        // 1. Filter by Name
+        if (searchName && !ing.name.toLowerCase().includes(searchName)) {
+            return false;
+        }
+
+        // 2. Filter by Category
+        if (searchCategory && ing.category !== searchCategory) {
+            return false;
+        }
+
+        // Get status for filters
+        const { status } = getIngredientStatus(ing);
+
+        // 3. Filter by Status
+        if (searchStatus && status !== searchStatus) {
+            return false;
+        }
+        
+        // 4. Filter by Expiry
+        if (searchExpiry) {
+            if (!ing.expiryDate) return false;
+            
+            try {
+                const expiry = new Date(ing.expiryDate + 'T00:00:00');
+                if (isNaN(expiry)) return false;
+
+                if (searchExpiry === 'expired' && expiry >= today) {
+                    return false;
+                }
+                
+                if (searchExpiry === 'expiring_soon' && (expiry < today || expiry > sevenDaysFromNow)) {
+                    return false;
+                }
+            } catch (e) {
+                return false;
+            }
+        }
+        
+        return true;
+    });
+}
+// Helper to generate filter description for export
+function getFilterDescription() {
+    const filters = [];
+    
+    if (inventorySearchName.value) {
+        filters.push(`Name: "${inventorySearchName.value}"`);
+    }
+    if (inventoryFilterCategory.value) {
+        filters.push(`Category: ${inventoryFilterCategory.value}`);
+    }
+    if (inventoryFilterStatus.value) {
+        const statusLabels = {
+            'in_stock': 'In Stock',
+            'low_stock': 'Low Stock',
+            'out_of_stock': 'Out of Stock',
+            'expired': 'Expired'
+        };
+        filters.push(`Status: ${statusLabels[inventoryFilterStatus.value] || inventoryFilterStatus.value}`);
+    }
+    if (inventoryFilterExpiry.value) {
+        const expiryLabels = {
+            'expired': 'Expired Items',
+            'expiring_soon': 'Expiring in 7 Days'
+        };
+        filters.push(`Expiry: ${expiryLabels[inventoryFilterExpiry.value] || inventoryFilterExpiry.value}`);
+    }
+    
+    return filters.length > 0 ? `Filters: ${filters.join(' | ')}` : 'All Items (No Filters Applied)';
+}
+
 // --- Initial Load & NEW Event Listeners ---
 document.addEventListener('DOMContentLoaded', () => {
     loadInventory(); // Main function to load data
