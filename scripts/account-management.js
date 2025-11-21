@@ -13,7 +13,6 @@ import {
 
 // --- Module-level variables ---
 let hasLoaded = false;
-// DECLARE variables here so all functions can access them
 let employeeModal;
 let employeeForm;
 let employeeModalTitle;
@@ -23,7 +22,7 @@ let cancelEmployeeBtn;
 export async function loadAccounts() {
     // Only run this function once per page load
     if (hasLoaded) return;
-    hasLoaded = true; // Set flag
+    hasLoaded = true;
 
     const customerTableBody = document.getElementById("customer-accounts-table-body");
     const employeeTableBody = document.getElementById("employee-accounts-table-body");
@@ -67,6 +66,8 @@ export async function loadAccounts() {
 function renderCustomerRow(user) {
     const row = document.createElement("tr");
     const isBlocked = user.status === "blocked";
+    
+    // UPDATED: Removed "Edit/Promote" button, kept only Block/Unblock and Delete
     row.innerHTML = `
         <td>${user.fullName}</td>
         <td>${user.email}</td>
@@ -76,19 +77,20 @@ function renderCustomerRow(user) {
                 ${isBlocked ? "Blocked" : "Active"}
             </span>
         </td>
-        <td>
-            <button class="btn btn--small edit-btn">Edit/Promote</button>
-            <button class="btn btn--small block-btn" data-id="${user.id}" data-blocked="${isBlocked}">
-                ${isBlocked ? "Unblock" : "Block"}
-            </button>
-            <button class="btn btn--small delete-btn" data-id="${user.id}">Delete</button>
+        <td class="actions-cell">
+            ${isBlocked 
+                ? `<button class="btn-icon btn--icon-approve" data-id="${user.id}" data-blocked="${isBlocked}" title="Unblock">✓</button>`
+                : `<button class="btn-icon btn--icon-cancel" data-id="${user.id}" data-blocked="${isBlocked}" title="Block">🚫</button>`
+            }
+            <button class="btn-icon btn--icon-delete" data-id="${user.id}" title="Delete">🗑️</button>
         </td>
     `;
 
     // Add event listeners for buttons
-    row.querySelector(".block-btn").addEventListener("click", toggleBlockCustomer);
-    row.querySelector(".delete-btn").addEventListener("click", deleteCustomer);
-    row.querySelector(".edit-btn").addEventListener("click", () => openEmployeeModal(user));
+    const blockBtn = row.querySelector(isBlocked ? ".btn--icon-approve" : ".btn--icon-cancel");
+    blockBtn.addEventListener("click", toggleBlockCustomer);
+    
+    row.querySelector(".btn--icon-delete").addEventListener("click", deleteCustomer);
     
     document.getElementById("customer-accounts-table-body").appendChild(row);
 }
@@ -106,12 +108,12 @@ function renderEmployeeRow(user) {
         <td>${user.fullName}</td>
         <td>${user.email}</td>
         <td><ul class="permission-list">${permList || "<li>No permissions set</li>"}</ul></td>
-        <td>
-            <button class="btn btn--small edit-btn">Edit</button>
+        <td class="actions-cell">
+            <button class="btn-icon btn--icon-edit" title="Edit">✏️</button>
         </td>
     `;
 
-    row.querySelector(".edit-btn").addEventListener("click", () => openEmployeeModal(user));
+    row.querySelector(".btn--icon-edit").addEventListener("click", () => openEmployeeModal(user));
     
     document.getElementById("employee-accounts-table-body").appendChild(row);
 }
@@ -128,10 +130,10 @@ async function toggleBlockCustomer(e) {
             const userRef = doc(db, "users", userId);
             await updateDoc(userRef, { status: newStatus });
             alert(`Customer has been ${newStatus}.`);
-            hasLoaded = false; // Reset flag to allow reload
+            hasLoaded = false;
             loadAccounts();
         } catch (error) {
-            console.error("Error blocking customer:", error);
+            console.error("Error updating customer status:", error);
             alert("Error updating customer status.");
         }
     }
@@ -140,22 +142,26 @@ async function toggleBlockCustomer(e) {
 async function deleteCustomer(e) {
     const userId = e.target.dataset.id;
     
-    if (confirm("Are you sure you want to DELETE this customer?\nThis action cannot be undone and will delete their data.")) {
-        try {
-            const userRef = doc(db, "users", userId);
-            await deleteDoc(userRef);
-            alert("Customer record deleted.");
-            hasLoaded = false; // Reset flag to allow reload
-            loadAccounts();
-        } catch (error) {
-            console.error("Error deleting customer:", error);
-            alert("Error deleting customer record.");
+    if (confirm("⚠️ Are you sure you want to DELETE this customer?\n\nThis action cannot be undone and will permanently delete:\n• Their account\n• All their reservations\n• All their feedback\n\nType 'DELETE' in the next prompt to confirm.")) {
+        const confirmation = prompt("Type 'DELETE' to confirm:");
+        if (confirmation === "DELETE") {
+            try {
+                const userRef = doc(db, "users", userId);
+                await deleteDoc(userRef);
+                alert("✅ Customer account has been permanently deleted.");
+                hasLoaded = false;
+                loadAccounts();
+            } catch (error) {
+                console.error("Error deleting customer:", error);
+                alert("❌ Error deleting customer account: " + error.message);
+            }
+        } else {
+            alert("Deletion cancelled.");
         }
     }
 }
 
 function openEmployeeModal(user) {
-    // Check if the form variable has been set by the DOM listener
     if (!employeeForm) {
         console.error("Modal form is not ready. DOM may not be fully loaded.");
         return;
@@ -163,37 +169,61 @@ function openEmployeeModal(user) {
     
     employeeForm.reset();
     
-    // This is where the error was happening
     document.getElementById("employee-id").value = user.id;
     document.getElementById("employee-name").value = user.fullName;
     document.getElementById("employee-email").value = user.email;
-    document.getElementById("role-select").value = user.role || "customer";
+    document.getElementById("role-select").value = user.role || "employee";
 
     const permissions = user.permissions || {};
     employeeForm.querySelectorAll('.permission-item input[type="checkbox"]').forEach(checkbox => {
         const permKey = checkbox.dataset.permission;
         checkbox.checked = permissions[permKey] === true;
+        
+        // Disable all checkboxes if role is admin
+        if (user.role === "admin") {
+            checkbox.disabled = true;
+        }
     });
 
-    employeeModalTitle.textContent = "Edit User Permissions";
+    employeeModalTitle.textContent = "Edit Employee Permissions";
     employeeModal.style.display = "flex";
 }
 
-// --- Event Listeners for Modal (Need to be run once) ---
+// --- Event Listeners for Modal ---
 document.addEventListener("DOMContentLoaded", () => {
     
-    // ASSIGN values to the module-level variables
+    // Assign values to the module-level variables
     employeeModal = document.getElementById("employee-modal");
     employeeForm = document.getElementById("employee-form");
     employeeModalTitle = document.getElementById("employee-modal-title");
     cancelEmployeeBtn = document.getElementById("cancel-employee-btn");
 
+    // Close modal button
     if (cancelEmployeeBtn) {
         cancelEmployeeBtn.addEventListener("click", () => {
             employeeModal.style.display = "none";
         });
     }
 
+    // Handle role change in modal (auto-check permissions for admin)
+    const roleSelect = document.getElementById("role-select");
+    if (roleSelect) {
+        roleSelect.addEventListener("change", (e) => {
+            const checkboxes = employeeForm.querySelectorAll('.permission-item input[type="checkbox"]');
+            if (e.target.value === "admin") {
+                checkboxes.forEach(cb => {
+                    cb.checked = true;
+                    cb.disabled = true;
+                });
+            } else {
+                checkboxes.forEach(cb => {
+                    cb.disabled = false;
+                });
+            }
+        });
+    }
+
+    // Form submission
     if (employeeForm) {
         employeeForm.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -211,6 +241,15 @@ document.addEventListener("DOMContentLoaded", () => {
             
             const newRole = document.getElementById("role-select").value;
             
+            // Validate: Admin must have all permissions
+            if (newRole === "admin") {
+                const allChecked = Object.values(permissions).every(val => val === true);
+                if (!allChecked) {
+                    alert("Admin role requires all permissions to be enabled.");
+                    return;
+                }
+            }
+            
             const employeeData = {
                 role: newRole,
                 permissions: permissions
@@ -219,14 +258,14 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 const docRef = doc(db, "users", userId);
                 await updateDoc(docRef, employeeData);
-                alert("User updated successfully!");
+                alert("✅ Employee permissions updated successfully!");
                 
                 employeeModal.style.display = "none";
-                hasLoaded = false; // Reset flag to allow reload
-                loadAccounts(); // Refresh the tables
+                hasLoaded = false;
+                loadAccounts();
             } catch (error) {
-                console.error("Error updating user:", error);
-                alert("Error updating user: " + error.message);
+                console.error("Error updating employee:", error);
+                alert("❌ Error updating employee: " + error.message);
             }
         });
     }
@@ -245,4 +284,13 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById(targetId).classList.add("active");
         });
     });
+
+    // Close modal when clicking outside
+    if (employeeModal) {
+        employeeModal.addEventListener("click", (e) => {
+            if (e.target === employeeModal) {
+                employeeModal.style.display = "none";
+            }
+        });
+    }
 });

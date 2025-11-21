@@ -517,6 +517,10 @@
                     </div>
 
                     <div id="employee-accounts" class="account-table-container">
+                            <div class="section-header" style="margin-bottom: 16px;">
+                                <h3 style="margin: 0; font-size: 1.2rem; color: var(--color-text);">Employee Accounts</h3>
+                                <button id="add-employee-btn" class="btn btn--primary btn--sm">+ Add Employee</button>
+                            </div>
                         <div class="table-container">
                             <table class="data-table">
                                 <thead>
@@ -894,7 +898,79 @@
             </div>
         </div>
     </div>
-
+<!-- Add Employee Modal -->
+<div id="add-employee-modal" class="modal">
+    <div class="modal-content modal-content--wide">
+        <h2 id="add-employee-modal-title">Create New Employee Account</h2>
+        <form id="add-employee-form">
+            <div class="form-grid-two-col">
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="new-employee-name">Full Name *</label>
+                        <input type="text" id="new-employee-name" class="form-control" required placeholder="e.g., John Smith">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-employee-email">Email *</label>
+                        <input type="email" id="new-employee-email" class="form-control" required placeholder="e.g., john@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-employee-password">Password *</label>
+                        <input type="password" id="new-employee-password" class="form-control" required placeholder="Minimum 6 characters" minlength="6">
+                        <p style="font-size: 12px; color: #666; margin-top: 4px;">Password must be at least 6 characters long.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-employee-role">User Role *</label>
+                        <select id="new-employee-role" class="form-control" required>
+                            <option value="">Select role...</option>
+                            <option value="employee">Employee</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-column">
+                    <label>Access Permissions</label>
+                    <div class="permissions-grid">
+                        <div class="permission-item">
+                            <input type="checkbox" id="new-perm-pos" data-permission="pos">
+                            <label for="new-perm-pos">Point of Sale (POS)</label>
+                        </div>
+                        <div class="permission-item">
+                            <input type="checkbox" id="new-perm-inventory" data-permission="inventory">
+                            <label for="new-perm-inventory">Inventory</label>
+                        </div>
+                        <div class="permission-item">
+                            <input type="checkbox" id="new-perm-transactions" data-permission="transactions">
+                            <label for="new-perm-transactions">Transactions</label>
+                        </div>
+                        <div class="permission-item">
+                            <input type="checkbox" id="new-perm-reservations" data-permission="reservations">
+                            <label for="new-perm-reservations">Reservations</label>
+                        </div>
+                        <div class="permission-item">
+                            <input type="checkbox" id="new-perm-feedback" data-permission="feedback">
+                            <label for="new-perm-feedback">Feedback</label>
+                        </div>
+                        <div class="permission-item">
+                            <input type="checkbox" id="new-perm-analytics" data-permission="analytics">
+                            <label for="new-perm-analytics">Analytics</label>
+                        </div>
+                        <div class="permission-item">
+                            <input type="checkbox" id="new-perm-accounts" data-permission="accounts">
+                            <label for="new-perm-accounts" title="Grants admin access">Account Mgmt (Admin)</label>
+                        </div>
+                    </div>
+                    <p style="font-size: 12px; color: #666; margin-top: 12px;">
+                        <strong>Note:</strong> If you select "Admin" role, all permissions will be automatically granted.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button type="submit" class="btn btn--primary">Create Employee Account</button>
+                <button type="button" id="cancel-add-employee-btn" class="btn btn--secondary">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns/cdn.min.js"></script>
@@ -910,6 +986,7 @@
     <script type="module" src="../scripts/employee-reservations.js"></script>
     <script type="module" src="../scripts/employee-feedback.js"></script>
     <script type="module" src="../scripts/analytics.js"></script>
+    <script type="module" src="../scripts/add-employee.js"></script>
     <script type="module" src="app.js"></script>
 
     <script type="module">

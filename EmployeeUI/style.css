@@ -3656,3 +3656,14 @@ body.sidebar-collapsed .sidebar {
     font-weight: 600;
     margin-bottom: 8px;
 }
+/* ========================================
+   EMPLOYEE ACCOUNTS SECTION HEADER
+   ======================================== */
+.account-table-container .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--color-border);
+}

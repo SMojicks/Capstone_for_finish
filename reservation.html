@@ -41,6 +41,10 @@
     </style>
 </head>
 <body class="page-content">
+        <!--Dev Mode Banner -->
+    <div id="dev-mode-banner" class="dev-mode-banner" style="display: none;">
+        🔧 DEVELOPER MODE ACTIVE - Mock User Logged In
+    </div>
     <div id="i6po" class="gjs-grid-row">
         <div id="itjq" class="gjs-grid-column">
             <div id="iyd2">
@@ -121,17 +125,17 @@
                             </div>
                             
                             <div class="table-overlays" id="tableOverlays">
-                                <div class="table-spot" data-id="1" style="top: 25%; left: 10%;"></div>
-                                <div class="table-spot" data-id="2" style="top: 23%; left: 38%;"></div>
-                                <div class="table-spot" data-id="3" style="top: 26%; left: 89%;"></div>
-                                <div class="table-spot" data-id="4" style="top: 60%; left: 13%;"></div>
-                                <div class="table-spot" data-id="5" style="top: 54%; left: 32%;"></div>
-                                <div class="table-spot" data-id="6" style="top: 54%; left: 50%;"></div>
-                                <div class="table-spot" data-id="7" style="top: 82%; left: 6%;"></div>
-                                <div class="table-spot" data-id="8" style="top: 82%; left: 32%;"></div>
-                                <div class="table-spot" data-id="9" style="top: 80%; left:50%;"></div>
-                                <div class="table-spot" data-id="10" style="top: 60%; left: 90%;"></div>
-                                <div class="table-spot" data-id="11" style="top: 78%; left: 90%;"></div>
+                                <div class="table-spot" data-id="1" style="top: 20%; left: 8%;"></div>
+                                <div class="table-spot" data-id="2" style="top: 15%; left: 36%;"></div>
+                                <div class="table-spot" data-id="3" style="top: 20%; left: 87%;"></div>
+                                <div class="table-spot" data-id="4" style="top: 57%; left: 11%;"></div>
+                                <div class="table-spot" data-id="5" style="top: 51%; left: 29.5%;"></div>
+                                <div class="table-spot" data-id="6" style="top: 51%; left: 48.5%;"></div>
+                                <div class="table-spot" data-id="7" style="top: 81%; left: 4%;"></div>
+                                <div class="table-spot" data-id="8" style="top: 80%; left: 29.5%;"></div>
+                                <div class="table-spot" data-id="9" style="top: 79%; left:48%;"></div>
+                                <div class="table-spot" data-id="10" style="top: 57%; left: 88%;"></div>
+                                <div class="table-spot" data-id="11" style="top: 77%; left: 88%;"></div>
                             </div>
                         </div>
 
@@ -146,9 +150,9 @@
                             </div>
                             
                             <div class="table-overlays" id="tableOverlaysUpstairs">
-                                <button class="vip-room-btn" data-id="12" style="top: 35%; left: 35%;">VIP ROOM</button>
+                                <button class="vip-room-btn" data-id="12" style="top: 35%; left: 33%;">VIP ROOM</button>
                                 <div class="table-spot" data-id="13" style="top: 90%; left: 80%;"></div>
-                                <div class="table-spot" data-id="14" style="top: 85%; left: 8%;"></div>
+                                <div class="table-spot" data-id="14" style="top: 81%; left: 8%;"></div>
                                 <div class="table-spot" data-id="15" style="top: 90%; left: 28%;"></div>
                             </div>
                         </div>
@@ -164,20 +168,31 @@
                  style="height: 24px; width: auto;">
             <span>GCash</span>
         </div>
-            </div>
+    </div>
     <div class="legend">
         <div class="legend-item">
             <div class="legend-color" style="background: linear-gradient(45deg, #4ECDC4, #44A08D);"></div>
             <span>Available Tables</span>
         </div>
-     <div class="legend-item">
+        <div class="legend-item">
             <div class="legend-color" style="background: linear-gradient(45deg, #df0404, #FF8E53);"></div>
             <span>Fully Booked (2/2)</span>
         </div>
-<div class="legend-item">
-    <div class="legend-color" style="background: linear-gradient(45deg, #04ec23, #764ba2);"></div>
-    <span>Your Selection (Max 2)</span>
-</div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(45deg, #04ec23, #764ba2);"></div>
+            <span>Your Selection (Max 2)</span>
+        </div>
+    </div>
+    
+    <!-- NEW: Daily Reservation Limit Notice -->
+    <div style="margin-top: 15px; padding: 12px; background: rgba(101, 85, 4, 0.1); border-left: 4px solid var(--color-gold); border-radius: var(--radius-md);">
+        <p style="margin: 0; font-size: 0.9rem; color: var(--color-text); line-height: 1.6;">
+            <strong>📅 Daily Reservation Limits:</strong><br>
+            <span style="color: var(--color-text-light);">
+                • Weekdays (Mon-Fri): Maximum 6 reservations per day<br>
+                • Weekends (Sat-Sun): Maximum 3 reservations per day
+            </span>
+        </p>
     </div>
 </div>
             </div>
@@ -735,7 +750,8 @@
             }
         });
     </script>
-<script type="module" src="scripts/firebase.js"></script>
+    <script type="module" src="scripts/firebase.js"></script>
+    <script type="module" src="scripts/dev-config.js"></script>
     <script type="module" src="scripts/auth-manager.js"></script>
     <script type="module" src="scripts/notification-manager.js"></script>
     <script type="module" src="scripts/reservation.js"></script>

@@ -14,12 +14,76 @@ import {
   deleteDoc // NEW: Import deleteDoc
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+// NEW: Import dev config
+import { DEV_MODE } from "./dev-config.js";
+
 let hasUnsavedChanges = false;
 
 // --- NEW ---
 let activeReservationId = null; 
 
 async function checkAuthState() {
+    // NEW: Check if dev mode is enabled
+// NEW: Check if dev mode is enabled
+if (DEV_MODE.enabled && DEV_MODE.skipAuth) {
+    console.log("🔧 DEV MODE ENABLED - Skipping authentication");
+    
+    // Set mock user as current user
+    currentUserId = DEV_MODE.mockUser.uid;
+    
+    // Fill in form with mock data
+    const nameInput = document.querySelector('input[name="customerName"]');
+    const contactInput = document.querySelector('input[name="contactNumber"]');
+    if (nameInput) {
+        nameInput.value = DEV_MODE.mockUser.fullName;
+        nameInput.readOnly = true;
+    }
+    if (contactInput) contactInput.value = DEV_MODE.mockUser.phone;
+    
+    // Show dev mode banner
+    const devBanner = document.getElementById('dev-mode-banner');
+    if (devBanner) devBanner.style.display = 'block';
+    
+    // Hide auth modal
+    const modal = document.getElementById('auth-validation-modal');
+    if (modal) modal.classList.add('hidden');
+    
+    // Show profile avatar with dev indicator
+    const loginBtn = document.getElementById('i1mew');
+    const profileContainer = document.getElementById('profile-avatar-container');
+    const profileInitials = document.getElementById('profile-initials');
+    
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (profileContainer) {
+        profileContainer.style.display = 'block';
+        profileContainer.style.border = '3px solid #ff6b6b'; // Red border for dev mode
+    }
+    if (profileInitials) profileInitials.textContent = '🔧'; // Wrench emoji for dev
+    
+    // Skip pending reservation check in dev mode
+    const pendingModal = document.getElementById('pending-reservation-modal');
+    const mainSection = document.getElementById('reservation-section-main');
+    if (pendingModal) pendingModal.classList.add('hidden');
+    if (mainSection) mainSection.classList.remove('blurred-section');
+    if (confirmReservationBtn) confirmReservationBtn.textContent = "Confirm Reservation";
+    
+    // NEW: Remove blur overlay and enable all form fields in dev mode
+    setFormStepsDisabled(false); // Enable all form fields
+    const layoutBlurOverlay = document.getElementById('layout-blur-overlay');
+    if (layoutBlurOverlay) {
+        layoutBlurOverlay.classList.add('hidden'); // Hide the blur overlay
+        layoutBlurOverlay.style.display = 'none'; // Extra safeguard
+    }
+    
+    // NEW: Make all tables appear available for positioning
+    updateTableVisuals();
+    
+    console.log("✅ Dev mode initialized with mock user:", DEV_MODE.mockUser);
+    console.log("🎨 All form fields enabled and blur overlay removed for development");
+    return;
+}
+    
+    // ORIGINAL CODE: Normal authentication flow
     onAuthStateChanged(auth, async (user) => {
         const modal = document.getElementById('auth-validation-modal'); 
 
@@ -28,21 +92,19 @@ async function checkAuthState() {
             currentUserId = user.uid;
             const userDocRef = doc(db, "users", user.uid);
             const userDoc = await getDoc(userDocRef);
-         if (userDoc.exists()) {
+            if (userDoc.exists()) {
                 const userData = userDoc.data();
                 const nameInput = document.querySelector('input[name="customerName"]');
                 const contactInput = document.querySelector('input[name="contactNumber"]');
                 if (nameInput) {
                     nameInput.value = userData.fullName || "";
-                    nameInput.readOnly = true; // Make it read-only
+                    nameInput.readOnly = true;
                 }
                 if (contactInput) contactInput.value = userData.phone || "";
             }
             
             if (modal) modal.classList.add('hidden');
 
-            // --- MODIFIED ---
-            // Check for pending reservations *after* filling user info
             await checkForPendingReservation(user.uid);
 
         } else {
@@ -441,7 +503,7 @@ function setFormStepsDisabled(disabled) {
 }
 
 
-// MODIFIED: checkAvailability
+// checkAvailability with daily limit
 async function checkAvailability() {
     if (!currentUserId) {
         const modal = document.getElementById('auth-validation-modal');
@@ -464,7 +526,13 @@ async function checkAvailability() {
     occupiedTables = [];
     
     try {
-        // MODIFIED: Only check by date, ignore time
+        // NEW: Check if selected date is a weekend
+        const selectedDateObj = new Date(selectedDate + 'T00:00:00');
+        const dayOfWeek = selectedDateObj.getDay(); // 0 = Sunday, 6 = Saturday
+        const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+        const maxReservations = isWeekend ? 3 : 6;
+        
+        // Query all reservations for the selected date
         const q = query(
             reservationsRef, 
             where("date", "==", selectedDate),
@@ -472,7 +540,26 @@ async function checkAvailability() {
         );
         const snapshot = await getDocs(q);
         
-        // MODIFIED: Mark all tables as occupied for the entire day
+        // NEW: Count total reservations for the day
+        let totalReservationsForDay = 0;
+        snapshot.forEach(doc => {
+            if (doc.id !== activeReservationId) {
+                totalReservationsForDay++;
+            }
+        });
+        
+        // NEW: Check if daily limit is reached
+        if (totalReservationsForDay >= maxReservations) {
+            const dayType = isWeekend ? "weekend" : "weekday";
+            alert(`Sorry, the maximum number of reservations (${maxReservations}) has been reached for this ${dayType}. Please select a different date.`);
+            setFormStepsDisabled(true);
+            if (availabilityMessage) {
+                availabilityMessage.textContent = `⚠️ Fully booked for ${selectedDate}`;
+            }
+            return;
+        }
+        
+        // Mark occupied tables
         snapshot.forEach(doc => {
             if (doc.id === activeReservationId) {
                 return; // Skip user's own active reservation
@@ -480,16 +567,14 @@ async function checkAvailability() {
             
             const res = doc.data();
             
-            // Add all tables from this reservation to occupied list (regardless of time)
+            // Add all tables from this reservation to occupied list
             if (Array.isArray(res.tableNumbers)) {
-                // New format: array of tables
                 res.tableNumbers.forEach(tableNum => {
                     if (!occupiedTables.includes(String(tableNum))) {
                         occupiedTables.push(String(tableNum));
                     }
                 });
             } else if (res.tableNumber) {
-                // Old format: single table
                 if (!occupiedTables.includes(String(res.tableNumber))) {
                     occupiedTables.push(String(res.tableNumber));
                 }
@@ -497,8 +582,15 @@ async function checkAvailability() {
         });
         
         updateTableVisuals();
-        setFormStepsDisabled(false); // SUCCESS! Un-disable form
-        if (availabilityMessage) availabilityMessage.textContent = `Showing availability for ${selectedDate}. Tables shown as occupied are booked for the entire day.`;
+        setFormStepsDisabled(false);
+        
+        // NEW: Show reservation count in message
+        const remainingSlots = maxReservations - totalReservationsForDay;
+        const dayType = isWeekend ? "weekend" : "weekday";
+        if (availabilityMessage) {
+            availabilityMessage.textContent = `Showing availability for ${selectedDate}. ${remainingSlots} reservation slot(s) remaining for this ${dayType}.`;
+        }
+        
         if (activeReservationId) {
             if (confirmReservationBtn) confirmReservationBtn.textContent = "Update Reservation";
         } else {
@@ -507,7 +599,7 @@ async function checkAvailability() {
     } catch (err) {
         console.error("Error checking availability:", err);
         if (availabilityMessage) availabilityMessage.textContent = "Error loading tables. Please try again.";
-        setFormStepsDisabled(true); // Re-disable form on error
+        setFormStepsDisabled(true);
     } finally {
         if (checkAvailabilityBtn) checkAvailabilityBtn.disabled = false;
         if (availabilityLoader) availabilityLoader.classList.add("hidden");
