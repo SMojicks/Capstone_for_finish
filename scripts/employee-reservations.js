@@ -247,17 +247,21 @@ function loadReservationHistory() {
     });
 }
 // --- NEW: Function to load dashboard stats ---
+// --- FIXED: Function to load dashboard stats ---
 function loadReservationDashboard() {
-    // This query listens to ALL reservations to update cards in real-time
-    const q = query(reservationCollection);
+    // Query to exclude deleted reservations from counts
+    const q = query(
+        reservationCollection,
+        where("status", "!=", "deleted") // FIXED: Exclude deleted reservations
+    );
 
     if (dashboardListener) dashboardListener(); // Detach old listener if it exists
 
     dashboardListener = onSnapshot(q, (snapshot) => {
         let totalCount = snapshot.size;
         let pendingCount = 0;
-        let approvedCount = 0; // Renamed from upcomingCount
-        let todayCount = 0;    // NEW
+        let approvedCount = 0;
+        let todayCount = 0;
 
         // Get today's date in "YYYY-MM-DD" format
         const today = new Date().toISOString().split('T')[0];
@@ -269,12 +273,11 @@ function loadReservationDashboard() {
                 pendingCount++;
             }
             
-            // NEW: Count only approved
             if (data.status === 'approved') {
                 approvedCount++;
             }
 
-            // NEW: Count any reservation for today
+            // Count any reservation for today (excluding deleted)
             if (data.date === today) {
                 todayCount++;
             }
@@ -286,7 +289,7 @@ function loadReservationDashboard() {
         if (approvedCard) approvedCard.textContent = approvedCount;
         if (todayCard) todayCard.textContent = todayCount;
 
-        // --- NEW: Update sidebar alert dot ---
+        // Update sidebar alert dot
         const reservationsAlertDot = document.getElementById('reservations-alert-dot');
         if (reservationsAlertDot) {
             reservationsAlertDot.style.display = pendingCount > 0 ? 'inline-block' : 'none';
@@ -296,8 +299,8 @@ function loadReservationDashboard() {
         console.error("Error loading reservation dashboard:", error);
         if (totalCard) totalCard.textContent = "E";
         if (pendingCard) pendingCard.textContent = "E";
-        if (approvedCard) approvedCard.textContent = "E"; // Renamed
-        if (todayCard) todayCard.textContent = "E";     // NEW
+        if (approvedCard) approvedCard.textContent = "E";
+        if (todayCard) todayCard.textContent = "E";
     });
 }
 
@@ -561,7 +564,47 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    
+      const historyTableBody = document.getElementById('reservation-history-table-body');
+    if (historyTableBody) {
+        historyTableBody.addEventListener('click', (e) => {
+            const target = e.target;
+            const button = target.closest('button');
+            
+            // Handle receipt button clicks in history
+            if (button && button.classList.contains('view-receipt-btn')) {
+                const imageUrl = button.dataset.src;
+                if (imageModal && modalImage && imageUrl) {
+                    modalImage.src = imageUrl;
+                    imageModal.style.display = 'flex';
+                }
+                return;
+            }
+
+            const cell = target.closest('td');
+            if (!cell) return;
+
+            // Handle pre-order cell clicks in history
+            if (cell.classList.contains('view-preorder')) {
+                const preOrderHtml = cell.dataset.preorderHtml;
+                const viewDetailsTitle = document.getElementById('view-details-title');
+                const viewDetailsContent = document.getElementById('view-details-content');
+                const viewDetailsModal = document.getElementById('view-details-modal');
+                if (viewDetailsTitle) viewDetailsTitle.textContent = "Pre-Order Details";
+                if (viewDetailsContent) viewDetailsContent.innerHTML = decodeURIComponent(preOrderHtml);
+                if (viewDetailsModal) viewDetailsModal.style.display = 'flex';
+            }
+            // Handle notes cell clicks in history
+            else if (cell.classList.contains('view-notes')) {
+                const notes = cell.dataset.notes;
+                const viewDetailsTitle = document.getElementById('view-details-title');
+                const viewDetailsContent = document.getElementById('view-details-content');
+                const viewDetailsModal = document.getElementById('view-details-modal');
+                if (viewDetailsTitle) viewDetailsTitle.textContent = "Reservation Notes";
+                if (viewDetailsContent) viewDetailsContent.textContent = notes;
+                if (viewDetailsModal) viewDetailsModal.style.display = 'flex';
+            }
+        });
+    }
     const viewDetailsModal = document.getElementById('view-details-modal');
     const closeDetailsBtn = document.getElementById('close-details-btn');
     if (closeDetailsBtn) {

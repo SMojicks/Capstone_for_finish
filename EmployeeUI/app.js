@@ -21,8 +21,14 @@ document.addEventListener('DOMContentLoaded', function() {
  * Main app initializer. Checks for auth state and then builds the UI.
  */
 function initializeApp() {
+    // Check if user should be redirected to employee dashboard
+    checkEmployeeDashboardRedirect();
+    
     onAuthStateChanged(auth, async (user) => {
         if (user) {
+            // Store that user accessed employee dashboard
+            storeEmployeeDashboardAccess(user.uid);
+            
             // User is logged in, fetch their permissions
             const userProfile = await fetchUserProfile(user);
             
@@ -37,13 +43,12 @@ function initializeApp() {
             const firstVisibleTab = applyPermissions(userProfile.permissions);
             
             // 2. Setup UI (navigation, logout, etc.)
-            setupNavigation(firstVisibleTab); // Pass the first visible tab to set as default
+            setupNavigation(firstVisibleTab);
             setupLogout();
             setupSidebarToggle();
-            
-            // --- ADDED THIS CALL ---
             setupInventoryToggle();
             setupReservationHistoryToggle();
+            setupSidebarDropdowns();
             
             // 3. Update employee info in navbar
             document.querySelector(".employee-name").textContent = userProfile.fullName || "Employee";
@@ -60,7 +65,56 @@ function initializeApp() {
         }
     });
 }
+/**
+ * Stores the employee dashboard access in localStorage
+ * @param {string} uid - The user's Firebase UID
+ */
+function storeEmployeeDashboardAccess(uid) {
+    const accessData = {
+        uid: uid,
+        lastAccessed: new Date().toISOString(),
+        page: 'employee-dashboard'
+    };
+    localStorage.setItem('lastDashboardAccess', JSON.stringify(accessData));
+}
 
+/**
+ * Checks if user should be redirected to employee dashboard
+ */
+function checkEmployeeDashboardRedirect() {
+    // Get the stored access data
+    const storedData = localStorage.getItem('lastDashboardAccess');
+    
+    if (!storedData) return; // No previous access recorded
+    
+    try {
+        const accessData = JSON.parse(storedData);
+        
+        // Check if the last accessed page was employee dashboard
+        if (accessData.page === 'employee-dashboard') {
+            // Optional: Check if access was recent (within last 7 days)
+            const lastAccessDate = new Date(accessData.lastAccessed);
+            const daysSinceAccess = (new Date() - lastAccessDate) / (1000 * 60 * 60 * 24);
+            
+            // If accessed within last 7 days and not already on employee dashboard
+            if (daysSinceAccess <= 7 && !window.location.pathname.includes('EmployeeUI')) {
+                console.log('Redirecting to employee dashboard (last accessed)');
+                // Store the current page they were trying to access
+                localStorage.setItem('redirectedFrom', window.location.href);
+            }
+        }
+    } catch (error) {
+        console.error('Error checking dashboard redirect:', error);
+    }
+}
+
+/**
+ * Clears employee dashboard access (call this on logout)
+ */
+function clearEmployeeDashboardAccess() {
+    localStorage.removeItem('lastDashboardAccess');
+    localStorage.removeItem('redirectedFrom');
+}
 /**
  * Fetches the user's document from Firestore and checks their role.
  * @param {object} user - The Firebase Auth user object.
@@ -174,7 +228,12 @@ function setupNavigation(defaultSection) {
             if (targetSectionId === 'accounts') { 
                 loadAccounts();
             }
-            // --- REMOVED inventory-log block ---
+            // Inside the nav link click event listener, add this condition:
+                if (targetSectionId === 'restock-prediction') {
+                    import('../scripts/restock-prediction.js').then(module => {
+                        module.loadRestockPredictions();
+                    });
+                }
         });
     });
 }
@@ -186,6 +245,9 @@ function setupLogout() {
         logoutBtn.addEventListener('click', function(event) {
             event.preventDefault();
             if (confirm('Are you sure you want to logout?')) {
+                // Clear employee dashboard access before logout
+                clearEmployeeDashboardAccess();
+                
                 auth.signOut().then(() => {
                     alert('Logged out successfully!');
                     window.location.href = '../login.html';
@@ -206,6 +268,56 @@ function setupSidebarToggle() {
       document.body.classList.toggle('sidebar-collapsed');
     });
   }
+}
+
+/**
+ * Sets up dropdown functionality for sidebar navigation
+ */
+function setupSidebarDropdowns() {
+    // Find all nav links with dropdown arrows
+    const dropdownToggles = document.querySelectorAll('.nav-link[data-section="inventory"]');
+    
+    dropdownToggles.forEach(toggle => {
+        const parentItem = toggle.closest('.nav-item');
+        const subsection = parentItem.querySelector('.nav-subsection');
+        
+        if (!subsection) return;
+        
+        toggle.addEventListener('click', (e) => {
+            // If clicking to navigate to inventory main page, don't toggle dropdown
+            // Instead, toggle the dropdown expansion
+            const isExpanded = subsection.classList.contains('expanded');
+            
+            // Toggle the expanded state
+            toggle.classList.toggle('expanded');
+            subsection.classList.toggle('expanded');
+            
+            // Prevent default navigation when just toggling
+            if (!isExpanded) {
+                e.stopPropagation();
+            }
+        });
+    });
+    
+    // Handle subsection item clicks
+    const subItems = document.querySelectorAll('.nav-subitem .nav-link');
+    subItems.forEach(subLink => {
+        subLink.addEventListener('click', () => {
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Add active class to clicked subitem
+            subLink.classList.add('active');
+            
+            // Also highlight the parent inventory item
+            const parentInventoryLink = document.querySelector('.nav-link[data-section="inventory"]');
+            if (parentInventoryLink) {
+                parentInventoryLink.classList.add('active');
+            }
+        });
+    });
 }
 
 

@@ -4,7 +4,7 @@ import {
   updateDoc, getDoc, setDoc, deleteDoc, serverTimestamp,
   query, where, writeBatch, runTransaction, orderBy
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-
+import { logIngredientUsage } from './ingredient-usage-logger.js';
 // --- Collections ---
 const productsRef = collection(db, "products");
 const ingredientsRef = collection(db, "ingredients");
@@ -1572,7 +1572,113 @@ function updateCheckButtonsState(status) {
         }
     });
 }
-
+/**
+ * Prepares order items with their recipes for usage logging
+ * @param {object} order - The order object
+ * @returns {Array} Array of items with their recipes
+ */
+async function prepareOrderItemsForUsageLog(order) {
+    const orderItemsWithRecipes = [];
+    
+    if (!order.items || !Array.isArray(order.items)) {
+        return orderItemsWithRecipes;
+    }
+    
+    for (const item of order.items) {
+        const productDoc = await getDoc(doc(db, "products", item.productId));
+        if (!productDoc.exists()) continue;
+        
+        const product = productDoc.data();
+        let recipeToLog = [];
+        
+        if (product.variations && product.variations.length > 0) {
+            // Handle variation products
+            const variationName = item.name.split(' - ')[1];
+            const variation = product.variations.find(v => v.name === variationName);
+            
+            if (variation && variation.recipe) {
+                // Check if we need to use secondary stock
+                let usePrimary = true;
+                
+                for (const recipeItem of variation.recipe) {
+                    const ingDoc = await getDoc(doc(db, "ingredients", recipeItem.ingredientId));
+                    if (ingDoc.exists()) {
+                        const ingData = ingDoc.data();
+                        const currentStock = (ingData.stockQuantity || 0) * (ingData.conversionFactor || 1);
+                        const needed = recipeItem.qtyPerProduct * item.quantity;
+                        if (currentStock < needed) {
+                            usePrimary = false;
+                            break;
+                        }
+                    }
+                }
+                
+                if (usePrimary) {
+                    recipeToLog = variation.recipe.map(r => ({
+                        ingredientId: r.ingredientId,
+                        name: allIngredientsCache.find(ing => ing.id === r.ingredientId)?.name || 'Unknown',
+                        quantity: r.qtyPerProduct,
+                        unit: r.unitUsed
+                    }));
+                } else if (product.hasSecondaryStock && product.secondaryStock && product.secondaryStock[variationName]) {
+                    recipeToLog = product.secondaryStock[variationName].map(r => ({
+                        ingredientId: r.ingredientId,
+                        name: allIngredientsCache.find(ing => ing.id === r.ingredientId)?.name || 'Unknown',
+                        quantity: r.qtyPerProduct,
+                        unit: r.unitUsed
+                    }));
+                }
+            }
+        } else {
+            // Handle non-variation products
+            const productRecipes = allRecipesCache.filter(r => r.productId === item.productId);
+            
+            if (productRecipes.length > 0) {
+                // Check if we need to use secondary stock
+                let usePrimary = true;
+                
+                for (const recipeItem of productRecipes) {
+                    const ingDoc = await getDoc(doc(db, "ingredients", recipeItem.ingredientId));
+                    if (ingDoc.exists()) {
+                        const ingData = ingDoc.data();
+                        const currentStock = (ingData.stockQuantity || 0) * (ingData.conversionFactor || 1);
+                        const needed = recipeItem.qtyPerProduct * item.quantity;
+                        if (currentStock < needed) {
+                            usePrimary = false;
+                            break;
+                        }
+                    }
+                }
+                
+                if (usePrimary) {
+                    recipeToLog = productRecipes.map(r => ({
+                        ingredientId: r.ingredientId,
+                        name: allIngredientsCache.find(ing => ing.id === r.ingredientId)?.name || 'Unknown',
+                        quantity: r.qtyPerProduct,
+                        unit: r.unitUsed
+                    }));
+                } else if (product.hasSecondaryStock && product.secondaryStock && product.secondaryStock.default) {
+                    recipeToLog = product.secondaryStock.default.map(r => ({
+                        ingredientId: r.ingredientId,
+                        name: allIngredientsCache.find(ing => ing.id === r.ingredientId)?.name || 'Unknown',
+                        quantity: r.qtyPerProduct,
+                        unit: r.unitUsed
+                    }));
+                }
+            }
+        }
+        
+        if (recipeToLog.length > 0) {
+            orderItemsWithRecipes.push({
+                name: item.name,
+                quantity: item.quantity,
+                recipe: recipeToLog
+            });
+        }
+    }
+    
+    return orderItemsWithRecipes;
+}
 async function completeOrder(order, paymentDetails) {
   const stockMovements = []; 
   try {
@@ -1779,9 +1885,21 @@ await runTransaction(db, async (transaction) => {
     });
     transaction.delete(pendingOrderRef);
 });
-    const logBatch = writeBatch(db);
-stockMovements.forEach(log => logBatch.set(doc(collection(db, "inventoryLogs")), log));
+const logBatch = writeBatch(db);
+    stockMovements.forEach(log => logBatch.set(doc(collection(db, "inventoryLogs")), log));
     await logBatch.commit();
+    
+    // --- LOG INGREDIENT USAGE FOR RESTOCK PREDICTIONS ---
+    try {
+        const orderItemsWithRecipes = await prepareOrderItemsForUsageLog(order);
+        const employeeName = order.processedBy || document.querySelector(".employee-name")?.textContent || "Employee";
+        await logIngredientUsage(order.orderId, orderItemsWithRecipes, employeeName);
+    } catch (logError) {
+        console.error("Warning: Failed to log ingredient usage for predictions:", logError);
+        // Don't block the order completion if logging fails
+    }
+    // --- END USAGE LOGGING ---
+    
     alert(`Order #${order.orderId} completed! Stock updated and transaction saved.`);
     if (orderDetailsModal) orderDetailsModal.style.display = "none";
   } catch (error) {
@@ -1789,6 +1907,7 @@ stockMovements.forEach(log => logBatch.set(doc(collection(db, "inventoryLogs")),
     alert(`Error: ${error.message}`);
   }
 }
+
 async function voidOrder(order) {
   const saleRef = doc(db, "sales", order.id);
   const pendingOrderRef = doc(db, "pending_orders", order.id);

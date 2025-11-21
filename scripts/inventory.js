@@ -324,6 +324,7 @@ function loadInventory() {
         id: docSnap.id,
         ...docSnap.data()
     }));
+    populateAddItemsCategory();
     
     // 2. (Re)populate the category filter dropdown
     populateCategoryFilter();
@@ -354,8 +355,7 @@ form.addEventListener('submit', async (e) => {
     lastUpdated: serverTimestamp(),
   };
 
-  // ... (rest of your validation logic)
-// Validation Logic
+  // Validation
   if (newData.conversionFactor <= 0) {
     alert("Conversion factor must be greater than 0.");
     return;
@@ -370,33 +370,25 @@ form.addEventListener('submit', async (e) => {
     newData.expiryDate = null;
   }
 
-  // --- NEW LOGGING LOGIC ---
   let prevQty = 0;
   const employeeName = document.querySelector(".employee-name")?.textContent || "Employee";
   const reason = id ? "Updated stock details" : "Added new stock";
   let actionType = "Add Stock";
-  // --- END NEW LOGGING LOGIC ---
 
   try {
     if (id) {
-      // --- LOGGING: Get previous quantity for an UPDATE ---
       actionType = "Update Stock";
       const docRef = doc(db, "ingredients", id);
       const oldDoc = await getDoc(docRef);
       if (oldDoc.exists()) {
         prevQty = oldDoc.data().stockQuantity || 0;
       }
-      // --- END LOGGING ---
-
       await updateDoc(docRef, newData);
-
     } else {
-      // This is a NEW item, so prevQty is 0
       newData.ingredientId = await getNextIngredientId();
       await addDoc(productsRef, newData);
     }
 
-    // --- NEW: Call createLog after success ---
     const qtyChange = newData.stockQuantity - prevQty;
     createLog(
       employeeName,
@@ -404,12 +396,11 @@ form.addEventListener('submit', async (e) => {
       newData.name,
       newData.category,
       qtyChange,
-      newData.stockUnit, // We log the change in *stock units*
+      newData.stockUnit,
       prevQty,
       newData.stockQuantity,
       reason
     );
-    // --- END NEW ---
 
     closeModal();
   } catch (error) {
@@ -636,13 +627,103 @@ function getFilterDescription() {
     
     return filters.length > 0 ? `Filters: ${filters.join(' | ')}` : 'All Items (No Filters Applied)';
 }
+const addItemsForm = document.getElementById('add-items-form');
+const addItemCategory = document.getElementById('add-item-category');
 
+// Populate category dropdown for add items form
+export function populateAddItemsCategory() {
+    if (!addItemCategory) return;
+    
+    const invCategoriesRef = doc(db, "settings", "inventoryCategories");
+    getDoc(invCategoriesRef).then(docSnap => {
+        if (docSnap.exists()) {
+            const categories = docSnap.data().list || [];
+            addItemCategory.innerHTML = '<option value="">Select category...</option>';
+            categories.forEach(cat => {
+                addItemCategory.add(new Option(cat, cat));
+            });
+        }
+    });
+}
+
+// Check for duplicate ingredient name
+async function isDuplicateIngredient(name) {
+    const normalizedName = name.trim().toLowerCase();
+    return allIngredients.some(ing => 
+        ing.name.trim().toLowerCase() === normalizedName
+    );
+}
+
+// Handle Add Items Form Submission
+if (addItemsForm) {
+    addItemsForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById('add-item-name').value.trim();
+        
+        // Check for duplicates
+        if (await isDuplicateIngredient(name)) {
+            alert(`An ingredient named "${name}" already exists. Please use a different name.`);
+            return;
+        }
+
+        const newData = {
+            name: name,
+            category: addItemCategory.value,
+            stockQuantity: parseFloat(document.getElementById('add-item-stock').value),
+            stockUnit: document.getElementById('add-item-stock-unit').value.trim(),
+            baseUnit: document.getElementById('add-item-base-unit').value.trim(),
+            conversionFactor: parseFloat(document.getElementById('add-item-conversion').value),
+            minStockThreshold: parseInt(document.getElementById('add-item-min-stock').value) || 0,
+            expiryDate: document.getElementById('add-item-expiry').value || null,
+            lastUpdated: serverTimestamp(),
+        };
+
+        // Validation
+        if (newData.conversionFactor <= 0) {
+            alert("Conversion factor must be greater than 0.");
+            return;
+        }
+
+        if (newData.stockUnit === newData.baseUnit && newData.conversionFactor !== 1) {
+            alert("If Stock Unit and Base Unit are the same, conversion factor must be 1.");
+            return;
+        }
+
+        try {
+            newData.ingredientId = await getNextIngredientId();
+            await addDoc(productsRef, newData);
+
+            const employeeName = document.querySelector(".employee-name")?.textContent || "Employee";
+            createLog(
+                employeeName,
+                "Add Stock",
+                newData.name,
+                newData.category,
+                newData.stockQuantity,
+                newData.stockUnit,
+                0,
+                newData.stockQuantity,
+                "Added new stock"
+            );
+
+            alert(`Ingredient "${newData.name}" added successfully!`);
+            addItemsForm.reset();
+        } catch (error) {
+            console.error("❌ Error adding ingredient:", error);
+            alert("Failed to add ingredient.");
+        }
+    });
+
+    // Clear form button
+    document.getElementById('cancel-add-item-btn')?.addEventListener('click', () => {
+        addItemsForm.reset();
+    });
+}
 // --- Initial Load & NEW Event Listeners ---
 document.addEventListener('DOMContentLoaded', () => {
     loadInventory(); // Main function to load data
     
-    // Add button listeners
-    addBtn.addEventListener('click', () => openModal());
     cancelBtn.addEventListener('click', closeModal);
 
     // --- NEW: Filter Listeners ---

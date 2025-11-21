@@ -3667,3 +3667,465 @@ body.sidebar-collapsed .sidebar {
     margin-bottom: 16px;
     border-bottom: 2px solid var(--color-border);
 }
+/* Sidebar Subsection */
+.nav-subsection {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.nav-subitem .nav-link {
+    padding-left: 48px;
+    font-size: var(--font-size-sm);
+}
+
+.add-items-form-container {
+    background: var(--color-white);
+    padding: var(--space-32);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+}
+/* ========================================
+   RESTOCK PREDICTION STYLES
+   ======================================== */
+
+/* Sidebar Sub-item */
+.nav-sub-item {
+    padding-left: 20px;
+}
+
+.nav-sub-item .nav-link {
+    font-size: var(--font-size-sm);
+    padding: var(--space-10) var(--space-20);
+    padding-left: var(--space-32);
+    border-left: 2px solid var(--color-brown-600);
+    margin-left: var(--space-24);
+}
+
+.nav-sub-item .nav-link:hover {
+    border-left-color: var(--color-green-400);
+}
+
+.nav-sub-item .nav-link.active {
+    border-left-color: var(--color-green-400);
+}
+
+/* Restock Alert Dot */
+#restock-alert-dot {
+    display: none;
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    width: 10px;
+    height: 10px;
+    background-color: var(--color-red-500);
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+    animation: blink 1.5s infinite;
+}
+
+/* Summary Cards Colors */
+#restock-card-critical {
+    border-left: 5px solid var(--color-red-500);
+}
+#restock-card-critical h2 {
+    color: var(--color-red-500);
+}
+
+#restock-card-warning {
+    border-left: 5px solid var(--color-orange-500);
+}
+#restock-card-warning h2 {
+    color: var(--color-orange-500);
+}
+
+#restock-card-good {
+    border-left: 5px solid var(--color-green-600);
+}
+#restock-card-good h2 {
+    color: var(--color-green-600);
+}
+
+#restock-card-nodata {
+    border-left: 5px solid var(--color-gray-500);
+}
+#restock-card-nodata h2 {
+    color: var(--color-gray-500);
+}
+
+/* Settings Panel */
+.restock-settings-panel {
+    background: var(--color-white);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-20);
+    margin-bottom: var(--space-24);
+    box-shadow: var(--shadow-sm);
+}
+
+.restock-settings-panel h4 {
+    margin: 0 0 var(--space-16) 0;
+    color: var(--color-green-800);
+    font-size: var(--font-size-lg);
+    border-bottom: 2px solid var(--color-border);
+    padding-bottom: var(--space-12);
+}
+
+.settings-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-20);
+    align-items: flex-end;
+}
+
+.setting-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.setting-group label {
+    display: block;
+    margin-bottom: var(--space-8);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+}
+
+/* Restock Status Badges */
+.restock-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: var(--space-6) var(--space-12);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.restock-status.critical {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: var(--color-red-500);
+    border: 1px solid var(--color-red-500);
+}
+
+.restock-status.warning {
+    background-color: rgba(249, 115, 22, 0.15);
+    color: var(--color-orange-500);
+    border: 1px solid var(--color-orange-500);
+}
+
+.restock-status.good {
+    background-color: rgba(45, 157, 95, 0.15);
+    color: var(--color-green-600);
+    border: 1px solid var(--color-green-600);
+}
+
+.restock-status.nodata {
+    background-color: rgba(107, 114, 128, 0.15);
+    color: var(--color-gray-600);
+    border: 1px solid var(--color-gray-500);
+}
+
+/* Highlight rows by status */
+.restock-row-critical {
+    background-color: rgba(239, 68, 68, 0.08) !important;
+}
+
+.restock-row-warning {
+    background-color: rgba(249, 115, 22, 0.08) !important;
+}
+
+.restock-row-nodata {
+    background-color: rgba(107, 114, 128, 0.05) !important;
+}
+
+/* Info Note */
+.restock-info-note {
+    margin-top: var(--space-24);
+    padding: var(--space-16);
+    background: var(--color-brown-100);
+    border-radius: var(--radius-base);
+    border-left: 4px solid var(--color-brown-500);
+}
+
+.restock-info-note p {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-brown-700);
+    line-height: 1.6;
+}
+
+/* Days remaining styling */
+.days-critical {
+    color: var(--color-red-500);
+    font-weight: var(--font-weight-bold);
+}
+
+.days-warning {
+    color: var(--color-orange-500);
+    font-weight: var(--font-weight-semibold);
+}
+
+.days-good {
+    color: var(--color-green-600);
+    font-weight: var(--font-weight-medium);
+}
+
+.days-nodata {
+    color: var(--color-gray-500);
+    font-style: italic;
+}
+
+/* Usage display */
+.usage-display {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+}
+
+.usage-none {
+    color: var(--color-gray-500);
+    font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .settings-row {
+        flex-direction: column;
+    }
+    
+    .setting-group {
+        width: 100%;
+    }
+    
+    .nav-sub-item .nav-link {
+        padding-left: var(--space-24);
+        margin-left: var(--space-16);
+    }
+}
+/* ========================================
+   MODERNIZED UI IMPROVEMENTS
+   ======================================== */
+
+/* Navbar centered title */
+.top-navbar {
+    display: grid;
+    grid-template-columns: 250px 1fr 250px;
+    align-items: center;
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+}
+
+.company-logo {
+    text-align: center;
+    margin: 0;
+    justify-self: center;
+}
+
+.navbar-right {
+    justify-self: end;
+}
+
+/* Sidebar collapsed state adjustments */
+body.sidebar-collapsed .top-navbar {
+    grid-template-columns: 60px 1fr 250px;
+}
+
+/* Sidebar icon improvements */
+.nav-icon.material-icons {
+    color: white;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-16);
+    position: relative;
+}
+
+.nav-text {
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 0.3s ease, width 0.3s ease;
+}
+
+/* Collapsed sidebar - hide text, show only icons */
+body.sidebar-collapsed .sidebar {
+    width: 60px;
+    margin-left: 0;
+}
+
+body.sidebar-collapsed .nav-text {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+}
+
+body.sidebar-collapsed .nav-link {
+    justify-content: center;
+    padding: var(--space-12);
+}
+
+body.sidebar-collapsed .sidebar-alert-dot {
+    right: 8px;
+    top: 8px;
+}
+
+/* Adjust main container when collapsed */
+body.sidebar-collapsed .main-container {
+    margin-left: 0;
+}
+
+/* Uniform action button icons in tables */
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 0;
+}
+
+.btn-icon .material-icons {
+    font-size: 20px;
+}
+
+.btn-icon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Color variants for action icons */
+.btn--icon-edit {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+.btn--icon-approve {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.btn--icon-complete {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: white;
+}
+
+.btn--icon-cancel {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    color: white;
+}
+
+.btn--icon-delete {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.btn--info {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .top-navbar {
+        grid-template-columns: 60px 1fr auto;
+    }
+    
+    .company-logo {
+        font-size: var(--font-size-lg);
+    }
+}
+/* ========================================
+   SIDEBAR DROPDOWN NAVIGATION
+   ======================================== */
+
+/* Dropdown arrow styling */
+.nav-dropdown-arrow {
+    margin-left: auto;
+    font-size: 20px;
+    color: white;
+    transition: transform 0.3s ease;
+}
+
+.nav-link.expanded .nav-dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* Hide dropdown arrow when sidebar is collapsed */
+body.sidebar-collapsed .nav-dropdown-arrow {
+    display: none;
+}
+
+/* Subsection container */
+.nav-subsection {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    background: rgba(0, 0, 0, 0.2);
+    border-left: 3px solid var(--color-green-500);
+}
+
+.nav-subsection.expanded {
+    max-height: 200px; /* Adjust based on number of items */
+    opacity: 1;
+    margin-bottom: 8px;
+}
+
+/* Subsection items */
+.nav-subitem {
+    margin: 0;
+}
+
+.nav-subitem .nav-link {
+    padding: 10px 16px 10px 50px; /* Extra left padding for indent */
+    font-size: var(--font-size-sm);
+    border-left: none;
+}
+
+.nav-subitem .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-subitem .nav-link.active {
+    background: linear-gradient(90deg, rgba(45, 157, 95, 0.25) 0%, transparent 100%);
+    border-left: 3px solid var(--color-green-400);
+}
+
+.nav-subitem .nav-icon {
+    font-size: 20px;
+    width: 20px;
+    color: white;
+}
+
+/* When sidebar is collapsed, hide subsections entirely */
+body.sidebar-collapsed .nav-subsection {
+    display: none;
+}
+
+/* Adjust icon size for subsections when collapsed */
+body.sidebar-collapsed .nav-subitem .nav-link {
+    padding: var(--space-12);
+    justify-content: center;
+}

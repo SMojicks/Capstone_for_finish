@@ -467,6 +467,37 @@
         });
     });
 </script>
+<script type="module">
+import { auth } from './scripts/firebase.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+// Check if user should be redirected to employee dashboard
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        const storedData = localStorage.getItem('lastDashboardAccess');
+        
+        if (storedData) {
+            try {
+                const accessData = JSON.parse(storedData);
+                
+                // Check if this is the same user
+                if (accessData.uid === user.uid && accessData.page === 'employee-dashboard') {
+                    // Check if access was recent (within 7 days)
+                    const lastAccessDate = new Date(accessData.lastAccessed);
+                    const daysSinceAccess = (new Date() - lastAccessDate) / (1000 * 60 * 60 * 24);
+                    
+                    if (daysSinceAccess <= 7) {
+                        // Redirect to employee dashboard
+                        window.location.href = './EmployeeUI/index.html';
+                    }
+                }
+            } catch (error) {
+                console.error('Error parsing stored data:', error);
+            }
+        }
+    }
+});
+</script>
     <script type="module" src="scripts/firebase.js"></script>
     <script type="module" src="scripts/auth-manager.js"></script>
 

@@ -11,21 +11,21 @@
     <script src="https://cdn.jsdelivr.net/npm/date-fns/cdn.min.js"></script>
 </head>
 <body>
-    <nav class="top-navbar">
-        <div class="navbar-left">
-            <button id="sidebar-toggle-btn" class="sidebar-toggle-btn">
-                <span class="material-icons">menu</span>
-            </button>
-            <h2 class="company-logo">Acaccia Bistro Cafe POS</h2>
+<nav class="top-navbar">
+    <div class="navbar-left">
+        <button id="sidebar-toggle-btn" class="sidebar-toggle-btn">
+            <span class="material-icons">menu</span>
+        </button>
+    </div>
+    <h2 class="company-logo">Acaccia Bistro Cafe POS</h2>
+    <div class="navbar-right">
+        <div class="employee-info">
+            <div class="employee-avatar">JS</div>
+            <span class="employee-name">John Smith</span>
         </div>
-        <div class="navbar-right">
-            <div class="employee-info">
-                <div class="employee-avatar">JS</div>
-                <span class="employee-name">John Smith</span>
-            </div>
-            <button class="btn btn--outline btn--sm logout-btn">Logout</button>
-        </div>
-    </nav>
+        <button class="btn btn--outline btn--sm logout-btn">Logout</button>
+    </div>
+</nav>
     
     <div class="main-container">
         <aside class="sidebar">
@@ -33,48 +33,64 @@
                 <ul class="nav-list">
                     <li class="nav-item" data-permission="pos">
                         <button class="nav-link active" data-section="pos" style="position: relative;">
-                            <span class="nav-icon">🛒</span>
-                            Orders
+                            <span class="nav-icon material-icons">shopping_cart</span>
+                            <span class="nav-text">Orders</span>
                             <span id="orders-alert-dot" class="sidebar-alert-dot"></span>
                         </button>
                     </li>
-                    <li class="nav-item" data-permission="inventory">
-                        <button class="nav-link" data-section="inventory" style="position: relative;">
-                            <span class="nav-icon">📦</span>
-                            Inventory
-                            <span id="inventory-alert-dot"></span>
-                        </button>
-                    </li>
+<li class="nav-item" data-permission="inventory">
+    <button class="nav-link" data-section="inventory" style="position: relative;">
+        <span class="nav-icon material-icons">inventory_2</span>
+        <span class="nav-text">Inventory</span>
+        <span class="nav-dropdown-arrow material-icons">expand_more</span>
+        <span id="inventory-alert-dot" class="sidebar-alert-dot"></span>
+    </button>
+    <ul class="nav-subsection">
+        <li class="nav-subitem" data-permission="inventory">
+            <button class="nav-link" data-section="add-items">
+                <span class="nav-icon material-icons">add_circle</span>
+                <span class="nav-text">Add Items</span>
+            </button>
+        </li>
+        <li class="nav-subitem" data-permission="inventory">
+            <button class="nav-link" data-section="restock-prediction" style="position: relative;">
+                <span class="nav-icon material-icons">trending_up</span>
+                <span class="nav-text">Restock Prediction</span>
+                <span id="restock-alert-dot" class="sidebar-alert-dot"></span>
+            </button>
+        </li>
+    </ul>
+</li>
                     <li class="nav-item" data-permission="transactions">
                         <button id="transactions-tab" class="nav-link" data-section="transactions">
-                            <span class="nav-icon">💳</span>
-                            Transactions
+                            <span class="nav-icon material-icons">receipt_long</span>
+                            <span class="nav-text">Transactions</span>
                         </button>
                     </li>
                     <li class="nav-item" data-permission="reservations">
                         <button class="nav-link" data-section="reservations" style="position: relative;">
-                            <span class="nav-icon">📅</span>
-                            Reservations
+                            <span class="nav-icon material-icons">event</span>
+                            <span class="nav-text">Reservations</span>
                             <span id="reservations-alert-dot" class="sidebar-alert-dot"></span>
                         </button>
                     </li>
                     <li class="nav-item" data-permission="accounts">
                         <button class="nav-link" data-section="accounts">
-                            <span class="nav-icon">👥</span>
-                            Accounts
+                           <span class="nav-icon material-icons">group</span>
+                            <span class="nav-text">Accounts</span>
                         </button>
                     </li>
                     <li class="nav-item" data-permission="feedback">
                         <button class="nav-link" data-section="feedback" style="position: relative;">
-                            <span class="nav-icon">⭐</span>
-                            Feedback
+                            <span class="nav-icon material-icons">star</span>
+                            <span class="nav-text">Feedback</span>
                             <span id="feedback-alert-dot" class="sidebar-alert-dot"></span>
                         </button>
                     </li>
                     <li class="nav-item" data-permission="analytics">
                         <button class="nav-link" data-section="analytics">
-                            <span class="nav-icon">📊</span>
-                            Analytics
+                            <span class="nav-icon material-icons">analytics</span>
+                            <span class="nav-text">Analytics</span>
                         </button>
                     </li>
                 </ul>
@@ -248,7 +264,6 @@
                             <button id="export-inventory-excel-btn" class="btn btn--secondary btn--sm">Export Excel</button>
                             <button id="view-inventory-log-btn" class="btn btn--secondary">View Logs</button>
                             <button id="manage-categories-btn" class="btn btn--secondary">Manage Categories</button>
-                            <button id="add-product-btn" class="btn btn--primary">Add Product</button>
                         </div>
                     </div>
 
@@ -347,7 +362,147 @@
                         </table>
                     </div>
                 </section>
+                <!-- RESTOCK PREDICTION SECTION -->
+<section id="restock-prediction-section" class="content-section hidden">
+    <div class="section-header">
+        <h1>Restock Predictions</h1>
+        <div class="header-actions">
+            <button id="recalculate-predictions-btn" class="btn btn--secondary">
+                🔄 Recalculate Predictions
+            </button>
+            <button id="export-restock-pdf-btn" class="btn btn--secondary btn--sm">Export PDF</button>
+        </div>
+    </div>
 
+    <!-- Summary Cards -->
+    <div class="analytics-grid" style="margin-bottom: 24px;">
+        <div class="stat-card" id="restock-card-critical">
+            <h5>Critical (≤3 Days)</h5>
+            <h2 id="restock-critical-count">0</h2>
+        </div>
+        <div class="stat-card" id="restock-card-warning">
+            <h5>Warning (≤7 Days)</h5>
+            <h2 id="restock-warning-count">0</h2>
+        </div>
+        <div class="stat-card" id="restock-card-good">
+            <h5>Good Stock (>7 Days)</h5>
+            <h2 id="restock-good-count">0</h2>
+        </div>
+        <div class="stat-card" id="restock-card-nodata">
+            <h5>No Usage Data</h5>
+            <h2 id="restock-nodata-count">0</h2>
+        </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="restock-settings-panel">
+        <h4>Prediction Settings</h4>
+        <div class="settings-row">
+            <div class="setting-group">
+                <label for="restock-lookback-days">Usage History Lookback:</label>
+                <select id="restock-lookback-days" class="form-control">
+                    <option value="7">7 Days (Fast-moving)</option>
+                    <option value="14">14 Days</option>
+                    <option value="30" selected>30 Days (Slow-moving)</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label for="restock-lead-time">Default Lead Time (Days):</label>
+                <input type="number" id="restock-lead-time" class="form-control" value="3" min="1" max="30">
+            </div>
+            <div class="setting-group">
+                <label for="restock-filter-status">Filter by Status:</label>
+                <select id="restock-filter-status" class="form-control">
+                    <option value="all">All Items</option>
+                    <option value="critical">Critical Only</option>
+                    <option value="warning">Warning & Critical</option>
+                    <option value="nodata">No Usage Data</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Predictions Table -->
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Item ID</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Current Stock</th>
+                    <th>Avg. Daily Usage</th>
+                    <th>Days Remaining</th>
+                    <th>Recommended Reorder</th>
+                    <th>Lead Time</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="restock-prediction-table-body"></tbody>
+        </table>
+    </div>
+
+    <!-- Info Note -->
+    <div class="restock-info-note">
+        <p><strong>ℹ️ How predictions work:</strong> The system analyzes ingredient usage from completed orders over the selected time period to calculate average daily consumption. Items with no sales history will fall back to manual reorder point monitoring.</p>
+    </div>
+</section>
+<!-- ADD ITEMS SECTION -->
+<section id="add-items-section" class="content-section hidden">
+    <div class="section-header">
+        <h1>Add New Product</h1>
+    </div>
+    <div class="add-items-form-container">
+        <form id="add-items-form">
+            <div class="form-grid-two-col">
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="add-item-name">Ingredient Name: *</label>
+                        <input type="text" id="add-item-name" class="form-control" placeholder="e.g., Coffee Beans" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="add-item-category">Category: *</label>
+                        <select id="add-item-category" class="form-control" required>
+                            <option value="">Loading categories...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="add-item-expiry">Expiry Date:</label>
+                        <input type="date" id="add-item-expiry" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="add-item-min-stock">Low Stock Alert (Base Unit): *</label>
+                        <input type="number" id="add-item-min-stock" class="form-control" min="0" placeholder="e.g., 2000" required />
+                    </div>
+                </div>
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="add-item-stock">Stock Quantity: *</label>
+                        <input type="number" id="add-item-stock" class="form-control" min="0" step="any" placeholder="e.g., 10" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="add-item-stock-unit">Stock Unit: *</label>
+                        <input type="text" id="add-item-stock-unit" class="form-control" placeholder="e.g., bag, bottle" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="add-item-base-unit">Base Unit: *</label>
+                        <input type="text" id="add-item-base-unit" class="form-control" placeholder="e.g., g, ml" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="add-item-conversion">Conversion Factor: *</label>
+                        <input type="number" id="add-item-conversion" class="form-control" min="1" step="any" placeholder="e.g., 1000" required />
+                        <p style="font-size: 12px; color: #666; margin-top: 4px;">(1 Stock Unit = ? Base Units)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="form-actions" style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                <button type="button" id="cancel-add-item-btn" class="btn btn--secondary">Clear Form</button>
+                <button type="submit" class="btn btn--primary">Add Ingredient</button>
+            </div>
+        </form>
+    </div>
+</section>
                 <!-- TRANSACTIONS SECTION -->
                 <section id="transactions-section" class="content-section hidden">
                     <div class="section-header">
@@ -971,6 +1126,33 @@
         </form>
     </div>
 </div>
+<!-- Edit Lead Time Modal -->
+<div id="edit-lead-time-modal" class="modal">
+    <div class="modal-content" style="width: 400px;">
+        <h2>Edit Restock Settings</h2>
+        <form id="edit-lead-time-form">
+            <input type="hidden" id="lead-time-ingredient-id">
+            <div class="form-group">
+                <label>Ingredient:</label>
+                <p id="lead-time-ingredient-name" style="font-weight: 600; margin: 0;"></p>
+            </div>
+            <div class="form-group">
+                <label for="ingredient-lead-time">Lead Time (Days):</label>
+                <input type="number" id="ingredient-lead-time" class="form-control" min="1" max="60" required>
+                <p style="font-size: 12px; color: #666; margin-top: 4px;">How many days does it take to receive this item after ordering?</p>
+            </div>
+            <div class="form-group">
+                <label for="ingredient-reorder-point">Manual Reorder Point (Base Units):</label>
+                <input type="number" id="ingredient-reorder-point" class="form-control" min="0" step="any">
+                <p style="font-size: 12px; color: #666; margin-top: 4px;">Optional: Set a manual reorder threshold for items with unpredictable usage.</p>
+            </div>
+            <div class="modal-buttons">
+                <button type="submit" class="btn btn--primary">Save Settings</button>
+                <button type="button" id="cancel-lead-time-btn" class="btn btn--secondary">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns/cdn.min.js"></script>
@@ -986,7 +1168,10 @@
     <script type="module" src="../scripts/employee-reservations.js"></script>
     <script type="module" src="../scripts/employee-feedback.js"></script>
     <script type="module" src="../scripts/analytics.js"></script>
+    
     <script type="module" src="../scripts/add-employee.js"></script>
+    <script type="module" src="../scripts/restock-prediction.js"></script>
+    <script type="module" src="../scripts/ingredient-usage-logger.js"></script>
     <script type="module" src="app.js"></script>
 
     <script type="module">
