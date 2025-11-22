@@ -49,7 +49,7 @@ function initializeApp() {
             setupInventoryToggle();
             setupReservationHistoryToggle();
             setupSidebarDropdowns();
-            
+            setupAddItemsTabs();
             // 3. Update employee info in navbar
             document.querySelector(".employee-name").textContent = userProfile.fullName || "Employee";
             const avatar = document.querySelector(".employee-avatar");
@@ -228,12 +228,49 @@ function setupNavigation(defaultSection) {
             if (targetSectionId === 'accounts') { 
                 loadAccounts();
             }
+            if (targetSectionId === 'add-items') {
+                import('../scripts/inventory.js').then(module => {
+                    module.loadRestockItems();
+                });
+            }
             // Inside the nav link click event listener, add this condition:
                 if (targetSectionId === 'restock-prediction') {
                     import('../scripts/restock-prediction.js').then(module => {
                         module.loadRestockPredictions();
                     });
                 }
+        });
+    });
+}
+/**
+ * Sets up tab switching for Add Items section
+ */
+function setupAddItemsTabs() {
+    const tabButtons = document.querySelectorAll('#add-items-section .account-tab-btn');
+    const tabContainers = document.querySelectorAll('#add-items-section .account-table-container');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetTab = button.getAttribute('data-target');
+            
+            // Remove active class from all tabs and containers
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContainers.forEach(container => container.classList.remove('active'));
+            
+            // Add active class to clicked tab and corresponding container
+            button.classList.add('active');
+            document.getElementById(targetTab).classList.add('active');
+            
+            // Load appropriate data when switching tabs
+            if (targetTab === 'restock-items-tab') {
+                import('../scripts/inventory.js').then(module => {
+                    module.loadRestockItems();
+                });
+            } else if (targetTab === 'manage-categories-tab') {
+                import('../scripts/inventory-categories.js').then(module => {
+                    // Categories are already loaded, but you can refresh if needed
+                });
+            }
         });
     });
 }

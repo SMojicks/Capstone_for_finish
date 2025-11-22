@@ -1173,14 +1173,54 @@ function addVariationToCart(product, variation) {
     addItemToCart(itemToAdd);
     if (variationModal) variationModal.style.display = "none";
 }
-
-function addItemToCart(item) {
-  const existingItem = cart.find(i => i.id === item.id);
+async function addItemToCart(item) {
+  // Check if adding this item would exceed available stock
+  const tempCart = [...cart];
+  const existingItem = tempCart.find(i => i.id === item.id);
+  
   if (existingItem) {
     existingItem.quantity += 1;
   } else {
+    tempCart.push({ ...item, quantity: 1 });
+  }
+  
+  // Validate the temporary cart
+  const validation = await validateCartStock(tempCart);
+  
+  if (!validation.isValid) {
+    // Find the specific item that failed
+    const failedItem = validation.insufficientItems.find(i => 
+      i.productName === item.name
+    );
+    
+    if (failedItem) {
+      let warningMsg = `⚠️ Cannot add "${item.name}"!\n\n`;
+      warningMsg += `Maximum available: ${failedItem.maxAvailable} order(s)\n\n`;
+      warningMsg += `Insufficient ingredients:\n`;
+      
+      failedItem.insufficientIngredients.forEach(ing => {
+        warningMsg += `• ${ing.name}:\n`;
+        warningMsg += `  This item needs: ${ing.needed.toFixed(2)} ${ing.unit}\n`;
+        warningMsg += `  Total stock: ${ing.available.toFixed(2)} ${ing.unit}\n`;
+        if (ing.alreadyReserved && ing.alreadyReserved > 0) {
+          warningMsg += `  Already reserved: ${ing.alreadyReserved.toFixed(2)} ${ing.unit}\n`;
+          warningMsg += `  Remaining: ${(ing.available - ing.alreadyReserved).toFixed(2)} ${ing.unit}\n`;
+        }
+      });
+      
+      alert(warningMsg);
+      return; // Don't add to cart
+    }
+  }
+  
+  // If validation passes, add to actual cart
+  const actualExistingItem = cart.find(i => i.id === item.id);
+  if (actualExistingItem) {
+    actualExistingItem.quantity += 1;
+  } else {
     cart.push({ ...item, quantity: 1 });
   }
+  
   updateCartDisplay();
 }
 
@@ -1209,12 +1249,54 @@ function updateCartDisplay() {
   updateCartTotals();
 }
 
-function updateCartQuantity(productId, change) {
+async function updateCartQuantity(productId, change) {
   const item = cart.find(item => item.id === productId);
-  if (item) {
-    item.quantity += change;
-    if (item.quantity <= 0) cart = cart.filter(cartItem => cartItem.id !== productId);
+  if (!item) return;
+  
+  // If increasing quantity, validate first
+  if (change > 0) {
+    const tempCart = cart.map(cartItem => {
+      if (cartItem.id === productId) {
+        return { ...cartItem, quantity: cartItem.quantity + change };
+      }
+      return { ...cartItem };
+    });
+    
+    const validation = await validateCartStock(tempCart);
+    
+    if (!validation.isValid) {
+      const failedItem = validation.insufficientItems.find(i => 
+        i.productName === item.name
+      );
+      
+      if (failedItem) {
+        let warningMsg = `⚠️ Cannot increase quantity!\n\n`;
+        warningMsg += `"${item.name}"\n`;
+        warningMsg += `Current: ${item.quantity} | Maximum: ${failedItem.maxAvailable}\n\n`;
+        warningMsg += `Insufficient ingredients:\n`;
+        
+        failedItem.insufficientIngredients.forEach(ing => {
+          warningMsg += `• ${ing.name}:\n`;
+          warningMsg += `  Needs: ${ing.needed.toFixed(2)} ${ing.unit}\n`;
+          warningMsg += `  Available: ${ing.available.toFixed(2)} ${ing.unit}\n`;
+          if (ing.alreadyReserved && ing.alreadyReserved > 0) {
+            warningMsg += `  Reserved: ${ing.alreadyReserved.toFixed(2)} ${ing.unit}\n`;
+            warningMsg += `  Remaining: ${(ing.available - ing.alreadyReserved).toFixed(2)} ${ing.unit}\n`;
+          }
+        });
+        
+        alert(warningMsg);
+        return; // Don't update
+      }
+    }
   }
+  
+  // If validation passes (or decreasing), update quantity
+  item.quantity += change;
+  if (item.quantity <= 0) {
+    cart = cart.filter(cartItem => cartItem.id !== productId);
+  }
+  
   updateCartDisplay();
 }
 
@@ -1248,12 +1330,248 @@ function updateCartTotals() {
   if (taxEl) taxEl.textContent = `₱${vatAmount.toFixed(2)}`;
   if (totalEl) totalEl.textContent = `₱${total.toFixed(2)}`;
 }
-
+/**
+ * Validates that there's enough stock to fulfill all items in the cart
+ * Accounts for cumulative ingredient usage across all cart items
+ * @param {Array} cart - The current shopping cart
+ * @returns {Object} Validation result with isValid flag and details
+ */
+async function validateCartStock(cart) {
+  const validationResult = {
+    isValid: true,
+    insufficientItems: []
+  };
+  
+  try {
+    // Get fresh ingredient data
+    const ingredientsSnapshot = await getDocs(ingredientsRef);
+    const currentIngredientStock = new Map();
+    
+    ingredientsSnapshot.forEach(doc => {
+      const ingData = doc.data();
+      const stockInBase = (ingData.stockQuantity || 0) * (ingData.conversionFactor || 1);
+      currentIngredientStock.set(doc.id, {
+        name: ingData.name,
+        stock: stockInBase,
+        unit: ingData.baseUnit
+      });
+    });
+    
+    // NEW: Track cumulative ingredient usage across all cart items
+    const cumulativeIngredientUsage = new Map();
+    
+    // First pass: Calculate total ingredient usage for entire cart
+    for (const cartItem of cart) {
+      const productId = cartItem.id.split('-')[0];
+      const productDoc = await getDoc(doc(db, "products", productId));
+      
+      if (!productDoc.exists()) continue;
+      
+      const product = productDoc.data();
+      let recipeToCheck = [];
+      
+      // Get the appropriate recipe for this cart item
+      if (product.variations && product.variations.length > 0) {
+        const variationName = cartItem.name.split(' - ')[1];
+        const variation = product.variations.find(v => v.name === variationName);
+        
+        if (variation && variation.recipe) {
+          recipeToCheck = variation.recipe;
+          
+          // Check if primary recipe can be used
+          let canUsePrimary = true;
+          for (const recipeItem of recipeToCheck) {
+            const ingredient = currentIngredientStock.get(recipeItem.ingredientId);
+            const alreadyUsed = cumulativeIngredientUsage.get(recipeItem.ingredientId) || 0;
+            const availableStock = ingredient ? (ingredient.stock - alreadyUsed) : 0;
+            
+            if (availableStock < (recipeItem.qtyPerProduct * cartItem.quantity)) {
+              canUsePrimary = false;
+              break;
+            }
+          }
+          
+          // Switch to secondary if primary doesn't have enough
+          if (!canUsePrimary && product.hasSecondaryStock && product.secondaryStock && product.secondaryStock[variationName]) {
+            recipeToCheck = product.secondaryStock[variationName];
+          }
+        }
+      } else {
+        // Non-variation product
+        const productRecipes = allRecipesCache.filter(r => r.productId === productId);
+        recipeToCheck = productRecipes;
+        
+        // Check if primary recipe can be used
+        if (recipeToCheck.length > 0) {
+          let canUsePrimary = true;
+          for (const recipeItem of recipeToCheck) {
+            const ingredient = currentIngredientStock.get(recipeItem.ingredientId);
+            const alreadyUsed = cumulativeIngredientUsage.get(recipeItem.ingredientId) || 0;
+            const availableStock = ingredient ? (ingredient.stock - alreadyUsed) : 0;
+            
+            if (availableStock < (recipeItem.qtyPerProduct * cartItem.quantity)) {
+              canUsePrimary = false;
+              break;
+            }
+          }
+          
+          // Switch to secondary if primary doesn't have enough
+          if (!canUsePrimary && product.hasSecondaryStock && product.secondaryStock && product.secondaryStock.default) {
+            recipeToCheck = product.secondaryStock.default;
+          }
+        }
+      }
+      
+      // Add this item's ingredient usage to cumulative totals
+      for (const recipeItem of recipeToCheck) {
+        const neededQty = recipeItem.qtyPerProduct * cartItem.quantity;
+        const currentUsage = cumulativeIngredientUsage.get(recipeItem.ingredientId) || 0;
+        cumulativeIngredientUsage.set(recipeItem.ingredientId, currentUsage + neededQty);
+      }
+    }
+    
+    // Second pass: Validate each item and check if total usage exceeds stock
+    const ingredientUsageByProduct = new Map(); // Track which products use which ingredients
+    
+    for (const cartItem of cart) {
+      const productId = cartItem.id.split('-')[0];
+      const productDoc = await getDoc(doc(db, "products", productId));
+      
+      if (!productDoc.exists()) continue;
+      
+      const product = productDoc.data();
+      let recipeToCheck = [];
+      
+      // Get the appropriate recipe (same logic as first pass)
+      if (product.variations && product.variations.length > 0) {
+        const variationName = cartItem.name.split(' - ')[1];
+        const variation = product.variations.find(v => v.name === variationName);
+        
+        if (variation && variation.recipe) {
+          recipeToCheck = variation.recipe;
+          
+          let canUsePrimary = true;
+          const tempUsage = new Map(cumulativeIngredientUsage);
+          
+          for (const recipeItem of recipeToCheck) {
+            const ingredient = currentIngredientStock.get(recipeItem.ingredientId);
+            const totalUsed = tempUsage.get(recipeItem.ingredientId) || 0;
+            const availableStock = ingredient ? ingredient.stock : 0;
+            
+            if (availableStock < totalUsed) {
+              canUsePrimary = false;
+              break;
+            }
+          }
+          
+          if (!canUsePrimary && product.hasSecondaryStock && product.secondaryStock && product.secondaryStock[variationName]) {
+            recipeToCheck = product.secondaryStock[variationName];
+          }
+        }
+      } else {
+        const productRecipes = allRecipesCache.filter(r => r.productId === productId);
+        recipeToCheck = productRecipes;
+        
+        if (recipeToCheck.length > 0) {
+          let canUsePrimary = true;
+          const tempUsage = new Map(cumulativeIngredientUsage);
+          
+          for (const recipeItem of recipeToCheck) {
+            const ingredient = currentIngredientStock.get(recipeItem.ingredientId);
+            const totalUsed = tempUsage.get(recipeItem.ingredientId) || 0;
+            const availableStock = ingredient ? ingredient.stock : 0;
+            
+            if (availableStock < totalUsed) {
+              canUsePrimary = false;
+              break;
+            }
+          }
+          
+          if (!canUsePrimary && product.hasSecondaryStock && product.secondaryStock && product.secondaryStock.default) {
+            recipeToCheck = product.secondaryStock.default;
+          }
+        }
+      }
+      
+      // Validate each ingredient considering cumulative usage
+      const insufficientIngredients = [];
+      let maxPossibleOrders = Infinity;
+      
+      for (const recipeItem of recipeToCheck) {
+        const ingredient = currentIngredientStock.get(recipeItem.ingredientId);
+        
+        if (!ingredient) {
+          insufficientIngredients.push({
+            name: 'Unknown Ingredient',
+            needed: recipeItem.qtyPerProduct * cartItem.quantity,
+            available: 0,
+            unit: recipeItem.unitUsed,
+            totalCartUsage: cumulativeIngredientUsage.get(recipeItem.ingredientId) || 0
+          });
+          maxPossibleOrders = 0;
+          continue;
+        }
+        
+        const neededForThisItem = recipeItem.qtyPerProduct * cartItem.quantity;
+        const totalNeededInCart = cumulativeIngredientUsage.get(recipeItem.ingredientId) || 0;
+        const availableStock = ingredient.stock;
+        
+        // Check if TOTAL cart usage exceeds available stock
+        if (availableStock < totalNeededInCart) {
+          insufficientIngredients.push({
+            name: ingredient.name,
+            needed: neededForThisItem,
+            available: availableStock,
+            unit: ingredient.unit,
+            totalCartUsage: totalNeededInCart,
+            alreadyReserved: totalNeededInCart - neededForThisItem
+          });
+          
+          // Calculate max possible orders considering what's already in cart
+          const alreadyReserved = totalNeededInCart - neededForThisItem;
+          const remainingStock = availableStock - alreadyReserved;
+          const possibleOrders = Math.floor(Math.max(0, remainingStock) / recipeItem.qtyPerProduct);
+          
+          if (possibleOrders < maxPossibleOrders) {
+            maxPossibleOrders = possibleOrders;
+          }
+        } else {
+          // Even if sufficient, calculate max possible
+          const alreadyReserved = totalNeededInCart - neededForThisItem;
+          const remainingStock = availableStock - alreadyReserved;
+          const possibleOrders = Math.floor(Math.max(0, remainingStock) / recipeItem.qtyPerProduct);
+          
+          if (possibleOrders < maxPossibleOrders) {
+            maxPossibleOrders = possibleOrders;
+          }
+        }
+      }
+      
+      if (insufficientIngredients.length > 0) {
+        validationResult.isValid = false;
+        validationResult.insufficientItems.push({
+          productName: cartItem.name,
+          requestedQty: cartItem.quantity,
+          maxAvailable: Math.max(0, maxPossibleOrders),
+          insufficientIngredients: insufficientIngredients
+        });
+      }
+    }
+    
+  } catch (error) {
+    console.error("Error validating cart stock:", error);
+    validationResult.isValid = false;
+    validationResult.error = error.message;
+  }
+  
+  return validationResult;
+}
 async function processSale(customerName, orderType, totalAmount, subtotal, tax, paymentDetails, discountInfo) {
   if (processPaymentBtn) {
     processPaymentBtn.disabled = true;
     processPaymentBtn.textContent = "Processing...";
   }
+  
   const getAvgWaitTime = (cart) => {
     let maxTime = 0;
     let waitCategory = "short";
@@ -1266,7 +1584,47 @@ async function processSale(customerName, orderType, totalAmount, subtotal, tax, 
     return waitCategory;
   };
   const avgWaitTime = getAvgWaitTime(cart);
+  
   try {
+    // --- NEW: VALIDATE STOCK BEFORE PROCESSING ---
+    const stockValidation = await validateCartStock(cart);
+    
+if (!stockValidation.isValid) {
+      // Show detailed error message
+      let errorMessage = "⚠️ Insufficient Stock:\n\n";
+      
+      stockValidation.insufficientItems.forEach(item => {
+        errorMessage += `• ${item.productName}\n`;
+        errorMessage += `  Requested: ${item.requestedQty} order(s)\n`;
+        errorMessage += `  Maximum available: ${item.maxAvailable} order(s)\n`;
+        
+        if (item.insufficientIngredients.length > 0) {
+          errorMessage += `  Missing ingredients:\n`;
+          item.insufficientIngredients.forEach(ing => {
+            errorMessage += `    - ${ing.name}:\n`;
+            errorMessage += `      This item needs: ${ing.needed.toFixed(2)} ${ing.unit}\n`;
+            errorMessage += `      Total stock: ${ing.available.toFixed(2)} ${ing.unit}\n`;
+            if (ing.alreadyReserved > 0) {
+              errorMessage += `      Already reserved by cart: ${ing.alreadyReserved.toFixed(2)} ${ing.unit}\n`;
+              errorMessage += `      Remaining: ${(ing.available - ing.alreadyReserved).toFixed(2)} ${ing.unit}\n`;
+            }
+          });
+        }
+        errorMessage += "\n";
+      });
+      
+      errorMessage += "Please adjust the cart quantities or restock ingredients before processing this order.";
+      
+      alert(errorMessage);
+      
+      if (processPaymentBtn) {
+        processPaymentBtn.disabled = false;
+        processPaymentBtn.textContent = "Process Payment";
+      }
+      return; // Stop processing
+    }
+    // --- END VALIDATION ---
+    
     const orderRef = doc(collection(db, "pending_orders"));
     const orderId = orderRef.id.substring(0, 4).toUpperCase();
     await setDoc(orderRef, { 
@@ -1281,7 +1639,7 @@ async function processSale(customerName, orderType, totalAmount, subtotal, tax, 
       tax: tax,
       discountType: discountInfo.type,
       discountAmount: discountInfo.amount,
-      discountPercentage: discountInfo.percentage || null, // ADD THIS LINE
+      discountPercentage: discountInfo.percentage || null,
       ...paymentDetails,
       items: cart.map(item => ({
         productId: item.id.split('-')[0],

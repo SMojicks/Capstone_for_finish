@@ -11,7 +11,8 @@ const invCategoriesRef = doc(db, "settings", "inventoryCategories");
 const ingredientsRef = collection(db, "ingredients");
 
 // --- DOM Elements ---
-let manageBtn, modal, closeBtn, addBtn, newCategoryInput, categoryListTbody, ingredientCategoryDropdown, posIngredientFilterDropdown, addCategoryForm;
+let modal, closeBtn, addBtn, newCategoryInput, categoryListTbody, ingredientCategoryDropdown, posIngredientFilterDropdown, addCategoryForm;
+
 
 let allInvCategories = [];
 
@@ -191,31 +192,19 @@ async function editCategory(oldName) {
 
 // --- Event Listeners ---
 document.addEventListener("DOMContentLoaded", () => {
-    // Assign elements
-    manageBtn = document.getElementById("manage-categories-btn");
-    modal = document.getElementById("inventory-category-modal");
-    closeBtn = document.getElementById("close-inv-category-btn");
+    // Assign elements - updated for new tab structure
     addBtn = document.getElementById("add-inv-category-btn");
     addCategoryForm = document.getElementById("add-inv-category-form");
     newCategoryInput = document.getElementById("new-inv-category-name");
-    categoryListTbody = document.getElementById("existing-inv-categories-tbody"); // <-- Changed ID
+    categoryListTbody = document.getElementById("existing-inv-categories-tbody");
 
-    if (manageBtn) {
-        manageBtn.addEventListener("click", () => {
-            loadCategories(); // Always get fresh data
-            if(modal) modal.style.display = "flex";
-        });
-    }
-    
-    if (closeBtn) closeBtn.addEventListener("click", () => modal.style.display = "none");
-    
     // Listen to form submit event
     if (addCategoryForm) addCategoryForm.addEventListener("submit", addCategory);
     
     if (categoryListTbody) {
         categoryListTbody.addEventListener("click", (e) => {
             const targetButton = e.target.closest('button');
-            if (!targetButton) return; // Click wasn't on a button
+            if (!targetButton) return;
 
             if (targetButton.classList.contains("delete-cat-btn")) {
                 deleteCategory(targetButton.dataset.category);

@@ -48,8 +48,8 @@
     <ul class="nav-subsection">
         <li class="nav-subitem" data-permission="inventory">
             <button class="nav-link" data-section="add-items">
-                <span class="nav-icon material-icons">add_circle</span>
-                <span class="nav-text">Add Items</span>
+                <span class="nav-icon material-icons">post_add</span>
+                <span class="nav-text">Add/Manage Items</span>
             </button>
         </li>
         <li class="nav-subitem" data-permission="inventory">
@@ -449,58 +449,134 @@
     </div>
 </section>
 <!-- ADD ITEMS SECTION -->
+<!-- ADD ITEMS SECTION -->
 <section id="add-items-section" class="content-section hidden">
     <div class="section-header">
-        <h1>Add New Product</h1>
+        <h1>Add & Manage Items</h1>
     </div>
-    <div class="add-items-form-container">
-        <form id="add-items-form">
-            <div class="form-grid-two-col">
-                <div class="form-column">
-                    <div class="form-group">
-                        <label for="add-item-name">Ingredient Name: *</label>
-                        <input type="text" id="add-item-name" class="form-control" placeholder="e.g., Coffee Beans" required />
+    
+    <!-- Tabs for Add Items -->
+    <div class="account-tabs">
+        <button class="account-tab-btn active" data-target="add-new-item-tab">Add New Item</button>
+        <button class="account-tab-btn" data-target="manage-categories-tab">Manage Categories</button>
+        <button class="account-tab-btn" data-target="restock-items-tab" style="position: relative;">
+            Restock Items
+            <span id="restock-tab-alert-dot" class="sidebar-alert-dot" style="position: absolute; top: 8px; right: 8px;"></span>
+        </button>
+    </div>
+
+    <!-- Add New Item Tab -->
+    <div id="add-new-item-tab" class="account-table-container active">
+        <div class="add-items-form-container">
+            <form id="add-items-form">
+                <div class="form-grid-two-col">
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="add-item-name">Ingredient Name: *</label>
+                            <input type="text" id="add-item-name" class="form-control" placeholder="e.g., Coffee Beans" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="add-item-category">Category: *</label>
+                            <select id="add-item-category" class="form-control" required>
+                                <option value="">Loading categories...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="add-item-expiry">Expiry Date:</label>
+                            <input type="date" id="add-item-expiry" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label for="add-item-min-stock">Low Stock Alert (Base Unit): *</label>
+                            <input type="number" id="add-item-min-stock" class="form-control" min="0" placeholder="e.g., 2000" required />
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="add-item-category">Category: *</label>
-                        <select id="add-item-category" class="form-control" required>
-                            <option value="">Loading categories...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="add-item-expiry">Expiry Date:</label>
-                        <input type="date" id="add-item-expiry" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label for="add-item-min-stock">Low Stock Alert (Base Unit): *</label>
-                        <input type="number" id="add-item-min-stock" class="form-control" min="0" placeholder="e.g., 2000" required />
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="add-item-stock">Stock Quantity: *</label>
+                            <input type="number" id="add-item-stock" class="form-control" min="0" step="any" placeholder="e.g., 10" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="add-item-stock-unit">Stock Unit: *</label>
+                            <input type="text" id="add-item-stock-unit" class="form-control" placeholder="e.g., bag, bottle" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="add-item-base-unit">Base Unit: *</label>
+                            <input type="text" id="add-item-base-unit" class="form-control" placeholder="e.g., g, ml" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="add-item-conversion">Conversion Factor: *</label>
+                            <input type="number" id="add-item-conversion" class="form-control" min="1" step="any" placeholder="e.g., 1000" required />
+                            <p style="font-size: 12px; color: #666; margin-top: 4px;">(1 Stock Unit = ? Base Units)</p>
+                        </div>
                     </div>
                 </div>
-                <div class="form-column">
-                    <div class="form-group">
-                        <label for="add-item-stock">Stock Quantity: *</label>
-                        <input type="number" id="add-item-stock" class="form-control" min="0" step="any" placeholder="e.g., 10" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="add-item-stock-unit">Stock Unit: *</label>
-                        <input type="text" id="add-item-stock-unit" class="form-control" placeholder="e.g., bag, bottle" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="add-item-base-unit">Base Unit: *</label>
-                        <input type="text" id="add-item-base-unit" class="form-control" placeholder="e.g., g, ml" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="add-item-conversion">Conversion Factor: *</label>
-                        <input type="number" id="add-item-conversion" class="form-control" min="1" step="any" placeholder="e.g., 1000" required />
-                        <p style="font-size: 12px; color: #666; margin-top: 4px;">(1 Stock Unit = ? Base Units)</p>
-                    </div>
+                <div class="form-actions" style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                    <button type="button" id="cancel-add-item-btn" class="btn btn--secondary">Clear Form</button>
+                    <button type="submit" class="btn btn--primary">Add Ingredient</button>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Manage Categories Tab -->
+    <div id="manage-categories-tab" class="account-table-container">
+        <div class="add-items-form-container">
+            <form id="add-inv-category-form" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <div class="form-group" style="flex-grow: 1; margin-bottom: 0;">
+                    <label for="new-inv-category-name" style="margin-bottom: 4px;">New Category Name:</label>
+                    <input type="text" id="new-inv-category-name" class="form-control" placeholder="e.g., Dairy, Produce...">
+                </div>
+                <button id="add-inv-category-btn" type="submit" class="btn btn--primary" style="align-self: flex-end;">Add Category</button>
+            </form>
+            <hr style="margin: 20px 0;">
+            <label>Existing Categories:</label>
+            <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Category Name</th>
+                            <th style="width: 120px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="existing-inv-categories-tbody"></tbody>
+                </table>
             </div>
-            <div class="form-actions" style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
-                <button type="button" id="cancel-add-item-btn" class="btn btn--secondary">Clear Form</button>
-                <button type="submit" class="btn btn--primary">Add Ingredient</button>
+        </div>
+    </div>
+
+    <!-- Restock Items Tab -->
+    <div id="restock-items-tab" class="account-table-container">
+        <div style="margin-bottom: 16px;">
+            <p style="color: #666; font-size: 14px;">Items that need restocking (Low Stock or Out of Stock)</p>
+        </div>
+        
+        <div class="analytics-grid" style="margin-bottom: 24px;">
+            <div class="stat-card" id="restock-out-stock-card">
+                <h5>Out of Stock</h5>
+                <h2 id="restock-out-count">0</h2>
             </div>
-        </form>
+            <div class="stat-card" id="restock-low-stock-card">
+                <h5>Low Stock</h5>
+                <h2 id="restock-low-count">0</h2>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Item ID</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Current Stock</th>
+                        <th>Min Stock</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="restock-items-table-body"></tbody>
+            </table>
+        </div>
     </div>
 </section>
                 <!-- TRANSACTIONS SECTION -->
