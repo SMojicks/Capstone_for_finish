@@ -263,7 +263,6 @@
                             <button id="export-inventory-pdf-btn" class="btn btn--secondary btn--sm">Export PDF</button>
                             <button id="export-inventory-excel-btn" class="btn btn--secondary btn--sm">Export Excel</button>
                             <button id="view-inventory-log-btn" class="btn btn--secondary">View Logs</button>
-                            <button id="manage-categories-btn" class="btn btn--secondary">Manage Categories</button>
                         </div>
                     </div>
 
@@ -499,10 +498,42 @@
                             <label for="add-item-stock-unit">Stock Unit: *</label>
                             <input type="text" id="add-item-stock-unit" class="form-control" placeholder="e.g., bag, bottle" required />
                         </div>
-                        <div class="form-group">
-                            <label for="add-item-base-unit">Base Unit: *</label>
-                            <input type="text" id="add-item-base-unit" class="form-control" placeholder="e.g., g, ml" required />
-                        </div>
+<div class="form-group">
+    <label for="add-item-base-unit">Base Unit: *</label>
+    <select id="add-item-base-unit" class="form-control" required>
+        <option value="">Select unit...</option>
+        <optgroup label="Weight">
+            <option value="g">g (grams)</option>
+            <option value="kg">kg (kilograms)</option>
+            <option value="mg">mg (milligrams)</option>
+            <option value="oz">oz (ounces)</option>
+            <option value="lb">lb (pounds)</option>
+        </optgroup>
+        <optgroup label="Volume">
+            <option value="ml">ml (milliliters)</option>
+            <option value="L">L (liters)</option>
+            <option value="fl oz">fl oz (fluid ounces)</option>
+            <option value="cup">cup</option>
+            <option value="tbsp">tbsp (tablespoon)</option>
+            <option value="tsp">tsp (teaspoon)</option>
+        </optgroup>
+        <optgroup label="Count">
+            <option value="pcs">pcs (pieces)</option>
+            <option value="slice">slice</option>
+            <option value="sheet">sheet</option>
+            <option value="sachet">sachet</option>
+            <option value="pack">pack</option>
+            <option value="dozen">dozen</option>
+        </optgroup>
+        <optgroup label="Other">
+            <option value="serving">serving</option>
+            <option value="portion">portion</option>
+            <option value="scoop">scoop</option>
+            <option value="shot">shot</option>
+            <option value="pump">pump</option>
+        </optgroup>
+    </select>
+</div>
                         <div class="form-group">
                             <label for="add-item-conversion">Conversion Factor: *</label>
                             <input type="number" id="add-item-conversion" class="form-control" min="1" step="any" placeholder="e.g., 1000" required />
@@ -877,10 +908,42 @@
                             <label for="product-stock-unit">Stock Unit (Purchase Unit):</label>
                             <input type="text" id="product-stock-unit" class="form-control" placeholder="e.g., bag, jug, bottle" required />
                         </div>
-                        <div class="form-group">
-                            <label for="product-base-unit">Base Unit (Usage Unit):</label>
-                            <input type="text" id="product-base-unit" class="form-control" placeholder="e.g., g, ml" required />
-                        </div>
+<div class="form-group">
+    <label for="product-base-unit">Base Unit (Usage Unit):</label>
+    <select id="product-base-unit" class="form-control" required>
+        <option value="">Select unit...</option>
+        <optgroup label="Weight">
+            <option value="g">g (grams)</option>
+            <option value="kg">kg (kilograms)</option>
+            <option value="mg">mg (milligrams)</option>
+            <option value="oz">oz (ounces)</option>
+            <option value="lb">lb (pounds)</option>
+        </optgroup>
+        <optgroup label="Volume">
+            <option value="ml">ml (milliliters)</option>
+            <option value="L">L (liters)</option>
+            <option value="fl oz">fl oz (fluid ounces)</option>
+            <option value="cup">cup</option>
+            <option value="tbsp">tbsp (tablespoon)</option>
+            <option value="tsp">tsp (teaspoon)</option>
+        </optgroup>
+        <optgroup label="Count">
+            <option value="pcs">pcs (pieces)</option>
+            <option value="slice">slice</option>
+            <option value="sheet">sheet</option>
+            <option value="sachet">sachet</option>
+            <option value="pack">pack</option>
+            <option value="dozen">dozen</option>
+        </optgroup>
+        <optgroup label="Other">
+            <option value="serving">serving</option>
+            <option value="portion">portion</option>
+            <option value="scoop">scoop</option>
+            <option value="shot">shot</option>
+            <option value="pump">pump</option>
+        </optgroup>
+    </select>
+</div>
                         <div class="form-group">
                             <label for="product-conversion">Conversion Factor:</label>
                             <input type="number" id="product-conversion" class="form-control" min="1" step="any" placeholder="e.g., 1000" required />

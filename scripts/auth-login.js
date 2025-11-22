@@ -49,10 +49,9 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
                         userId: user.uid,
                         role: "customer" // 👈 Assign "customer" role by default
                     })
-                    .then(() => {
-                        alert('Account created successfully! Redirecting to homepage...');
-                        window.location.href = 'index.html';
-                    })
+                        .then(() => {
+                            window.location.href = 'index.html';
+                        })
                     .catch((error) => {
                          alert(`Error saving user data: ${error.message}`);
                     });
@@ -81,10 +80,9 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
         } else {
             // --- Handle Customer Login ---
             signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    alert('Customer login successful! Redirecting to homepage...');
-                    window.location.href = 'index.html';
-                })
+                    .then((userCredential) => {
+                        window.location.href = 'index.html';
+                    })
                 .catch((error) => {
                     let userMessage = "An unknown error occurred. Please try again.";
                     switch (error.code) {
@@ -115,10 +113,9 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
                     
                     // --- THIS IS THE FIX ---
                     // Check if the role is 'employee' OR 'admin'
-                    if (userRole === 'employee' || userRole === 'admin') {
-                        alert('Login successful! Redirecting to dashboard...');
-                        window.location.href = 'EmployeeUI/index.html';
-                    } else {
+                        if (userRole === 'employee' || userRole === 'admin') {
+                            window.location.href = 'EmployeeUI/index.html';
+                        }else {
                         // This person is a 'customer' or has no role
                         alert('Access Denied: This is not an authorized employee or admin account.');
                         signOut(auth);

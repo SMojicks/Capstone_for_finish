@@ -80,10 +80,25 @@ function openModal(editMode = false, product = {}) {
       }
   }, 100);
   
-  stockField.value = product.stockQuantity || '';
-  stockUnitField.value = product.stockUnit || '';
-  baseUnitField.value = product.baseUnit || '';
-  conversionField.value = product.conversionFactor || '';
+stockField.value = product.stockQuantity || '';
+stockUnitField.value = product.stockUnit || '';
+
+// Handle base unit - check if value exists in dropdown, if not add it temporarily
+if (product.baseUnit) {
+    const optionExists = Array.from(baseUnitField.options).some(opt => opt.value === product.baseUnit);
+    if (!optionExists) {
+        // Add custom unit as an option
+        const customOption = document.createElement('option');
+        customOption.value = product.baseUnit;
+        customOption.textContent = `${product.baseUnit} (custom)`;
+        baseUnitField.appendChild(customOption);
+    }
+    baseUnitField.value = product.baseUnit;
+} else {
+    baseUnitField.value = '';
+}
+
+conversionField.value = product.conversionFactor || '';
   minStockField.value = product.minStockThreshold || '';
   expiryField.value = product.expiryDate || '';
 }
