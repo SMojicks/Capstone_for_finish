@@ -307,6 +307,7 @@
                                     <th>Category</th>
                                     <th>Status</th>
                                     <th>Stock (Unit)</th>
+                                     <th>Est. Servings</th>  
                                     <th>Min Stock (Base)</th>
                                     <th>Expiry Date</th>
                                     <th>Last Updated</th>
@@ -575,40 +576,71 @@
         </div>
     </div>
 
-    <!-- Restock Items Tab -->
-    <div id="restock-items-tab" class="account-table-container">
-        <div style="margin-bottom: 16px;">
-            <p style="color: #666; font-size: 14px;">Items that need restocking (Low Stock or Out of Stock)</p>
-        </div>
-        
-        <div class="analytics-grid" style="margin-bottom: 24px;">
-            <div class="stat-card" id="restock-out-stock-card">
-                <h5>Out of Stock</h5>
-                <h2 id="restock-out-count">0</h2>
-            </div>
-            <div class="stat-card" id="restock-low-stock-card">
-                <h5>Low Stock</h5>
-                <h2 id="restock-low-count">0</h2>
-            </div>
-        </div>
 
-        <div class="table-container">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Item ID</th>
-                        <th>Name</th>
-                        <th>Category</th>
-                        <th>Status</th>
-                        <th>Current Stock</th>
-                        <th>Min Stock</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="restock-items-table-body"></tbody>
-            </table>
+<!-- Restock Items Tab -->
+<div id="restock-items-tab" class="account-table-container">
+    <div style="margin-bottom: 16px;">
+        <p style="color: #666; font-size: 14px;">Items that need restocking (Low Stock or Out of Stock)</p>
+    </div>
+    
+    <!-- NEW: Search Section -->
+    <div class="restock-search-section" style="background: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+        <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+                <label for="restock-search-input">Search All Ingredients:</label>
+                <input type="text" id="restock-search-input" class="form-control" placeholder="Search by name or ID...">
+            </div>
+            <div class="form-group" style="min-width: 150px; margin-bottom: 0;">
+                <label for="restock-search-category">Category:</label>
+                <select id="restock-search-category" class="form-control">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="restock-show-all">
+                    <input type="checkbox" id="restock-show-all" style="margin-right: 6px;">
+                    Show all items
+                </label>
+            </div>
+            <button id="restock-search-reset" class="btn btn--secondary btn--small">Reset</button>
+        </div>
+        <p style="font-size: 12px; color: #888; margin-top: 8px;">
+            💡 Tip: Check "Show all items" or search to find items that aren't low on stock
+        </p>
+    </div>
+
+    <div class="analytics-grid" style="margin-bottom: 24px;">
+        <div class="stat-card" id="restock-out-stock-card">
+            <h5>Out of Stock</h5>
+            <h2 id="restock-out-count">0</h2>
+        </div>
+        <div class="stat-card" id="restock-low-stock-card">
+            <h5>Low Stock</h5>
+            <h2 id="restock-low-count">0</h2>
+        </div>
+        <div class="stat-card" id="restock-in-stock-card" style="display: none;">
+            <h5>In Stock (Showing)</h5>
+            <h2 id="restock-in-stock-count">0</h2>
         </div>
     </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Item ID</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Current Stock</th>
+                    <th>Min Stock</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="restock-items-table-body"></tbody>
+        </table>
+    </div>
+</div>
 </section>
                 <!-- TRANSACTIONS SECTION -->
                 <section id="transactions-section" class="content-section hidden">

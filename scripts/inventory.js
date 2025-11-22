@@ -150,7 +150,130 @@ function getIngredientStatus(ing) {
     
     return { status, statusDisplay, statusClass, isExpired };
 }
+// In scripts/inventory.js
 
+// Add this new function after the getIngredientStatus function
+/**
+ * Calculates estimated servings remaining for an ingredient
+ * @param {object} ingredient - The ingredient object
+ * @param {Array} recipes - All recipes from the system
+ * @param {Array} products - All products from the system
+ * @returns {object} - { minServings, maxServings, usageDetails }
+ */
+function calculateEstimatedServings(ingredient, allRecipesData, allProductsData) {
+    const currentStockInBase = (ingredient.stockQuantity || 0) * (ingredient.conversionFactor || 1);
+    
+    if (currentStockInBase <= 0) {
+        return { minServings: 0, maxServings: 0, usageDetails: [] };
+    }
+    
+    const usageDetails = [];
+    let minUsage = Infinity; // Smallest amount used per serving (gives max servings)
+    let maxUsage = 0; // Largest amount used per serving (gives min servings)
+    
+    // Check standalone recipes (non-variation products)
+    allRecipesData.forEach(recipe => {
+        if (recipe.ingredientId === ingredient.id) {
+            const product = allProductsData.find(p => p.id === recipe.productId);
+            const productName = product ? product.name : 'Unknown Product';
+            const qtyPerServing = parseFloat(recipe.qtyPerProduct) || 0;
+            
+            if (qtyPerServing > 0) {
+                usageDetails.push({
+                    productName,
+                    variationName: null,
+                    qtyPerServing,
+                    unit: recipe.unitUsed,
+                    servingsFromStock: Math.floor(currentStockInBase / qtyPerServing)
+                });
+                
+                if (qtyPerServing < minUsage) minUsage = qtyPerServing;
+                if (qtyPerServing > maxUsage) maxUsage = qtyPerServing;
+            }
+        }
+    });
+    
+    // Check variation products
+    allProductsData.forEach(product => {
+        if (product.variations && product.variations.length > 0) {
+            product.variations.forEach(variation => {
+                if (variation.recipe && variation.recipe.length > 0) {
+                    variation.recipe.forEach(recipeItem => {
+                        if (recipeItem.ingredientId === ingredient.id) {
+                            const qtyPerServing = parseFloat(recipeItem.qtyPerProduct) || 0;
+                            
+                            if (qtyPerServing > 0) {
+                                usageDetails.push({
+                                    productName: product.name,
+                                    variationName: variation.name,
+                                    qtyPerServing,
+                                    unit: recipeItem.unitUsed,
+                                    servingsFromStock: Math.floor(currentStockInBase / qtyPerServing)
+                                });
+                                
+                                if (qtyPerServing < minUsage) minUsage = qtyPerServing;
+                                if (qtyPerServing > maxUsage) maxUsage = qtyPerServing;
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    });
+    
+    // Calculate min and max servings
+    const minServings = maxUsage > 0 ? Math.floor(currentStockInBase / maxUsage) : 0;
+    const maxServings = minUsage < Infinity ? Math.floor(currentStockInBase / minUsage) : 0;
+    
+    return {
+        minServings,
+        maxServings,
+        usageDetails,
+        hasUsage: usageDetails.length > 0
+    };
+}
+
+// Function to format servings display
+function formatServingsDisplay(servingsData) {
+    if (!servingsData.hasUsage) {
+        return `<span style="color: #999; font-style: italic;">No recipes</span>`;
+    }
+    
+    if (servingsData.minServings === 0 && servingsData.maxServings === 0) {
+        return `<span style="color: var(--color-red-600); font-weight: 600;">0 servings</span>`;
+    }
+    
+    if (servingsData.minServings === servingsData.maxServings) {
+        const color = servingsData.minServings <= 10 ? 'var(--color-red-600)' : 
+                      servingsData.minServings <= 50 ? 'var(--color-yellow-600)' : 'var(--color-green-600)';
+        return `<span style="color: ${color}; font-weight: 600;">${servingsData.minServings} servings</span>`;
+    }
+    
+    const avgServings = Math.floor((servingsData.minServings + servingsData.maxServings) / 2);
+    const color = avgServings <= 10 ? 'var(--color-red-600)' : 
+                  avgServings <= 50 ? 'var(--color-yellow-600)' : 'var(--color-green-600)';
+    
+    return `<span style="color: ${color}; font-weight: 600;">${servingsData.minServings} - ${servingsData.maxServings}</span>`;
+}
+
+// Function to create tooltip content for servings
+function createServingsTooltip(servingsData, ingredientName) {
+    if (!servingsData.hasUsage || servingsData.usageDetails.length === 0) {
+        return `No products use ${ingredientName}`;
+    }
+    
+    let tooltip = `Estimated servings for ${ingredientName}:\n\n`;
+    
+    servingsData.usageDetails.forEach(detail => {
+        const name = detail.variationName 
+            ? `${detail.productName} (${detail.variationName})`
+            : detail.productName;
+        tooltip += `• ${name}: ${detail.servingsFromStock} servings\n`;
+        tooltip += `  (uses ${detail.qtyPerServing} ${detail.unit}/serving)\n`;
+    });
+    
+    return tooltip;
+}
 
 // --- NEW: Populate Category Filter Dropdown ---
 function populateCategoryFilter() {
@@ -232,8 +355,29 @@ function filterAndRenderInventory() {
     renderInventoryTable(filteredList);
 }
 
+// --- Add these variables at the top of the file, after the existing variable declarations ---
+let allRecipesCache = [];
+let allProductsCache = [];
 
-// --- MODIFIED: Renders a pre-filtered list ---
+// --- Add these listener functions after loadInventory function ---
+function listenForRecipes() {
+    const recipesRef = collection(db, "recipes");
+    onSnapshot(recipesRef, (snapshot) => {
+        allRecipesCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        filterAndRenderInventory(); // Re-render when recipes change
+    });
+}
+
+function listenForProducts() {
+    const productsRefCollection = collection(db, "products");
+    const q = query(productsRefCollection, orderBy("name"));
+    onSnapshot(q, (snapshot) => {
+        allProductsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        filterAndRenderInventory(); // Re-render when products change
+    });
+}
+
+// --- Replace the entire renderInventoryTable function ---
 function renderInventoryTable(ingredientsToRender) {
   inventoryTableBody.innerHTML = '';
   let hasLowStock = false;
@@ -241,20 +385,25 @@ function renderInventoryTable(ingredientsToRender) {
   today.setHours(0, 0, 0, 0);
 
   if (ingredientsToRender.length === 0) {
-    inventoryTableBody.innerHTML = `<tr><td colspan="10" style="text-align:center;">No ingredients match your filters.</td></tr>`;
-    updateInventoryNotification(false); // No items, so no low stock
+    inventoryTableBody.innerHTML = `<tr><td colspan="11" style="text-align:center;">No ingredients match your filters.</td></tr>`;
+    updateInventoryNotification(false);
     return;
   }
   
   ingredientsToRender.forEach(ing => {
     const id = ing.id;
     
-    // --- Get status from helper function ---
+    // Get status from helper function
     const { statusDisplay, statusClass, isExpired } = getIngredientStatus(ing);
     
     if (statusDisplay === "Low Stock" || statusDisplay === "Out of Stock" || isExpired) {
         hasLowStock = true;
     }
+
+    // Calculate estimated servings
+    const servingsData = calculateEstimatedServings(ing, allRecipesCache, allProductsCache);
+    const servingsDisplay = formatServingsDisplay(servingsData);
+    const servingsTooltip = createServingsTooltip(servingsData, ing.name);
 
     // Format Expiry Date
     let expiryStr = "N/A";
@@ -286,6 +435,10 @@ function renderInventoryTable(ingredientsToRender) {
       <td style="${(statusClass === 'status-blocked' || statusClass === 'status-pending') ? 'color:var(--color-red-600);font-weight:600;' : ''}">
         ${displayStock}
       </td>
+      <td class="servings-cell" title="${servingsTooltip.replace(/"/g, '&quot;')}" style="cursor: help;">
+        ${servingsDisplay}
+        ${servingsData.hasUsage ? `<button class="btn-icon servings-info-btn" title="View details" style="margin-left: 4px; font-size: 12px;">ℹ️</button>` : ''}
+      </td>
       <td>${(ing.minStockThreshold || 0)} ${ing.baseUnit}</td>
       <td>${expiryStr}</td>
       <td>${lastUpdatedStr}</td>
@@ -296,6 +449,15 @@ function renderInventoryTable(ingredientsToRender) {
       </td>
       `;
 
+    // Add servings info button click handler
+    const servingsInfoBtn = row.querySelector('.servings-info-btn');
+    if (servingsInfoBtn) {
+        servingsInfoBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showServingsModal(ing, servingsData);
+        });
+    }
+
     row.querySelector('.edit-btn').addEventListener('click', () => {
       openModal(true, { id, ...ing });
     });
@@ -303,7 +465,6 @@ function renderInventoryTable(ingredientsToRender) {
     row.querySelector('.delete-btn').addEventListener('click', async () => {
        if (confirm(`Delete "${ing.name}"? This is permanent.`)) {
         await deleteDoc(doc(db, "ingredients", id));
-        // No need to reload, snapshot will update
       }
     });
 
@@ -311,6 +472,100 @@ function renderInventoryTable(ingredientsToRender) {
   });
   
   updateInventoryNotification(hasLowStock);
+}
+
+// --- Add this function for the servings detail modal ---
+function showServingsModal(ingredient, servingsData) {
+    // Remove existing modal if any
+    const existingModal = document.getElementById('servings-detail-modal');
+    if (existingModal) existingModal.remove();
+    
+    const currentStock = (ingredient.stockQuantity || 0) * (ingredient.conversionFactor || 1);
+    
+    let tableRows = '';
+    if (servingsData.usageDetails.length > 0) {
+        servingsData.usageDetails
+            .sort((a, b) => a.servingsFromStock - b.servingsFromStock) // Sort by lowest servings first
+            .forEach(detail => {
+                const name = detail.variationName 
+                    ? `${detail.productName} <span style="color: #666; font-size: 12px;">(${detail.variationName})</span>`
+                    : detail.productName;
+                
+                const servingColor = detail.servingsFromStock <= 10 ? 'var(--color-red-600)' : 
+                                    detail.servingsFromStock <= 50 ? 'var(--color-yellow-600)' : 'var(--color-green-600)';
+                
+                tableRows += `
+                    <tr>
+                        <td>${name}</td>
+                        <td style="text-align: center;">${detail.qtyPerServing} ${detail.unit}</td>
+                        <td style="text-align: center; color: ${servingColor}; font-weight: 600;">${detail.servingsFromStock}</td>
+                    </tr>
+                `;
+            });
+    } else {
+        tableRows = `<tr><td colspan="3" style="text-align: center; color: #999; padding: 20px;">No products use this ingredient</td></tr>`;
+    }
+    
+    const modalHTML = `
+        <div id="servings-detail-modal" class="modal" style="display: flex;">
+            <div class="modal-content" style="max-width: 600px;">
+                <h2 style="display: flex; align-items: center; gap: 8px;">
+                    <span>📊</span>
+                    Estimated Servings: ${ingredient.name}
+                </h2>
+                
+                <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <strong style="color: #666; font-size: 12px;">CURRENT STOCK</strong>
+                            <p style="font-size: 24px; font-weight: 700; margin: 4px 0; color: var(--color-primary);">
+                                ${currentStock.toFixed(2)} ${ingredient.baseUnit}
+                            </p>
+                            <span style="color: #666; font-size: 12px;">(${ingredient.stockQuantity} ${ingredient.stockUnit})</span>
+                        </div>
+                        <div>
+                            <strong style="color: #666; font-size: 12px;">SERVINGS RANGE</strong>
+                            <p style="font-size: 24px; font-weight: 700; margin: 4px 0; color: ${servingsData.minServings <= 10 ? 'var(--color-red-600)' : 'var(--color-green-600)'};">
+                                ${servingsData.minServings === servingsData.maxServings 
+                                    ? servingsData.minServings 
+                                    : `${servingsData.minServings} - ${servingsData.maxServings}`}
+                            </p>
+                            <span style="color: #666; font-size: 12px;">orders possible</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="max-height: 300px; overflow-y: auto;">
+                    <table class="data-table" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th style="text-align: center;">Usage/Serving</th>
+                                <th style="text-align: center;">Est. Servings</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="modal-buttons" style="margin-top: 20px; justify-content: flex-end;">
+                    <button type="button" id="close-servings-modal" class="btn btn--secondary">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    const modal = document.getElementById('servings-detail-modal');
+    const closeBtn = document.getElementById('close-servings-modal');
+    
+    closeBtn.addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
 }
 
 // --- Stock Display Helper ---
@@ -329,7 +584,7 @@ function updateInventoryNotification(hasLowStock) {
   }
 }
 
-// --- MODIFIED: Load Inventory (Realtime) ---
+// --- Replace the loadInventory function ---
 function loadInventory() {
   const q = query(productsRef, orderBy("name"));
   onSnapshot(q, (snapshot) => {
@@ -347,13 +602,17 @@ function loadInventory() {
     // 3. Apply filters and render
     filterAndRenderInventory();
 
-      // 4. NEW: Refresh restock items tab
+    // 4. Refresh restock items tab
     loadRestockItems();
 
   }, (error) => {
     console.error("❌ Error loading inventory:", error);
-    inventoryTableBody.innerHTML = `<tr><td colspan="10">Error loading inventory.</td></tr>`;
+    inventoryTableBody.innerHTML = `<tr><td colspan="11">Error loading inventory.</td></tr>`;
   });
+  
+  // Also listen for recipes and products to calculate servings
+  listenForRecipes();
+  listenForProducts();
 }
 
 // --- Add or Update Ingredient ---
@@ -980,79 +1239,420 @@ async function saveNewIngredientFromAddForm(name) {
         alert("Failed to add ingredient.");
     }
 }
-// Export function to populate restock tab
+// --- Add these variables near the top of the file with other element declarations ---
+let restockSearchInput;
+let restockSearchCategory;
+let restockShowAll;
+let restockSearchReset;
+
+// --- Replace the entire loadRestockItems function with this expanded version ---
 export function loadRestockItems() {
     const restockTableBody = document.getElementById('restock-items-table-body');
     const outCountEl = document.getElementById('restock-out-count');
     const lowCountEl = document.getElementById('restock-low-count');
+    const inStockCountEl = document.getElementById('restock-in-stock-count');
+    const inStockCard = document.getElementById('restock-in-stock-card');
     const tabAlertDot = document.getElementById('restock-tab-alert-dot');
+    
+    // Get search elements
+    restockSearchInput = document.getElementById('restock-search-input');
+    restockSearchCategory = document.getElementById('restock-search-category');
+    restockShowAll = document.getElementById('restock-show-all');
+    restockSearchReset = document.getElementById('restock-search-reset');
     
     if (!restockTableBody) return;
     
-    // Filter for items that are low stock or out of stock
-    const restockItems = allIngredients.filter(ing => {
-        const { status } = getIngredientStatus(ing);
-        return status === 'low_stock' || status === 'out_of_stock';
-    });
+    // Populate category dropdown
+    populateRestockCategoryFilter();
     
+    // Get filter values
+    const searchTerm = restockSearchInput ? restockSearchInput.value.toLowerCase().trim() : '';
+    const categoryFilter = restockSearchCategory ? restockSearchCategory.value : '';
+    const showAllItems = restockShowAll ? restockShowAll.checked : false;
+    
+    // Determine which items to show
+    let itemsToShow = [];
     let outOfStockCount = 0;
     let lowStockCount = 0;
+    let inStockCount = 0;
+    
+    // Count all statuses first (for the cards)
+    allIngredients.forEach(ing => {
+        const { status } = getIngredientStatus(ing);
+        if (status === 'out_of_stock') outOfStockCount++;
+        else if (status === 'low_stock') lowStockCount++;
+    });
+    
+    // Filter items based on search criteria
+    if (showAllItems || searchTerm || categoryFilter) {
+        // Show filtered items (can include any status)
+        itemsToShow = allIngredients.filter(ing => {
+            // Apply search term filter
+            if (searchTerm) {
+                const nameMatch = ing.name.toLowerCase().includes(searchTerm);
+                const idMatch = (ing.ingredientId || ing.id).toLowerCase().includes(searchTerm);
+                if (!nameMatch && !idMatch) return false;
+            }
+            
+            // Apply category filter
+            if (categoryFilter && ing.category !== categoryFilter) {
+                return false;
+            }
+            
+            return true;
+        });
+        
+        // Count in-stock items being shown
+        inStockCount = itemsToShow.filter(ing => {
+            const { status } = getIngredientStatus(ing);
+            return status === 'in_stock';
+        }).length;
+        
+        // Show the in-stock card when showing all items
+        if (inStockCard) {
+            inStockCard.style.display = (showAllItems || searchTerm || categoryFilter) ? 'block' : 'none';
+        }
+    } else {
+        // Default: Only show low stock and out of stock items
+        itemsToShow = allIngredients.filter(ing => {
+            const { status } = getIngredientStatus(ing);
+            return status === 'low_stock' || status === 'out_of_stock';
+        });
+        
+        if (inStockCard) {
+            inStockCard.style.display = 'none';
+        }
+    }
+    
+    // Sort items: out of stock first, then low stock, then in stock
+    itemsToShow.sort((a, b) => {
+        const statusOrder = { 'out_of_stock': 0, 'low_stock': 1, 'expired': 2, 'in_stock': 3 };
+        const statusA = getIngredientStatus(a).status;
+        const statusB = getIngredientStatus(b).status;
+        return (statusOrder[statusA] || 4) - (statusOrder[statusB] || 4);
+    });
     
     restockTableBody.innerHTML = '';
     
-    if (restockItems.length === 0) {
-        restockTableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 40px; color: #666;">
-            <span style="font-size: 48px;">✓</span><br>
-            <strong>All items are well stocked!</strong><br>
-            No items need restocking at this time.
-        </td></tr>`;
+    // Update counts
+    if (outCountEl) outCountEl.textContent = outOfStockCount;
+    if (lowCountEl) lowCountEl.textContent = lowStockCount;
+    if (inStockCountEl) inStockCountEl.textContent = inStockCount;
+    
+    // Show alert dot if there are items needing restock
+    if (tabAlertDot) {
+        tabAlertDot.style.display = (outOfStockCount > 0 || lowStockCount > 0) ? 'inline-block' : 'none';
+    }
+    
+    if (itemsToShow.length === 0) {
+        let emptyMessage = '';
         
-        if (outCountEl) outCountEl.textContent = '0';
-        if (lowCountEl) lowCountEl.textContent = '0';
-        if (tabAlertDot) tabAlertDot.style.display = 'none';
+        if (searchTerm || categoryFilter) {
+            emptyMessage = `
+                <span style="font-size: 48px;">🔍</span><br>
+                <strong>No items found</strong><br>
+                Try adjusting your search or filters.
+            `;
+        } else if (showAllItems) {
+            emptyMessage = `
+                <span style="font-size: 48px;">📦</span><br>
+                <strong>No ingredients in inventory</strong><br>
+                Add ingredients to get started.
+            `;
+        } else {
+            emptyMessage = `
+                <span style="font-size: 48px;">✓</span><br>
+                <strong>All items are well stocked!</strong><br>
+                No items need restocking at this time.<br>
+                <span style="font-size: 12px; color: #888;">Use search or check "Show all items" to restock any item.</span>
+            `;
+        }
+        
+        restockTableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 40px; color: #666;">
+            ${emptyMessage}
+        </td></tr>`;
         return;
     }
     
-    // Show alert dot if there are items to restock
-    if (tabAlertDot) tabAlertDot.style.display = 'inline-block';
-    
-    restockItems.forEach(ing => {
+    // Render items
+    itemsToShow.forEach(ing => {
         const { status, statusDisplay, statusClass } = getIngredientStatus(ing);
         const displayStock = formatStockDisplay(ing.stockQuantity, ing.stockUnit, ing.baseUnit, ing.conversionFactor);
         
-        if (status === 'out_of_stock') outOfStockCount++;
-        if (status === 'low_stock') lowStockCount++;
-        
         const row = document.createElement('tr');
+        
+        // Set row background based on status
         if (status === 'out_of_stock') {
             row.style.backgroundColor = '#fee2e2';
-        } else {
+        } else if (status === 'low_stock') {
             row.style.backgroundColor = 'var(--color-brown-50)';
+        } else if (status === 'expired') {
+            row.style.backgroundColor = '#fecaca';
+        }
+        
+        // Highlight search term in name if searching
+        let displayName = ing.name || '-';
+        if (searchTerm && ing.name) {
+            const regex = new RegExp(`(${searchTerm})`, 'gi');
+            displayName = ing.name.replace(regex, '<mark style="background-color: #fef08a; padding: 0 2px;">$1</mark>');
         }
         
         row.innerHTML = `
             <td>${ing.ingredientId || ing.id}</td>
-            <td style="font-weight: 600;">${ing.name || '-'}</td>
+            <td style="font-weight: 600;">${displayName}</td>
             <td>${ing.category || '-'}</td>
             <td><span class="status ${statusClass}">${statusDisplay}</span></td>
-            <td style="color:var(--color-red-600);font-weight:600;">${displayStock}</td>
+            <td style="${(status === 'out_of_stock' || status === 'low_stock') ? 'color:var(--color-red-600);font-weight:600;' : ''}">
+                ${displayStock}
+            </td>
             <td>${(ing.minStockThreshold || 0)} ${ing.baseUnit}</td>
             <td class="actions-cell">
-                <button class="btn btn--primary btn--small restock-btn" data-id="${ing.id}">Restock</button>
+                <button class="btn btn--primary btn--small restock-btn" data-id="${ing.id}">
+                    ${status === 'in_stock' ? 'Add Stock' : 'Restock'}
+                </button>
             </td>
         `;
         
         // Add restock button functionality
         row.querySelector('.restock-btn').addEventListener('click', () => {
-            openModal(true, { id: ing.id, ...ing });
+            openRestockModal(ing);
         });
         
         restockTableBody.appendChild(row);
     });
+}
+
+// --- Add this new function to populate the category filter ---
+function populateRestockCategoryFilter() {
+    if (!restockSearchCategory) return;
     
-    // Update counts
-    if (outCountEl) outCountEl.textContent = outOfStockCount;
-    if (lowCountEl) lowCountEl.textContent = lowStockCount;
+    const currentVal = restockSearchCategory.value;
+    const categories = [...new Set(allIngredients.map(ing => ing.category).filter(Boolean))];
+    categories.sort();
+    
+    restockSearchCategory.innerHTML = '<option value="">All Categories</option>';
+    categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        restockSearchCategory.appendChild(option);
+    });
+    
+    restockSearchCategory.value = currentVal;
+}
+
+// --- Add this new function for the restock modal ---
+function openRestockModal(ingredient) {
+    // Remove existing modal if any
+    const existingModal = document.getElementById('quick-restock-modal');
+    if (existingModal) existingModal.remove();
+    
+    const currentStock = ingredient.stockQuantity || 0;
+    const currentStockInBase = currentStock * (ingredient.conversionFactor || 1);
+    const { statusDisplay, statusClass } = getIngredientStatus(ingredient);
+    
+    const modalHTML = `
+        <div id="quick-restock-modal" class="modal" style="display: flex;">
+            <div class="modal-content" style="max-width: 500px;">
+                <h2 style="display: flex; align-items: center; gap: 8px;">
+                    <span>📦</span>
+                    Restock: ${ingredient.name}
+                </h2>
+                
+                <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <strong style="color: #666; font-size: 12px;">CURRENT STOCK</strong>
+                            <p style="font-size: 20px; font-weight: 700; margin: 4px 0; color: ${statusClass === 'status-blocked' ? 'var(--color-red-600)' : 'var(--color-primary)'};">
+                                ${currentStock.toFixed(2)} ${ingredient.stockUnit}
+                            </p>
+                            <span style="color: #666; font-size: 12px;">(${currentStockInBase.toFixed(2)} ${ingredient.baseUnit})</span>
+                        </div>
+                        <div>
+                            <strong style="color: #666; font-size: 12px;">STATUS</strong>
+                            <p style="margin: 4px 0;">
+                                <span class="status ${statusClass}">${statusDisplay}</span>
+                            </p>
+                            <span style="color: #666; font-size: 12px;">Min: ${ingredient.minStockThreshold || 0} ${ingredient.baseUnit}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <form id="quick-restock-form">
+                    <div class="form-group">
+                        <label for="restock-qty">Add Stock Quantity (${ingredient.stockUnit}):</label>
+                        <input type="number" id="restock-qty" class="form-control" 
+                               placeholder="e.g., 5" step="any" min="0.01" required
+                               style="font-size: 18px; padding: 12px;">
+                        <p style="font-size: 12px; color: #666; margin-top: 4px;">
+                            1 ${ingredient.stockUnit} = ${ingredient.conversionFactor} ${ingredient.baseUnit}
+                        </p>
+                    </div>
+                    
+                    <div id="restock-preview" style="background: #ecfdf5; padding: 12px; border-radius: 8px; margin-bottom: 16px; display: none;">
+                        <strong style="color: #059669;">New Stock After Restock:</strong>
+                        <span id="restock-new-total" style="font-size: 18px; font-weight: 700; margin-left: 8px;"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="restock-reason">Reason (Optional):</label>
+                        <input type="text" id="restock-reason" class="form-control" 
+                               placeholder="e.g., Weekly delivery, Emergency restock">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="restock-expiry">Update Expiry Date (Optional):</label>
+                        <input type="date" id="restock-expiry" class="form-control" 
+                               value="${ingredient.expiryDate || ''}">
+                    </div>
+                    
+                    <div class="modal-buttons" style="margin-top: 20px;">
+                        <button type="button" id="cancel-quick-restock" class="btn btn--secondary">Cancel</button>
+                        <button type="submit" class="btn btn--primary">
+                            <span style="margin-right: 6px;">✓</span> Confirm Restock
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    const modal = document.getElementById('quick-restock-modal');
+    const form = document.getElementById('quick-restock-form');
+    const cancelBtn = document.getElementById('cancel-quick-restock');
+    const qtyInput = document.getElementById('restock-qty');
+    const previewDiv = document.getElementById('restock-preview');
+    const newTotalSpan = document.getElementById('restock-new-total');
+    
+    // Focus on quantity input
+    setTimeout(() => qtyInput.focus(), 100);
+    
+    // Live preview of new stock
+    qtyInput.addEventListener('input', () => {
+        const addQty = parseFloat(qtyInput.value) || 0;
+        if (addQty > 0) {
+            const newTotal = currentStock + addQty;
+            const newTotalInBase = newTotal * (ingredient.conversionFactor || 1);
+            newTotalSpan.textContent = `${newTotal.toFixed(2)} ${ingredient.stockUnit} (${newTotalInBase.toFixed(2)} ${ingredient.baseUnit})`;
+            previewDiv.style.display = 'block';
+        } else {
+            previewDiv.style.display = 'none';
+        }
+    });
+    
+    // Handle form submission
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const addQty = parseFloat(qtyInput.value);
+        const reason = document.getElementById('restock-reason').value.trim() || 'Manual restock';
+        const newExpiry = document.getElementById('restock-expiry').value;
+        
+        if (!addQty || addQty <= 0) {
+            alert('Please enter a valid quantity to add.');
+            return;
+        }
+        
+        const newStockQty = currentStock + addQty;
+        
+        try {
+            const updateData = {
+                stockQuantity: newStockQty,
+                lastUpdated: serverTimestamp()
+            };
+            
+            if (newExpiry) {
+                updateData.expiryDate = newExpiry;
+            }
+            
+            await updateDoc(doc(db, "ingredients", ingredient.id), updateData);
+            
+            // Create log entry
+            const employeeName = document.querySelector(".employee-name")?.textContent || "Employee";
+            createLog(
+                employeeName,
+                "Restock",
+                ingredient.name,
+                ingredient.category,
+                addQty,
+                ingredient.stockUnit,
+                currentStock,
+                newStockQty,
+                reason
+            );
+            
+            // Show success message
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 10001; font-weight: 600;';
+            successDiv.textContent = `✓ ${ingredient.name} restocked successfully! Added ${addQty} ${ingredient.stockUnit}`;
+            document.body.appendChild(successDiv);
+            setTimeout(() => successDiv.remove(), 3000);
+            
+            modal.remove();
+            
+        } catch (error) {
+            console.error("Error restocking:", error);
+            alert("Failed to restock. Please try again.");
+        }
+    });
+    
+    // Handle cancel
+    cancelBtn.addEventListener('click', () => modal.remove());
+    
+    // Close on background click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+    
+    // Close on Escape key
+    document.addEventListener('keydown', function escHandler(e) {
+        if (e.key === 'Escape') {
+            modal.remove();
+            document.removeEventListener('keydown', escHandler);
+        }
+    });
+}
+
+// --- Add event listeners setup function ---
+function setupRestockSearchListeners() {
+    const searchInput = document.getElementById('restock-search-input');
+    const searchCategory = document.getElementById('restock-search-category');
+    const showAllCheckbox = document.getElementById('restock-show-all');
+    const resetBtn = document.getElementById('restock-search-reset');
+    
+    if (searchInput) {
+        // Debounce search input
+        let searchTimeout;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                loadRestockItems();
+            }, 300);
+        });
+    }
+    
+    if (searchCategory) {
+        searchCategory.addEventListener('change', () => {
+            loadRestockItems();
+        });
+    }
+    
+    if (showAllCheckbox) {
+        showAllCheckbox.addEventListener('change', () => {
+            loadRestockItems();
+        });
+    }
+    
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            if (searchInput) searchInput.value = '';
+            if (searchCategory) searchCategory.value = '';
+            if (showAllCheckbox) showAllCheckbox.checked = false;
+            loadRestockItems();
+        });
+    }
 }
 
 // --- Initial Load & NEW Event Listeners ---
@@ -1074,4 +1674,5 @@ document.addEventListener('DOMContentLoaded', () => {
         inventoryFilterExpiry.value = '';
         filterAndRenderInventory(); // Re-run with cleared filters
     });
+     setupRestockSearchListeners();
 });
