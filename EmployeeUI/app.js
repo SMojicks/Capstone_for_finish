@@ -5,6 +5,7 @@ import { loadAnalytics } from "../scripts/analytics.js";
 import { loadAccounts } from "../scripts/account-management.js";
 import { auth, db } from "../scripts/firebase.js";
 import { loadInventoryLog } from "../scripts/inventory-log.js";
+import { initReservationCards } from '../scripts/reservation-cards.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
@@ -50,6 +51,7 @@ function initializeApp() {
             setupReservationHistoryToggle();
             setupSidebarDropdowns();
             setupAddItemsTabs();
+            setupFeedbackTabs();
             // 3. Update employee info in navbar
             document.querySelector(".employee-name").textContent = userProfile.fullName || "Employee";
             const avatar = document.querySelector(".employee-avatar");
@@ -200,6 +202,7 @@ function setupNavigation(defaultSection) {
         if (defaultSection === 'transactions') loadTransactions();
         if (defaultSection === 'analytics') loadAnalytics();
         if (defaultSection === 'accounts') loadAccounts();
+         if (defaultSection === 'reservations') initReservationCards();
         // --- REMOVED inventory-log load ---
     } else {
         // Fallback if the default doesn't exist (e.g., no permissions)
@@ -228,6 +231,19 @@ function setupNavigation(defaultSection) {
             if (targetSectionId === 'accounts') { 
                 loadAccounts();
             }
+            if (targetSectionId === 'reservations') {
+            initReservationCards();
+        }
+        if (targetSectionId === 'feedback') { // ADD THIS ENTIRE BLOCK
+            // Ensure the active feedback tab content loads
+            setTimeout(() => {
+                const activeTab = document.querySelector('#feedback-section .account-tab-btn.active');
+                if (activeTab && activeTab.getAttribute('data-target') === 'feedback-active-tab') {
+                    // Feedback loads automatically via DOMContentLoaded in employee-feedback.js
+                    // No additional action needed, just ensure the tab system is initialized
+                }
+            }, 100);
+        }
             if (targetSectionId === 'add-items') {
                 import('../scripts/inventory.js').then(module => {
                     module.loadRestockItems();
@@ -274,7 +290,49 @@ function setupAddItemsTabs() {
         });
     });
 }
+/**
+ * Sets up tab switching for Feedback section
+ */
 
+function setupFeedbackTabs() {
+    const feedbackSection = document.getElementById('feedback-section');
+    if (!feedbackSection) return;
+
+    const tabButtons = feedbackSection.querySelectorAll('.account-tab-btn');
+    const tabContainers = feedbackSection.querySelectorAll('.account-table-container');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetTab = button.getAttribute('data-target');
+            
+            // Remove active class from all tabs and containers
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContainers.forEach(container => container.classList.remove('active'));
+            
+            // Add active class to clicked tab and corresponding container
+            button.classList.add('active');
+            const targetContainer = document.getElementById(targetTab);
+            if (targetContainer) {
+                targetContainer.classList.add('active');
+            }
+            
+            // Load feedback history when switching to history tab
+            if (targetTab === 'feedback-history-tab') {
+                import('../scripts/employee-feedback.js').then(module => {
+                    module.loadFeedbackHistory();
+                });
+            }
+        });
+    });
+    
+    // ADDED: Ensure the first tab is active on load
+    const firstTab = feedbackSection.querySelector('.account-tab-btn.active');
+    const firstContainer = feedbackSection.querySelector('.account-table-container.active');
+    if (firstTab && firstContainer) {
+        // Content should already be loaded by employee-feedback.js DOMContentLoaded
+        console.log('✅ Feedback section initialized with active tab');
+    }
+}
 // Logout functionality
 function setupLogout() {
     const logoutBtn = document.querySelector('.logout-btn');

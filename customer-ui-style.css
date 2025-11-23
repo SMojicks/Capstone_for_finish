@@ -3332,13 +3332,13 @@ h1, h2, h3, h4, h5, h6 {
    ======================================== */
 
 /* Targets only the desktop payment section's body */
-#payment-section .payment-body-grid {
+/* #payment-section .payment-body-grid {
     display: grid;
     grid-template-columns: 400px 400px;
     justify-content: center; 
     gap: 30px; 
     align-items: flex-start;
-}
+} */
 
 /* Resets the payment-grid inside the new layout to be 1 column (stacked) */
 #payment-section .payment-body-grid .payment-grid {
@@ -3537,17 +3537,63 @@ h1, h2, h3, h4, h5, h6 {
    17. FINAL SUMMARY MODAL STYLES (Desktop)
    ======================================== */
 #final-reservation-summary-modal .auth-modal-content {
-    max-width: 500px;
+    max-width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
     text-align: left;
 }
 
 #final-reservation-summary-modal .auth-modal-content h2 {
     text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
 }
 
 #final-reservation-summary-modal .auth-modal-content p {
     text-align: center;
+    font-size: 0.95rem;
+    margin-bottom: 15px;
 }
+
+/* Make the receipt details scrollable */
+#final-reservation-summary-modal .auth-modal-content > div {
+    margin: 15px 0;
+}
+
+/* Ensure OK button is always visible */
+#final-reservation-summary-modal .auth-modal-buttons {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 15px 0 0 0;
+    border-top: 1px solid var(--color-border);
+    margin-top: 20px;
+}
+
+/* Additional fix for laptop screens */
+@media (max-height: 800px) {
+    #final-reservation-summary-modal .auth-modal-content {
+        max-height: 80vh;
+        padding: 20px;
+    }
+    
+    #final-reservation-summary-modal .auth-modal-content h2 {
+        font-size: 1.3rem;
+        margin-bottom: 8px;
+    }
+    
+    #final-reservation-summary-modal .auth-modal-content > div {
+        margin: 10px 0;
+    }
+}
+
+@media (max-height: 700px) {
+    #final-reservation-summary-modal .auth-modal-content {
+        max-height: 75vh;
+        padding: 15px;
+    }
+}
+
 /* NEW AUTOMATIC CAROUSEL WITH CENTER FOCUS */
 .carousel-container-new {
     position: relative;
@@ -3953,4 +3999,388 @@ body {
 @keyframes devPulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.8; }
+}
+/* ==========================================
+   IMPROVED PAYMENT SECTION STYLES (3-COLUMN LAYOUT)
+   ========================================== */
+
+.payment-body {
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* 3-Column Grid Layout */
+.payment-body-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    margin-top: 0;
+}
+
+/* Column 1: Reservation Summary */
+.payment-reservation-summary {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+}
+
+.payment-reservation-summary h3 {
+    color: var(--color-dark-green);
+    font-size: 1.3rem;
+    margin: 0 0 20px 0;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--color-gold);
+    font-weight: 700;
+    text-align: center;
+}
+
+.payment-reservation-summary h4 {
+    color: var(--color-text);
+    font-size: 1rem;
+    margin: 20px 0 12px 0;
+    font-weight: 600;
+    padding-top: 12px;
+    border-top: 1px solid #e9ecef;
+    text-align: center;
+}
+
+.payment-reservation-summary p {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.payment-reservation-summary p:last-of-type {
+    border-bottom: none;
+}
+
+.payment-reservation-summary p strong {
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.payment-reservation-summary p span {
+    color: var(--color-text-light);
+    text-align: right;
+    font-weight: 500;
+}
+
+/* Pre-order Items Container */
+#payment-summary-items-desktop,
+#payment-summary-items-mobile {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 10px;
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid #e9ecef;
+}
+
+#payment-summary-items-desktop > div,
+#payment-summary-items-mobile > div {
+    padding: 8px 0;
+    border-bottom: 1px dashed #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+}
+
+#payment-summary-items-desktop > div:last-child,
+#payment-summary-items-mobile > div:last-child {
+    border-bottom: none;
+}
+
+/* Remove the payment-steps-wrapper since we don't need it */
+.payment-steps-wrapper {
+    display: contents; /* This makes the wrapper invisible */
+}
+
+/* Remove the nested grid - columns are siblings now */
+.payment-grid {
+    display: contents; /* Makes Step 1 and Step 2 direct children of the main grid */
+}
+
+/* Step Badge Styling */
+.step-badge {
+    display: inline-block;
+    background: var(--color-gold);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 25px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(212, 175, 55, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Column 2: Step 1 - QR Code Section */
+.payment-qr-code {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.payment-qr-code h4 {
+    color: var(--color-dark-green);
+    font-size: 1.2rem;
+    margin: 0 0 12px 0;
+    font-weight: 700;
+}
+
+.payment-qr-code p {
+    color: var(--color-text-light);
+    margin: 8px 0;
+    font-size: 0.9rem;
+}
+
+.payment-qr-code img {
+    max-width: 200px;
+    width: 100%;
+    height: auto;
+    margin: 15px auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 3px solid #ffffff;
+}
+
+#payment-total-amount-desktop,
+#payment-total-amount {
+    display: inline-block;
+        background: var(--color-gold);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 1.3rem !important;
+    font-weight: 700;
+    margin: 12px 0;
+    box-shadow: 0 3px 10px rgba(212, 175, 55, 0.4);
+}
+
+/* Column 3: Step 2 - Receipt Upload Section */
+.payment-upload {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.payment-upload h4 {
+    color: var(--color-dark-green);
+    font-size: 1.2rem;
+    margin: 0 0 12px 0;
+    font-weight: 700;
+    text-align: center;
+}
+
+.payment-upload p {
+    color: var(--color-text-light);
+    margin: 0 0 20px 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.payment-upload .form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.payment-upload .form-group label:first-of-type {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--color-text);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.file-input-label {
+    display: inline-block;
+   background: var(--color-dark-green);
+    color: white !important;
+    padding: 12px 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(4, 85, 21, 0.3);
+    font-size: 0.9rem;
+}
+
+.file-input-label:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(4, 85, 21, 0.4);
+}
+
+.file-input {
+    display: none;
+}
+
+.receipt-preview-link {
+    display: inline-block;
+    margin-top: 12px;
+    color: var(--color-gold);
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: 600;
+    transition: color 0.3s ease;
+    font-size: 0.85rem;
+}
+
+.receipt-preview-link:hover {
+    color: #d4af37;
+}
+
+.payment-upload .submit-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 14px;
+    font-size: 1rem;
+      background: var(--color-gold);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(212, 175, 55, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.payment-upload .submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(212, 175, 55, 0.5);
+}
+
+.payment-upload .submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Scrollbar styling for order items */
+#payment-summary-items-desktop::-webkit-scrollbar,
+#payment-summary-items-mobile::-webkit-scrollbar {
+    width: 6px;
+}
+
+#payment-summary-items-desktop::-webkit-scrollbar-track,
+#payment-summary-items-mobile::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+#payment-summary-items-desktop::-webkit-scrollbar-thumb,
+#payment-summary-items-mobile::-webkit-scrollbar-thumb {
+    background: var(--color-gold);
+    border-radius: 10px;
+}
+
+#payment-summary-items-desktop::-webkit-scrollbar-thumb:hover,
+#payment-summary-items-mobile::-webkit-scrollbar-thumb:hover {
+    background: #d4af37;
+}
+
+/* Mobile Responsive */
+@media (max-width: 1024px) {
+    .payment-body-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .payment-reservation-summary,
+    .payment-qr-code,
+    .payment-upload {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .payment-body {
+        padding: 20px 12px;
+    }
+    
+    .payment-body-grid {
+        gap: 15px;
+    }
+    
+    .payment-reservation-summary h3,
+    .payment-qr-code h4,
+    .payment-upload h4 {
+        font-size: 1.1rem;
+    }
+    
+    .step-badge {
+        font-size: 0.7rem;
+        padding: 5px 12px;
+    }
+    
+    .payment-qr-code img {
+        max-width: 180px;
+    }
+    
+    #payment-total-amount-desktop,
+    #payment-total-amount {
+        font-size: 1.15rem !important;
+        padding: 8px 18px;
+    }
+}
+
+@media (max-width: 576px) {
+    .payment-body {
+        padding: 15px 10px;
+    }
+    
+    .payment-reservation-summary,
+    .payment-qr-code,
+    .payment-upload {
+        padding: 18px;
+    }
+    
+    .payment-qr-code img {
+        max-width: 160px;
+    }
+    
+    #payment-total-amount-desktop,
+    #payment-total-amount {
+        font-size: 1.1rem !important;
+        padding: 8px 16px;
+    }
+    
+    .file-input-label {
+        padding: 10px 20px;
+        font-size: 0.85rem;
+    }
+    
+    .payment-upload .submit-btn {
+        padding: 12px;
+        font-size: 0.95rem;
+    }
 }

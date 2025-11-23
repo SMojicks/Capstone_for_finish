@@ -338,43 +338,53 @@
         </div>
     </div>
     
-   <div id="payment-section" class="desktop-only-section" style="display: none;">
+<div id="payment-section" class="desktop-only-section" style="display: none;">
     <div class="payment-modal-content">
         <div class="preorder-header">
             <button id="cancel-payment-btn-desktop" class="preorder-back-btn"><span>&larr;</span><span class="btn-text"> Back to Pre-Order</span></button>
             <h2 style="color: white;">Pay for Pre-Order</h2>
         </div>
         
-        <div class="payment-body payment-body-grid">
-            
-            <div class="payment-reservation-summary">
-                <h3>Reservation Summary</h3>
-                <p><strong>Name:</strong> <span id="payment-summary-name-desktop">...</span></p>
-                <p><strong>Date:</strong> <span id="payment-summary-date-desktop">...</span></p>
-                <p><strong>Time:</strong> <span id="payment-summary-time-desktop">...</span></p>
-                <p><strong>Diners:</strong> <span id="payment-summary-diners-desktop">...</span></p>
-                
-                <h4>Pre-Order Summary</h4>
-                <div id="payment-summary-items-desktop">
-                    </div>
-            </div>
-            <div class="payment-grid">
-                <div class="payment-qr-code">
-                    <h4>Pay with GCash</h4>
-                    <p>Total Amount: <strong id="payment-total-amount-desktop" style="font-size: 1.2rem;">₱0.00</strong></p>
-                    <img src="assets/acaccia qr code.png" alt="GCash QR Code">
-                    <p>Scan this QR code with your GCash app.</p>
+        <div class="payment-body">
+            <!-- Left Column: Reservation Summary -->
+            <div class="payment-body-grid">
+                <div class="payment-reservation-summary">
+                    <h3>Reservation Summary</h3>
+                    <p><strong>Name:</strong> <span id="payment-summary-name-desktop">...</span></p>
+                    <p><strong>Date:</strong> <span id="payment-summary-date-desktop">...</span></p>
+                    <p><strong>Time:</strong> <span id="payment-summary-time-desktop">...</span></p>
+                    <p><strong>Diners:</strong> <span id="payment-summary-diners-desktop">...</span></p>
+                    
+                    <h4>Pre-Order Summary</h4>
+                    <div id="payment-summary-items-desktop"></div>
                 </div>
-                <div class="payment-upload">
-                    <h4>Upload Receipt</h4>
-                    <p>After paying, please upload a screenshot of your e-receipt.</p>
-                    <div class="form-group">
-                        <label for="receipt-file-input-desktop">Proof of Payment:</label>
-                        <input type="file" id="receipt-file-input-desktop" class="file-input" accept="image/*" required>
-                        <label for="receipt-file-input-desktop" class="file-input-label" style="color: white;">📷 Select Screenshot</label>
-                        <button type="button" id="receipt-preview-link-desktop" class="receipt-preview-link" style="display: none;">View Attached Screenshot</button>
+                
+                <!-- Right Column: Payment Steps -->
+                <div class="payment-steps-wrapper">
+                    <div class="payment-grid">
+                        <!-- Step 1: Pay with GCash -->
+                        <div class="payment-qr-code">
+                            <span class="step-badge">Step 1</span>
+                            <h4>Pay with GCash</h4>
+                            <p>Total Amount: <strong id="payment-total-amount-desktop" style="font-size: 1.2rem;">₱0.00</strong></p>
+                            <img src="assets/acaccia qr code.png" alt="GCash QR Code">
+                            <p>Scan this QR code with your GCash app.</p>
+                        </div>
+                        
+                        <!-- Step 2: Upload Receipt -->
+                        <div class="payment-upload">
+                            <span class="step-badge">Step 2</span>
+                            <h4>Upload Receipt</h4>
+                            <p>After paying, please upload a screenshot of your e-receipt.</p>
+                            <div class="form-group">
+                                <label for="receipt-file-input-desktop">Proof of Payment:</label>
+                                <input type="file" id="receipt-file-input-desktop" class="file-input" accept="image/*" required>
+                                <label for="receipt-file-input-desktop" class="file-input-label" style="color: white;">📷 Select Screenshot</label>
+                                <button type="button" id="receipt-preview-link-desktop" class="receipt-preview-link" style="display: none;">View Attached Screenshot</button>
+                            </div>
+                            <button id="upload-receipt-btn-desktop" class="submit-btn" disabled>Confirm Pre-Order</button>
+                        </div>
                     </div>
-                    <button id="upload-receipt-btn-desktop" class="submit-btn" disabled>Confirm Pre-Order</button>
                 </div>
             </div>
         </div>
@@ -502,7 +512,7 @@
         </div>
     </div>
 
- <div id="preorder-payment-modal" class="preorder-modal" style="z-index: 1002;">
+<div id="preorder-payment-modal" class="preorder-modal" style="z-index: 1002;">
     <div class="payment-modal-content">
         <div class="preorder-header">
             <button id="payment-back-btn-mobile" class="preorder-back-btn">
@@ -520,28 +530,31 @@
                 <p><strong>Diners:</strong> <span id="payment-summary-diners-mobile">...</span></p>
                 
                 <h4>Pre-Order Summary</h4>
-                <div id="payment-summary-items-mobile">
-                </div>
+                <div id="payment-summary-items-mobile"></div>
             </div>
             
-            <div class="payment-grid">
-                <div class="payment-qr-code">
-                    <h4>Pay with GCash</h4>
-                    <p>Total Amount: <strong id="payment-total-amount" style="font-size: 1.2rem;">₱0.00</strong></p>
-                    <img src="assets/acaccia qr code.png" alt="GCash QR Code">
-                    <p>Scan this QR code with your GCash app.</p>
-                </div>
-                
-                <div class="payment-upload">
-                    <h4>Upload Receipt</h4>
-                    <p>After paying, please upload a screenshot of your e-receipt.</p>
-                    <div class="form-group">
-                        <label for="receipt-file-input">Proof of Payment:</label>
-                        <input type="file" id="receipt-file-input" class="file-input" accept="image/*" required>
-                        <label for="receipt-file-input" class="file-input-label" style="color: white;">📷 Select Screenshot</label>
-                        <button type="button" id="receipt-preview-link" class="receipt-preview-link" style="display: none;">View Attached Screenshot</button>
+            <div class="payment-steps-wrapper">
+                <div class="payment-grid">
+                    <div class="payment-qr-code">
+                        <span class="step-badge">Step 1</span>
+                        <h4>Pay with GCash</h4>
+                        <p>Total Amount: <strong id="payment-total-amount" style="font-size: 1.2rem;">₱0.00</strong></p>
+                        <img src="assets/acaccia qr code.png" alt="GCash QR Code">
+                        <p>Scan this QR code with your GCash app.</p>
                     </div>
-                    <button id="upload-receipt-btn" class="submit-btn" disabled>Confirm Pre-Order</button>
+                    
+                    <div class="payment-upload">
+                        <span class="step-badge">Step 2</span>
+                        <h4>Upload Receipt</h4>
+                        <p>After paying, please upload a screenshot of your e-receipt.</p>
+                        <div class="form-group">
+                            <label for="receipt-file-input">Proof of Payment:</label>
+                            <input type="file" id="receipt-file-input" class="file-input" accept="image/*" required>
+                            <label for="receipt-file-input" class="file-input-label" style="color: white;">📷 Select Screenshot</label>
+                            <button type="button" id="receipt-preview-link" class="receipt-preview-link" style="display: none;">View Attached Screenshot</button>
+                        </div>
+                        <button id="upload-receipt-btn" class="submit-btn" disabled>Confirm Pre-Order</button>
+                    </div>
                 </div>
             </div>
         </div>

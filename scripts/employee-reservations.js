@@ -118,6 +118,7 @@ function promptForMessage(id, newStatus, userId, date) {
 }
 // --- MODIFIED: Function to load reservation history ---
 // --- SIMPLIFIED: Function to load reservation history ---
+// --- MODIFIED: Function to load reservation history ---
 function loadReservationHistory() {
     const historyTableBody = document.getElementById('reservation-history-table-body');
     if (!historyTableBody) {
@@ -127,16 +128,19 @@ function loadReservationHistory() {
 
     console.log("📋 Loading reservation history...");
 
-    // SIMPLIFIED: Just get all reservations without complex ordering
-    const q = query(reservationCollection);
+    // MODIFIED: Only show completed, canceled, and deleted reservations
+    const q = query(
+        reservationCollection,
+        where("status", "in", ["completed", "canceled", "deleted"])
+    );
 
     onSnapshot(q, (snapshot) => {
-        console.log(`✅ Found ${snapshot.size} reservations`);
+        console.log(`✅ Found ${snapshot.size} history reservations`);
         
         historyTableBody.innerHTML = "";
 
         if (snapshot.empty) {
-            console.log("⚠️ No reservations found");
+            console.log("⚠️ No history reservations found");
             historyTableBody.innerHTML = `
             <tr>
                 <td colspan="10" style="text-align: center; padding: 20px; color: #999;">
@@ -162,7 +166,7 @@ function loadReservationHistory() {
             return 0;
         });
 
-        console.log("📊 Displaying reservations:", reservations.length);
+        console.log("📊 Displaying history reservations:", reservations.length);
 
         reservations.forEach((data) => {
             const row = document.createElement("tr");
@@ -307,6 +311,7 @@ function loadReservationDashboard() {
 
 
 // --- MODIFIED: Function to load the FILTERED table ---
+// --- MODIFIED: Function to load the FILTERED table ---
 function loadReservationTable() {
     if (!reservationTableBody) return;
 
@@ -317,153 +322,129 @@ function loadReservationTable() {
     const statusValue = statusFilter.value;
     const dateValue = dateFilter.value;
 
- let queryConstraints = [orderBy("date", "desc"), orderBy("time", "desc")];
+    // MODIFIED: Only show pending and approved reservations in main table
+    let queryConstraints = [orderBy("date", "desc"), orderBy("time", "desc")];
 
-// Always exclude deleted reservations from main table
-queryConstraints.push(where("status", "!=", "deleted"));
+    // Filter to show ONLY pending and approved (exclude completed, canceled, deleted)
+    if (statusValue && statusValue !== "all") {
+        queryConstraints.push(where("status", "==", statusValue));
+    } else {
+        // DEFAULT: Show only pending and approved when "All" is selected
+        queryConstraints.push(where("status", "in", ["pending", "approved"]));
+    }
 
-if (statusValue && statusValue !== "all") {
-    // This will be combined with the != "deleted" filter above
-    queryConstraints.push(where("status", "==", statusValue));
-}
     if (dateValue) {
         queryConstraints.push(where("date", "==", dateValue));
     }
 
     const q = query(reservationCollection, ...queryConstraints);
 
-reservationListener = onSnapshot(q, (snapshot) => {
-    reservationTableBody.innerHTML = ""; 
+    reservationListener = onSnapshot(q, (snapshot) => {
+        reservationTableBody.innerHTML = ""; 
 
-    if (snapshot.empty) {
-        reservationTableBody.innerHTML = `
-        <tr>
-            <td colspan="11" style="text-align: center; padding: 20px; color: #999;">
-            No reservations found matching your filters.
-            </td>
-        </tr>
-        `;
-        return;
-    }
-
-    // MODIFIED: Filter out deleted reservations manually
-    let filteredDocs = [];
-    snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        // Skip deleted reservations in main table
-        if (data.status !== "deleted") {
-            filteredDocs.push(docSnap);
-        }
-    });
-
-    if (filteredDocs.length === 0) {
-        reservationTableBody.innerHTML = `
-        <tr>
-            <td colspan="11" style="text-align: center; padding: 20px; color: #999;">
-            No reservations found matching your filters.
-            </td>
-        </tr>
-        `;
-        return;
-    }
-
-    filteredDocs.forEach((docSnap) => {
-        const data = docSnap.data();
-        const row = document.createElement("tr");
-        const status = data.status || "pending";
-
-        // --- NEW: Build Pre-Order HTML for modal and cell ---
-        let preOrderCell = "—";
-        let preOrderModalHtml = '<p>No pre-order items.</p>';
-        if (data.preOrder && data.preOrder.length > 0) {
-            // For the cell (truncated)
-            preOrderCell = `<ul class="pre-order-item-list">`;
-            data.preOrder.forEach(item => {
-                preOrderCell += `<li>${item.quantity}x ${item.name}</li>`;
-            });
-            preOrderCell += `</ul>`;
-            
-            // For the modal (full list)
-            preOrderModalHtml = `<ul class="pre-order-item-list">`;
-            data.preOrder.forEach(item => {
-                preOrderModalHtml += `<li><strong>${item.quantity}x</strong> ${item.name}</li>`;
-            });
-            preOrderModalHtml += `</ul>`;
+        if (snapshot.empty) {
+            reservationTableBody.innerHTML = `
+            <tr>
+                <td colspan="11" style="text-align: center; padding: 20px; color: #999;">
+                No active reservations found.
+                </td>
+            </tr>
+            `;
+            return;
         }
 
-        let receiptCell = "—";
-        if (data.paymentReceiptUrl) {
-            receiptCell = `<button class="btn btn--secondary btn--sm view-receipt-btn" data-src="${data.paymentReceiptUrl}">View</button>`;
-        }
-        
-        // --- (Date/Time formatting logic is unchanged) ---
-        let formattedDate = data.date; 
-        try {
-            const parts = data.date.split('-');
-            if (parts.length === 3) {
-                formattedDate = `${parts[1]}/${parts[2]}/${parts[0].substring(2)}`; 
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const row = document.createElement("tr");
+            const status = data.status || "pending";
+
+            // --- Build Pre-Order HTML for modal and cell ---
+            let preOrderCell = "—";
+            let preOrderModalHtml = '<p>No pre-order items.</p>';
+            if (data.preOrder && data.preOrder.length > 0) {
+                preOrderCell = `<ul class="pre-order-item-list">`;
+                data.preOrder.forEach(item => {
+                    preOrderCell += `<li>${item.quantity}x ${item.name}</li>`;
+                });
+                preOrderCell += `</ul>`;
+                
+                preOrderModalHtml = `<ul class="pre-order-item-list">`;
+                data.preOrder.forEach(item => {
+                    preOrderModalHtml += `<li><strong>${item.quantity}x</strong> ${item.name}</li>`;
+                });
+                preOrderModalHtml += `</ul>`;
             }
-        } catch (e) { console.warn("Could not format date:", data.date); }
 
-        let formattedTime = data.time;
-        if (data.time) {
+            let receiptCell = "—";
+            if (data.paymentReceiptUrl) {
+                receiptCell = `<button class="btn btn--secondary btn--sm view-receipt-btn" data-src="${data.paymentReceiptUrl}">View</button>`;
+            }
+            
+            // Date/Time formatting
+            let formattedDate = data.date; 
             try {
-                const [hours, minutes] = data.time.split(':').map(Number);
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-                let h = hours % 12;
-                if (h === 0) h = 12; 
-                const m = String(minutes).padStart(2, '0');
-                formattedTime = `${h}:${m} ${ampm}`;
-            } catch (e) { console.warn("Could not format time:", data.time); }
-        }
+                const parts = data.date.split('-');
+                if (parts.length === 3) {
+                    formattedDate = `${parts[1]}/${parts[2]}/${parts[0].substring(2)}`; 
+                }
+            } catch (e) { console.warn("Could not format date:", data.date); }
 
-        // Display multiple tables correctly
-        const tableDisplay = Array.isArray(data.tableNumbers) 
-            ? data.tableNumbers.join(', ') 
-            : (data.tableNumber || 'N/A');
+            let formattedTime = data.time;
+            if (data.time) {
+                try {
+                    const [hours, minutes] = data.time.split(':').map(Number);
+                    const ampm = hours >= 12 ? 'PM' : 'AM';
+                    let h = hours % 12;
+                    if (h === 0) h = 12; 
+                    const m = String(minutes).padStart(2, '0');
+                    formattedTime = `${h}:${m} ${ampm}`;
+                } catch (e) { console.warn("Could not format time:", data.time); }
+            }
 
-        // --- (actionsHtml logic is unchanged) ---
-        let actionsHtml = '';
-        if (status === "pending") {
-            actionsHtml = `<button class="btn-icon btn--icon-approve approve-btn" title="Approve Reservation" data-id="${docSnap.id}" data-user-id="${data.userId || ''}" data-date="${data.date}">✔️</button>`;
-        } else if (status === "approved") {
-            actionsHtml = `<button class="btn-icon btn--icon-complete complete-btn" title="Complete Reservation" data-id="${docSnap.id}" data-user-id="${data.userId || ''}" data-date="${data.date}">🏁</button>`;
-        } else if (status === "completed") {
-            actionsHtml = `<span class="status-text">Completed</span>`;
-        } else if (status === "canceled") {
-            actionsHtml = `<span class="status-text">Canceled</span>`;
-        }
-        if (status === "pending" || status === "approved") {
-            actionsHtml += `<button class="btn-icon btn--icon-cancel cancel-btn" title="Cancel Reservation" data-id="${docSnap.id}" data-user-id="${data.userId || ''}" data-date="${data.date}">❌</button>`;
-        }
-        actionsHtml += `<button class="btn-icon btn--icon-delete delete-btn" title="Delete Reservation" data-id="${docSnap.id}">🗑️</button>`;
+            // Display multiple tables correctly
+            const tableDisplay = Array.isArray(data.tableNumbers) 
+                ? data.tableNumbers.join(', ') 
+                : (data.tableNumber || 'N/A');
 
-        row.innerHTML = `
-        <td>${data.name}</td>
-        <td>${data.contactNumber}</td>
-        <td>${tableDisplay}</td>
-        <td>${formattedDate}</td> 
-        <td>${formattedTime}</td> 
-        <td>${data.numOfDiners}</td>
-        <td class="view-preorder" data-preorder-html="${encodeURIComponent(preOrderModalHtml)}">${preOrderCell}</td>
-        <td>${receiptCell}</td>
-        <td class="view-notes" data-notes="${data.notes || "No notes provided."}">${data.notes || "—"}</td>
-        <td class="status ${status}">${status}</td>
-        <td class="actions-cell">
-            ${actionsHtml}
-        </td>
-        `;
+            // Actions based on status
+            let actionsHtml = '';
+            if (status === "pending") {
+                actionsHtml = `<button class="btn-icon btn--icon-approve approve-btn" title="Approve Reservation" data-id="${docSnap.id}" data-user-id="${data.userId || ''}" data-date="${data.date}">✔️</button>`;
+            } else if (status === "approved") {
+                actionsHtml = `<button class="btn-icon btn--icon-complete complete-btn" title="Complete Reservation" data-id="${docSnap.id}" data-user-id="${data.userId || ''}" data-date="${data.date}">🏁</button>`;
+            }
+            
+            if (status === "pending" || status === "approved") {
+                actionsHtml += `<button class="btn-icon btn--icon-cancel cancel-btn" title="Cancel Reservation" data-id="${docSnap.id}" data-user-id="${data.userId || ''}" data-date="${data.date}">❌</button>`;
+            }
+            actionsHtml += `<button class="btn-icon btn--icon-delete delete-btn" title="Delete Reservation" data-id="${docSnap.id}">🗑️</button>`;
+
+            row.innerHTML = `
+            <td>${data.name}</td>
+            <td>${data.contactNumber}</td>
+            <td>${tableDisplay}</td>
+            <td>${formattedDate}</td> 
+            <td>${formattedTime}</td> 
+            <td>${data.numOfDiners}</td>
+            <td class="view-preorder" data-preorder-html="${encodeURIComponent(preOrderModalHtml)}">${preOrderCell}</td>
+            <td>${receiptCell}</td>
+            <td class="view-notes" data-notes="${data.notes || "No notes provided."}">${data.notes || "—"}</td>
+            <td class="status ${status}">${status}</td>
+            <td class="actions-cell">
+                ${actionsHtml}
+            </td>
+            `;
+            
+            reservationTableBody.appendChild(row);
+        });
+    }, (error) => {
+        console.error("Error loading filtered reservations:", error);
+        reservationTableBody.innerHTML = `<tr><td colspan="11">Error loading reservations.</td></tr>`;
         
-        reservationTableBody.appendChild(row);
+        if (error.code === 'failed-precondition') {
+            alert("A database query failed. This is likely because a required composite index is missing. Please check the browser console (F12) for a link to create the index in Firebase.");
+        }
     });
-}, (error) => {
-    console.error("Error loading filtered reservations:", error);
-    reservationTableBody.innerHTML = `<tr><td colspan="11">Error loading reservations.</td></tr>`;
-    
-    if (error.code === 'failed-precondition') {
-        alert("A database query failed. This is likely because a required composite index is missing. Please check the browser console (F12) for a link to create the index in Firebase.");
-    }
-});
 }
 
 // --- MODIFIED: DOMContentLoaded listener ---

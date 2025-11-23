@@ -729,27 +729,17 @@
                             <h2 id="analytics-today-res">...</h2>
                         </div>
                     </div>
+<!-- Reservations Cards Container -->
+<div class="reservations-cards-container" id="reservations-cards-container">
+    <!-- Cards will be dynamically generated here -->
+</div>
 
-                    <div class="table-container">
-                        <table id="reservationTable">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Contact</th>
-                                    <th>Table</th>
-                                    <th>Date</th>
-                                    <th>Time</th>
-                                    <th>Diners</th>
-                                    <th>Pre-Order</th>
-                                    <th>Receipt</th>
-                                    <th>Notes</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="reservationTableBody"></tbody>
-                        </table>
-                    </div>
+<!-- Empty State (shown when no reservations) -->
+<div class="reservations-empty-state hidden" id="reservations-empty-state">
+    <span class="material-icons">event_busy</span>
+    <h3>No Reservations Found</h3>
+    <p>There are no reservations matching your current filters.</p>
+</div>
                 </section>
 
                 <!-- RESERVATION HISTORY SECTION -->
@@ -832,19 +822,49 @@
                 </section>
 
                 <!-- FEEDBACK SECTION -->
-                <section id="feedback-section" class="content-section">
-                    <div class="section-header">
-                        <h1>Customer Feedback</h1>
-                        <div class="header-actions">
-                            <div class="average-rating-card">
-                                <h5>Average Rating</h5>
-                                <h2 id="overall-average-rating">...</h2>
-                            </div>
-                        </div>
-                    </div>
+<!-- FEEDBACK SECTION -->
+<section id="feedback-section" class="content-section">
+    <div class="section-header">
+        <h1>Customer Feedback</h1>
+        <div class="header-actions">
+            <div class="average-rating-card">
+                <h5>Average Rating</h5>
+                <h2 id="overall-average-rating">...</h2>
+            </div>
+        </div>
+    </div>
 
-                    <div class="feedback-grid" id="feedback-grid-container"></div>
-                </section>
+    <!-- Tabs for Feedback -->
+    <div class="account-tabs">
+        <button class="account-tab-btn active" data-target="feedback-active-tab">Active Feedback</button>
+        <button class="account-tab-btn" data-target="feedback-history-tab">Feedback History</button>
+    </div>
+
+    <!-- Active Feedback Tab -->
+    <div id="feedback-active-tab" class="account-table-container active">
+        <div class="feedback-grid" id="feedback-grid-container"></div>
+    </div>
+
+    <!-- Feedback History Tab -->
+    <div id="feedback-history-tab" class="account-table-container">
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Customer Name</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                        <th>Image</th>
+                        <th>Posted Date</th>
+                        <th>Deleted Date</th>
+                        <th>Deleted By</th>
+                    </tr>
+                </thead>
+                <tbody id="feedback-history-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
 
                 <!-- ANALYTICS SECTION -->
                 <section id="analytics-section" class="content-section">
@@ -1142,7 +1162,7 @@
         </div>
     </div>
 
-    <div id="inventory-category-modal" class="modal">
+    <!-- <div id="inventory-category-modal" class="modal">
         <div class="modal-content modal-content--wide">
             <h2>Manage Inventory Categories</h2>
             <form id="add-inv-category-form" style="display: flex; gap: 10px; margin-bottom: 20px;">
@@ -1169,7 +1189,7 @@
                 <button type="button" id="close-inv-category-btn" class="btn btn--secondary">Close</button>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <div id="image-view-modal" class="modal" style="padding: 20px;">
         <div class="modal-content" style="padding: 10px; max-width: 80vw; max-height: 80vh;">
@@ -1336,7 +1356,8 @@
     <script type="module" src="../scripts/inventory-categories.js"></script>
     <script type="module" src="../scripts/inventory.js"></script>
     <script type="module" src="../scripts/transaction.js"></script>
-    <script type="module" src="../scripts/employee-reservations.js"></script>
+     <script type="module" src="../scripts/employee-reservations.js"></script> 
+     <script type="module" src="../scripts/reservation-cards.js"></script>
     <script type="module" src="../scripts/employee-feedback.js"></script>
     <script type="module" src="../scripts/analytics.js"></script>
     

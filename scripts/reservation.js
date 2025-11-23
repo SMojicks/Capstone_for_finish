@@ -827,21 +827,34 @@ function renderPreOrderMenu(category, isDesktop = false) {
 
 function handlePreOrderProductClick(product) {
     if (product.variations && product.variations.length > 0) {
-        if (preOrderVariationModal) {
+        // Determine if we're on desktop or mobile
+        const isDesktop = window.innerWidth > 992;
+        
+        if (preOrderVariationModal && preOrderVariationTitle && preOrderVariationOptions) {
             preOrderVariationTitle.textContent = `Select ${product.name} Size`;
             preOrderVariationOptions.innerHTML = ""; 
+            
             product.variations.forEach(v => {
                 const btn = document.createElement("button");
                 btn.className = "variation-btn";
                 btn.innerHTML = `${v.name} <span class="variation-price">₱${v.price.toFixed(2)}</span>`;
                 btn.onclick = () => {
-                    const item = { ...product, id: `${product.id}-${v.name}`, name: `${product.name} - ${v.name}`, price: v.price };
+                    const item = { 
+                        ...product, 
+                        id: `${product.id}-${v.name}`, 
+                        name: `${product.name} - ${v.name}`, 
+                        price: v.price 
+                    };
                     addItemToPreOrderCart(item);
                     preOrderVariationModal.style.display = "none";
+                    preOrderVariationModal.classList.add("hidden"); // Add this line
                 };
                 preOrderVariationOptions.appendChild(btn);
             });
+            
+            // Show the modal with both methods for compatibility
             preOrderVariationModal.style.display = "flex";
+            preOrderVariationModal.classList.remove("hidden");
         }
     } else {
         addItemToPreOrderCart(product);
@@ -1501,9 +1514,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
   });
   if (preOrderCheckoutBtn) preOrderCheckoutBtn.addEventListener("click", openPaymentModal);
-  if (cancelPreOrderVariationBtn) cancelPreOrderVariationBtn.addEventListener("click", () => {
-      if (preOrderVariationModal) preOrderVariationModal.style.display = "none";
-  });
+if (cancelPreOrderVariationBtn) cancelPreOrderVariationBtn.addEventListener("click", () => {
+    if (preOrderVariationModal) {
+        preOrderVariationModal.style.display = "none";
+        preOrderVariationModal.classList.add("hidden");
+    }
+});
   if (cancelPaymentBtn) cancelPaymentBtn.addEventListener("click", () => {
       if (preOrderPaymentModal) preOrderPaymentModal.style.display = "none";
   });
